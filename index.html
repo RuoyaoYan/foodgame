@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>寻味之旅 · 原型</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="title">寻味之旅</div>
+  <div class="stats">
+    <span class="gold">🪙 <b id="gold">0</b></span>
+    <span class="income">+<b id="income">0</b>/秒</span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="map" class="active">🗺️ 地图</button>
+  <button data-tab="market">🧺 集市</button>
+  <button data-tab="kitchen">🍳 厨房</button>
+  <button data-tab="journal">📖 手帐 <span id="journalCount"></span></button>
+</nav>
+
+<main>
+  <section id="tab-map" class="panel active">
+    <h2>大地图</h2>
+    <p class="sub">金币会自动累积（关掉页面也会）。攒够了就去解锁新城市。</p>
+    <div id="cityList" class="cards"></div>
+  </section>
+
+  <section id="tab-market" class="panel">
+    <h2>本地集市</h2>
+    <div id="marketCityTabs" class="pills"></div>
+    <h3>食材</h3>
+    <div id="marketIngredients" class="cards small"></div>
+    <h3>菜谱铺 <span class="sub">买下菜谱即可在手帐里看到完整配方</span></h3>
+    <div id="marketRecipes" class="cards small"></div>
+  </section>
+
+  <section id="tab-kitchen" class="panel">
+    <h2>厨房</h2>
+    <p class="sub">点击或拖动背包里的食材放进锅里，凑出正确组合就能做出新菜。做错了不扣食材。</p>
+    <div class="kitchen">
+      <div class="bag">
+        <h3>背包</h3>
+        <div id="bag" class="bag-grid"></div>
+      </div>
+      <div class="pot-area">
+        <div id="pot" class="pot" title="把食材拖到这里">
+          <div id="potItems" class="pot-items"></div>
+          <div class="pot-label">🍲 铁锅</div>
+        </div>
+        <div class="pot-actions">
+          <button id="clearPot" class="ghost">清空</button>
+          <button id="cookBtn" class="primary">下锅！</button>
+        </div>
+        <div id="cookMsg" class="msg"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-journal" class="panel">
+    <h2>美食手帐</h2>
+    <div id="journal" class="cards journal"></div>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<footer>
+  <button id="resetBtn" class="link">重置存档</button>
+</footer>
+
+<script src="data/game.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
