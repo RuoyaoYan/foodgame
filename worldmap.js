@@ -75,15 +75,36 @@ window.WorldMap = (() => {
     let grid = "";
     for (let lon = -150; lon <= 180; lon += 30) grid += `<line x1="${lon + 180}" y1="0" x2="${lon + 180}" y2="142"/>`;
     for (let lat = -40; lat <= 80; lat += 20) grid += `<line x1="0" y1="${84 - lat}" x2="360" y2="${84 - lat}"/>`;
-    return `<svg class="worldmap" viewBox="8 2 352 128" preserveAspectRatio="xMidYMid meet">
-      <defs><filter id="paper"><feTurbulence baseFrequency="0.9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 0.42  0 0 0 0 0.29  0 0 0 0 0.2  0 0 0 0.06 0"/><feComposite in2="SourceGraphic" operator="in"/></filter></defs>
-      <rect x="0" y="0" width="360" height="142" class="ocean"/>
+    return `<svg class="worldmap" viewBox="6 0 356 132" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="mapRough" x="-2%" y="-2%" width="104%" height="104%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="5" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <filter id="landWash" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="9" result="w"/>
+          <feDisplacementMap in="SourceGraphic" in2="w" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+          <feTurbulence type="fractalNoise" baseFrequency="0.18" numOctaves="3" seed="2" result="g"/>
+          <feColorMatrix in="g" values="0 0 0 0 0.55  0 0 0 0 0.38  0 0 0 0 0.22  0 0 0 0.55 -0.12" result="pig"/>
+          <feComposite in="pig" in2="d" operator="in" result="pig2"/>
+          <feMerge><feMergeNode in="d"/><feMergeNode in="pig2"/></feMerge>
+        </filter>
+        <radialGradient id="oceanG" cx="50%" cy="45%" r="70%">
+          <stop offset="0" stop-color="#e3efe9"/><stop offset=".7" stop-color="#c7dde0"/><stop offset="1" stop-color="#a9c8d0"/>
+        </radialGradient>
+      </defs>
+      <rect x="7" y="1" width="353" height="130" rx="3" fill="url(#oceanG)" filter="url(#landWash)" class="ocean-wash"/>
       <g class="grid">${grid}</g>
-      <path class="land-shadow" d="${landPath}" transform="translate(0.8,1.2)"/>
-      <path class="land" d="${landPath}"/>
-      <path class="land" d="${landPath}" filter="url(#paper)"/>
-      <path class="water" d="${waterPath}"/>
+      <path class="land" d="${landPath}" filter="url(#landWash)"/>
+      <path class="land-line" d="${landPath}" filter="url(#mapRough)"/>
+      <path class="water" d="${waterPath}" filter="url(#mapRough)"/>
+      <g transform="translate(30,112)" class="compass-g">
+        <circle r="7" fill="#fffaf0" stroke="#5b3a28" stroke-width=".6" filter="url(#mapRough)"/>
+        <path d="M0,-6 L1.6,0 L0,6 L-1.6,0Z" fill="#d8693f" stroke="#5b3a28" stroke-width=".4"/>
+        <text class="compass" y="-8.5" text-anchor="middle">北</text>
+      </g>
       ${routes}${pins}
+      <rect x="7" y="1" width="353" height="130" rx="3" class="map-frame"/>
     </svg>`;
   }
   return { render };

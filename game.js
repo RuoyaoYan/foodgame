@@ -56,6 +56,29 @@
     }
   })();
 
+  // ---------- 美术：图片位置 + 水彩贴纸 ----------
+  // 把图片放到 images/ingredients/<食材id>.png 或 images/dishes/<菜品id>.png 就会自动替换 emoji
+  const WASH = ["#f4c3a6", "#c8dcae", "#b9d5e4", "#f3db97", "#eeb3ab", "#d3c5e6", "#f1cf9f", "#bfe0d2"];
+  const artOK = {};
+  function washOf(id) { let h = 0; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return WASH[h % WASH.length]; }
+  function artSrc(kind, id) { return `images/${kind}/${id}.png`; }
+  function preloadArt() {
+    const list = [...D.ingredients.map(i => ["ingredients", i.id]), ...D.dishes.map(d => ["dishes", d.id])];
+    list.forEach(([kind, id]) => {
+      const img = new Image();
+      img.onload = () => { artOK[kind + "/" + id] = true; renderAll(); };
+      img.src = artSrc(kind, id);
+    });
+  }
+  // size: s / m / l / xl
+  function art(kind, id, emoji, size = "m", extra = "") {
+    const has = artOK[kind + "/" + id];
+    return `<span class="sticker ${size} ${extra}" style="--wash:${washOf(id)}">${has
+      ? `<img src="${artSrc(kind, id)}" alt="">` : `<span class="emo">${emoji}</span>`}</span>`;
+  }
+  const ingArt = (id, size, extra) => art("ingredients", id, ING[id].emoji, size, extra);
+  const dishArt = (d, size, extra) => art("dishes", d.id, d.emoji, size, extra);
+
   // ---------- 工具 ----------
   const $ = id => document.getElementById(id);
   const fmt = n => Math.floor(n).toLocaleString("zh-CN");
@@ -166,8 +189,8 @@
       const open = S.cities.includes(c.id);
       const total = D.dishes.filter(d => d.city === c.id).length;
       const done = D.dishes.filter(d => d.city === c.id && S.dishes.includes(d.id)).length;
-      return `<div class="card ${open ? "" : "locked"}">
-        <div class="big">${open ? c.emoji : "🔒"}</div>
+      return `<div class="card taped ${open ? "" : "locked"}">
+        <span class="sticker xl" style="--wash:${open ? washOf(c.id) : "#e4dccd"}"><span class="emo">${open ? c.emoji : "🔒"}</span></span>
         <div class="name">${c.name}</div>
         <div class="meta">${c.desc}</div>
         <div class="meta">${open ? `图鉴 ${done}/${total}` : `解锁需要 🪙 ${fmt(c.unlockCost)}`}</div>
@@ -197,7 +220,7 @@
       `<button data-city="${id}" class="${id === marketCity ? "active" : ""}">${CITY[id].emoji} ${CITY[id].name}</button>`).join("");
     $("marketIngredients").innerHTML = D.ingredients.filter(i => i.city === marketCity).map(i => `
       <div class="card">
-        <div class="big">${i.emoji}</div>
+        ${ingArt(i.id, "l")}
         <div class="name">${i.name}</div>
         <div class="meta">🪙 ${i.price} / 份 · 背包 ${S.inventory[i.id] || 0}</div>
         <div class="row">
@@ -208,7 +231,7 @@
     $("marketRecipes").innerHTML = D.dishes.filter(d => d.city === marketCity).map(d => {
       const owned = S.recipes.includes(d.id) || S.dishes.includes(d.id);
       return `<div class="card">
-        <div class="big">📜</div>
+        <span class="sticker l" style="--wash:#f3db97"><span class="emo">📜</span></span>
         <div class="name">${d.name} 菜谱</div>
         <div class="meta">${owned ? "已拥有" : `🪙 ${fmt(d.recipePrice)}`}</div>
         <div class="row">${owned ? "" : `<button data-recipe="${d.id}" ${S.gold < d.recipePrice ? "disabled" : ""}>购买</button>`}</div>
@@ -246,10 +269,10 @@
     $("bag").innerHTML = owned.length ? owned.map(i => {
       const n = available(i.id);
       return `<div class="ing ${n <= 0 ? "empty" : ""}" draggable="${n > 0}" data-add="${i.id}">
-        <span class="c">×${n}</span><div class="e">${i.emoji}</div><div class="n">${i.name}</div></div>`;
+        <span class="c">×${n}</span>${ingArt(i.id, "m")}<div class="n">${i.name}</div></div>`;
     }).join("") : `<p class="sub">背包空空的，先去集市进点货吧。</p>`;
     $("potItems").innerHTML = pot.map((id, idx) =>
-      `<div class="ing" data-remove="${idx}" title="点击拿出"><div class="e">${ING[id].emoji}</div><div class="n">${ING[id].name}</div></div>`).join("");
+      `<div class="ing" data-remove="${idx}" title="点击拿出">${ingArt(id, "s")}<div class="n">${ING[id].name}</div></div>`).join("");
   }
   function addToPot(id) {
     if (available(id) <= 0) return;
@@ -296,7 +319,7 @@
     pot = [];
     S.dishes.push(match.id); save();
     msg.textContent = "";
-    showModal(`<div class="big">${match.emoji}</div>
+    showModal(`${dishArt(match, "xl")}
       <h2>研发成功：${match.name}！</h2>
       <p>${match.story}</p>
       <p>手帐收益 <b style="color:var(--accent-2)">+${match.incomeBonus} 金币/秒</b></p>
@@ -314,12 +337,12 @@
       const cityOpen = S.cities.includes(d.city);
       const recipe = S.recipes.includes(d.id) || got;
       const recipeText = d.ingredients.map(x => `${ING[x].emoji}${ING[x].name}`).join(" + ");
-      return `<div class="card ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}">
-        <div class="big">${got ? d.emoji : cityOpen ? d.emoji : "🔒"}</div>
+      return `<div class="card taped ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}">
+        ${cityOpen || got ? dishArt(d, "xl") : `<span class="sticker xl" style="--wash:#e4dccd"><span class="emo">🔒</span></span>`}
         <div class="name">${got || cityOpen ? d.name : "？？？"}</div>
         <div class="meta">${CITY[d.city].emoji} ${CITY[d.city].name} · +${d.incomeBonus}/秒</div>
         ${got ? `<div class="story">${d.story}</div>` :
-          cityOpen ? `<div class="meta">💡 ${d.hint}</div>` : `<div class="meta">开通${CITY[d.city].name}航线后解锁</div>`}
+          cityOpen ? `<div class="hint">${d.hint}</div>` : `<div class="meta">开通${CITY[d.city].name}航线后解锁</div>`}
         ${recipe && cityOpen ? `<div class="recipe">${recipeText}</div>` : ""}
       </div>`;
     }).join("");
@@ -372,5 +395,6 @@
 
   renderAll();
   renderTitle();
+  preloadArt();
   requestAnimationFrame(tick);
 })();
