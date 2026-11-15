@@ -44,47 +44,66 @@
       <button id="newGameBtn" class="link hidden">重新开始</button>
     </div>
   </div>
-  <div class="title-foot">原型 v0.3 · 水彩手帐风</div>
+  <div class="title-foot">原型 v0.4 · 水彩手帐风</div>
 </div>
 
 <header class="topbar">
   <button class="logo-small" id="homeBtn" title="回到开始界面">吃</button>
   <div class="stats">
     <span class="gold">🪙 <b id="gold">0</b></span>
-    <span class="income">+<b id="income">0</b>/秒</span>
+    <span class="shelf-stat" id="shelfStat" title="货架上在卖的菜">🏪 <b id="onShelf">0</b> 份在售</span>
   </div>
 </header>
 
-<nav class="tabs">
-  <button data-tab="map" class="active">🗺️ 地图</button>
-  <button data-tab="market">🧺 集市</button>
-  <button data-tab="kitchen">🍳 厨房</button>
-  <button data-tab="journal">📖 手帐 <span id="journalCount"></span></button>
-</nav>
-
 <main>
-  <section id="tab-map" class="panel active">
-    <h2>世界地图</h2>
-    <p class="sub">点击地图上的城市：已开通的去逛集市，未开通的花金币开通航线。金币会自动累积（关掉页面也会）。</p>
-    <div class="map-wrap">
-      <div id="worldMap"></div>
-      <div id="mapPopup" class="map-popup hidden"></div>
+  <!-- 我的家 -->
+  <section id="tab-home" class="panel">
+    <h2>我的家</h2>
+    <div id="room" class="room"></div>
+    <div id="homeTabs" class="pills">
+      <button data-home="dishes" class="active">📖 菜品图鉴</button>
+      <button data-home="ingredients">🧺 食材图鉴</button>
+      <button data-home="storage">📦 仓库</button>
+      <button data-home="furniture">🪑 家具</button>
+      <button data-home="settings">⚙️ 设置</button>
     </div>
-    <div id="cityList" class="cards"></div>
+    <div id="home-dishes" class="home-sub"><div id="journal" class="cards journal"></div></div>
+    <div id="home-ingredients" class="home-sub hidden"><div id="ingDex" class="cards small"></div></div>
+    <div id="home-storage" class="home-sub hidden">
+      <h3>成菜</h3><div id="storageDishes" class="cards small"></div>
+      <h3>食材</h3><div id="storageIngs" class="cards small"></div>
+    </div>
+    <div id="home-furniture" class="home-sub hidden">
+      <p class="sub">买下的家具会摆进房间，并带来一点小加成。</p>
+      <div id="furnitureList" class="cards small"></div>
+    </div>
+    <div id="home-settings" class="home-sub hidden">
+      <div class="settings">
+        <div class="setting-row"><span>🎵 背景音乐</span><button class="toggle" data-setting="music"></button></div>
+        <div class="setting-row"><span>🔔 音效</span><button class="toggle" data-setting="sfx"></button></div>
+        <p class="sub">（音乐和音效素材还没加入，开关会先记住你的选择。）</p>
+        <div class="setting-row"><span>🏠 回到开始界面</span><button class="ghost" id="toTitleBtn">前往</button></div>
+        <div class="setting-row"><span>🗑️ 重置存档</span><button class="ghost" id="resetBtn">重置</button></div>
+        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.4 · 水彩手帐风</span></div>
+        <div id="debugRow"></div>
+      </div>
+    </div>
   </section>
 
-  <section id="tab-market" class="panel">
-    <h2>本地集市</h2>
-    <div id="marketCityTabs" class="pills"></div>
-    <h3>食材</h3>
-    <div id="marketIngredients" class="cards small"></div>
-    <h3>菜谱铺 <span class="sub">买下菜谱即可在手帐里看到完整配方</span></h3>
-    <div id="marketRecipes" class="cards small"></div>
+  <!-- 农场 -->
+  <section id="tab-farm" class="panel">
+    <h2>农场</h2>
+    <p class="sub">在菜地里种菜、在畜栏里养家禽家畜。按现实时间生长，关掉页面也会长，成熟后点“收获”放进仓库。开通对应城市后才能种养。</p>
+    <h3>🌾 菜地</h3>
+    <div id="fields" class="cards plots"></div>
+    <h3>🐾 畜栏</h3>
+    <div id="pens" class="cards plots"></div>
   </section>
 
+  <!-- 厨房 -->
   <section id="tab-kitchen" class="panel">
     <h2>厨房</h2>
-    <p class="sub">点击或拖动背包里的食材放进锅里，凑出正确组合就能做出新菜。做错了不扣食材。</p>
+    <p class="sub">把食材放进锅里猜配方，研发新菜；已经收录的菜，下锅就能做成一份成菜，拿去店铺卖。做错了不扣食材。</p>
     <div class="kitchen">
       <div class="bag">
         <h3>背包</h3>
@@ -102,22 +121,54 @@
         <div id="cookMsg" class="msg"></div>
       </div>
     </div>
+    <h3>📋 已会做的菜 <span class="sub">食材够就能一键出餐</span></h3>
+    <div id="quickCook" class="cards small"></div>
   </section>
 
-  <section id="tab-journal" class="panel">
-    <h2>美食手帐</h2>
-    <div id="journal" class="cards journal"></div>
+  <!-- 店铺 -->
+  <section id="tab-shop" class="panel">
+    <h2>我的小店</h2>
+    <p class="sub">把做好的菜摆上货架，顾客会自动来买，关掉页面也会继续卖。卖光了记得补货。</p>
+    <div id="shopBonus" class="sub"></div>
+    <div id="shelves" class="cards shelves"></div>
+    <div id="shelfExpand" class="expand"></div>
+  </section>
+
+  <!-- 地图 -->
+  <section id="tab-map" class="panel">
+    <h2>世界地图</h2>
+    <p class="sub">点击城市：已开通的可以去逛当地集市，未开通的花金币开通航线。</p>
+    <div class="map-wrap">
+      <div id="worldMap"></div>
+      <div id="mapPopup" class="map-popup hidden"></div>
+    </div>
+    <div id="cityList" class="cards"></div>
+  </section>
+
+  <!-- 集市（从地图进入） -->
+  <section id="tab-market" class="panel">
+    <button class="ghost back-btn" id="backToMap">← 返回地图</button>
+    <h2 id="marketTitle">本地集市</h2>
+    <div id="marketCityTabs" class="pills"></div>
+    <h3>食材</h3>
+    <div id="marketIngredients" class="cards small"></div>
+    <h3>菜谱铺 <span class="sub">买下菜谱即可在图鉴里看到完整配方</span></h3>
+    <div id="marketRecipes" class="cards small"></div>
   </section>
 </main>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button data-tab="home"><span class="ni">🏠</span>我的家</button>
+  <button data-tab="farm"><span class="ni">🌾</span>农场</button>
+  <button data-tab="kitchen"><span class="ni">🍳</span>厨房</button>
+  <button data-tab="shop"><span class="ni">🏪</span>店铺</button>
+  <button data-tab="map"><span class="ni">🗺️</span>地图</button>
+</nav>
 
 <div id="modal" class="modal hidden">
   <div class="modal-card" id="modalCard"></div>
 </div>
 <div id="toast" class="toast"></div>
-
-<footer>
-  <button id="resetBtn" class="link">重置存档</button>
-</footer>
 
 <script src="data/game.js"></script>
 <script src="worldmap.js"></script>

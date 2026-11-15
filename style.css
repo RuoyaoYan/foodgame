@@ -349,3 +349,90 @@ footer { text-align: center; padding: 10px 0 30px; }
 .cards { padding-top: 14px; }
 .pot { max-width: 440px; margin: 0 auto; width: 100%; }
 .sticker::before { opacity: .95; }
+
+/* =========================================================
+   v0.4：底部导航 / 我的家 / 农场 / 店铺
+   ========================================================= */
+main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
+.stats > .shelf-stat { color: var(--ink-soft); font-size: 16px; }
+.shelf-stat.ping { animation: ping .5s ease; }
+@keyframes ping { 40% { transform: scale(1.12) rotate(-2deg); background: #fbe2c8; } }
+
+/* 底部导航：一排水彩书签 */
+.bottom-nav {
+  position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 15;
+  display: flex; gap: 6px; padding: 8px 10px 6px; isolation: isolate;
+}
+.bottom-nav::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; background: rgba(255,250,240,.96);
+  border: 2.5px solid var(--line); border-radius: 18px 22px 16px 20px; box-shadow: 4px 6px 0 rgba(91,58,40,.22);
+  filter: url(#rough);
+}
+.bottom-nav button {
+  font-family: var(--hand); font-size: 15px; color: var(--ink); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 76px;
+  padding: 6px 10px 4px; border: 2px solid transparent; border-radius: var(--wobble); background: none;
+  transition: transform .12s;
+}
+.bottom-nav .ni { font-size: 26px; line-height: 1.1; }
+.bottom-nav button:hover { transform: translateY(-3px) rotate(-2deg); }
+.bottom-nav button.active { border-color: var(--line); box-shadow: 2px 3px 0 var(--line); transform: translateY(-4px); }
+.bottom-nav button[data-tab="home"].active { background: #f6d4bd; }
+.bottom-nav button[data-tab="farm"].active { background: #dbe8c6; }
+.bottom-nav button[data-tab="kitchen"].active { background: #f5e2ae; }
+.bottom-nav button[data-tab="shop"].active { background: #eec3bb; }
+.bottom-nav button[data-tab="map"].active { background: #cfe1ea; }
+@media (max-width: 560px) {
+  .bottom-nav button { min-width: 58px; font-size: 13px; padding: 4px 6px; }
+  main { padding: 18px 14px 110px; }
+  .stats > .shelf-stat { display: none; }
+}
+
+/* 我的家：水彩小房间 */
+.room {
+  position: relative; height: 230px; margin: 10px 0 18px; overflow: hidden; isolation: isolate;
+  border: 2.5px solid var(--line); border-radius: 8px 14px 10px 12px; box-shadow: 3px 5px 0 rgba(91,58,40,.18);
+}
+.room-wall { position: absolute; inset: 0 0 34% 0; background:
+  repeating-linear-gradient(90deg, rgba(255,255,255,.25) 0 22px, transparent 22px 44px), #f3dcc0; }
+.room-floor { position: absolute; inset: 66% 0 0 0; background:
+  repeating-linear-gradient(90deg, rgba(91,58,40,.12) 0 2px, transparent 2px 70px), #d9b48a; border-top: 2.5px solid var(--line); }
+.room-window {
+  position: absolute; left: 50%; top: 18%; transform: translateX(-50%); width: 120px; height: 80px;
+  display: grid; place-items: center; font-size: 34px; background: #cfe3ec;
+  border: 3px solid var(--line); border-radius: 6px; box-shadow: inset 0 0 0 4px #fffaf0;
+  background-image: linear-gradient(var(--line), var(--line)), linear-gradient(var(--line), var(--line));
+  background-size: 3px 100%, 100% 3px; background-position: center; background-repeat: no-repeat;
+  background-color: #cfe3ec;
+}
+.room-item { position: absolute; transform: translate(-50%, -50%); animation: rise .6s ease both; }
+.room-empty { position: absolute; left: 0; right: 0; bottom: 14%; text-align: center; font-family: var(--hand); color: #6b4a35; font-size: 16px; }
+
+/* 设置 */
+.settings { max-width: 520px; display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.setting-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 10px 4px; border-bottom: 2px dashed rgba(91,58,40,.2); font-family: var(--hand); font-size: 18px;
+}
+.setting-row .sub { margin: 0; }
+.toggle {
+  font-family: var(--hand); font-size: 15px; min-width: 62px; padding: 4px 12px; cursor: pointer;
+  border: 2.5px solid var(--line); border-radius: 999px; background: #e9e0d2; color: var(--ink-soft);
+}
+.toggle.on { background: radial-gradient(ellipse at 35% 30%, #c8e0b4, var(--accent-2) 85%); color: #fff; }
+
+/* 进度条（农场、货架） */
+.bar { width: 86%; height: 12px; border: 2px solid var(--line); border-radius: 999px; background: #f3ead9; overflow: hidden; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, #b7d39d, var(--accent-2)); border-radius: 999px; transition: width .3s linear; }
+.shelf .bar i { background: linear-gradient(90deg, #f3c39f, var(--accent)); }
+.card .row.col { flex-direction: column; align-items: stretch; width: 100%; }
+.card .row.col button { font-size: 14px; }
+.plots, .shelves { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.plot.ready::before, .shelf.sold-out::before { background: #fff6dd; }
+.plot.ready .name { color: var(--accent-2); }
+.shelf.sold-out .name { color: var(--ink-soft); }
+.expand { margin-top: 22px; text-align: center; }
+.missing { color: #c0503a; font-weight: 700; }
+.back-btn { margin-bottom: 10px; }
+#shopBonus { margin-top: -6px; }
+.toast { bottom: 108px; }
