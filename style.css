@@ -197,3 +197,17 @@ button.link { background: none; border: none; color: var(--ink-soft); text-decor
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 footer { text-align: center; padding: 10px 0 30px; }
+
+/* ---------- 语言切换 / Language switch ---------- */
+.lang-switch { display: inline-flex; border: 2px solid var(--line); border-radius: 999px; overflow: hidden; background: #fffdf8; }
+.lang-switch button {
+  font: inherit; font-size: 13px; padding: 4px 12px; border: none; background: none;
+  color: var(--ink); cursor: pointer;
+}
+.lang-switch button.active { background: var(--ink); color: #fff; font-weight: 700; }
+.title-lang { position: absolute; top: 18px; right: 22px; z-index: 3; }
+.stats { align-items: center; }
+.logo-pinyin { font-family: "ZCOOL XiaoWei", serif; font-size: 18px; letter-spacing: 8px; color: var(--ink-soft); margin-top: -6px; }
+body.lang-en .big-btn { letter-spacing: 1px; font-family: Georgia, "Times New Roman", serif; }
+body.lang-en .seal { letter-spacing: 1px; font-size: 15px; }
+body.lang-en .tagline { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 19px; }

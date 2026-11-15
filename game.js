@@ -29,6 +29,43 @@
   }
 
   let S = load();
+
+  // ---------- 语言 / Language ----------
+  const LANG_KEY = "chi_lang";
+  const EN = window.GAME_DATA_EN || { cities: {}, ingredients: {}, dishes: {} };
+  let lang = (() => {
+    try { const l = localStorage.getItem(LANG_KEY); if (l === "zh" || l === "en") return l; } catch (e) {}
+    return (navigator.language || "zh").toLowerCase().startsWith("zh") ? "zh" : "en";
+  })();
+  function t(k, vars) {
+    let str = (I18N[lang] && I18N[lang][k]) ?? I18N.zh[k] ?? k;
+    if (vars) for (const v in vars) str = str.split(`{${v}}`).join(vars[v]);
+    return str;
+  }
+  // 游戏数据的显示名：英文模式取 GAME_DATA_EN，缺失时回退中文
+  const cityName = id => lang === "en" ? (EN.cities[id]?.name || CITY[id].name) : CITY[id].name;
+  const cityDesc = id => lang === "en" ? (EN.cities[id]?.desc || CITY[id].desc) : CITY[id].desc;
+  const ingName = id => lang === "en" ? (EN.ingredients[id] || ING[id].name) : ING[id].name;
+  const dishText = (d, f) => lang === "en" ? (EN.dishes[d.id]?.[f] || d[f]) : d[f];
+  function applyStatic() {
+    document.documentElement.lang = lang === "en" ? "en" : "zh-CN";
+    document.title = t("pageTitle");
+    document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+    document.querySelectorAll("[data-i18n-html]").forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
+    document.querySelectorAll("[data-i18n-title]").forEach(el => el.title = t(el.dataset.i18nTitle));
+    document.querySelectorAll("[data-lang]").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+    document.body.classList.toggle("lang-en", lang === "en");
+  }
+  function setLang(l) {
+    lang = l;
+    try { localStorage.setItem(LANG_KEY, l); } catch (e) {}
+    applyStatic(); renderTitle(); renderAll();
+    $("cookMsg").textContent = ""; $("mapPopup").classList.add("hidden");
+    if (resetArmed) { resetArmed = false; }
+    $("resetBtn").textContent = t("reset");
+    const dbg = document.querySelector(".debug-btn"); if (dbg) dbg.textContent = t("debug");
+  }
+  document.querySelectorAll("[data-lang]").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
   let pot = [];
   let marketCity = D.config.startCity;
 
@@ -38,7 +75,7 @@
   }
   function dish(id) { return D.dishes.find(d => d.id === id); }
   function spend(n) {
-    if (S.gold < n) { toast("金币不够哦，再等一会儿吧"); return false; }
+    if (S.gold < n) { toast(t("notEnough")); return false; }
     S.gold -= n; return true;
   }
 
@@ -58,11 +95,11 @@
 
   // ---------- 工具 ----------
   const $ = id => document.getElementById(id);
-  const fmt = n => Math.floor(n).toLocaleString("zh-CN");
+  const fmt = n => Math.floor(n).toLocaleString(t("locale"));
   function fmtTime(sec) {
     sec = Math.floor(sec);
     const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
-    return h ? `${h}小时${m}分` : m ? `${m}分${s}秒` : `${s}秒`;
+    return h ? t("timeH", { h, m }) : m ? t("timeM", { m, s }) : t("timeS", { s });
   }
   let toastTimer;
   function toast(text) {
@@ -95,10 +132,11 @@
   }).join("");
   function renderTitle() {
     const started = S.dishes.length || S.cities.length > 1 || Object.keys(S.inventory).length || S.recipes.length;
-    $("startBtn").textContent = started ? "继续旅程" : "开始旅程";
+    $("startBtn").textContent = started ? t("continue") : t("start");
+    if (!newArmed) $("newGameBtn").textContent = t("newGame");
     $("newGameBtn").classList.toggle("hidden", !started);
     $("saveInfo").innerHTML = started
-      ? `手帐 ${S.dishes.length}/${D.dishes.length} · 已到过 ${S.cities.map(c => CITY[c].name).join("、")} · 🪙 ${fmt(S.gold)}`
+      ? t("saveInfo", { done: S.dishes.length, total: D.dishes.length, cities: S.cities.map(cityName).join(t("listSep")), gold: fmt(S.gold) })
       : "";
   }
   function enterGame() {
@@ -109,9 +147,9 @@
       const { away, gain } = offlineMsg; offlineMsg = null;
       setTimeout(() => showModal(`
         <div class="big">🌙</div>
-        <h2>欢迎回来！</h2>
-        <p>你离开的 ${fmtTime(away / 1000)} 里，<br>美食手帐为你赚了 <b>🪙 ${fmt(gain)}</b></p>
-        <button class="primary" data-close>好的</button>`), 450);
+        <h2>${t("welcomeBack")}</h2>
+        <p>${t("offlineBody", { time: fmtTime(away / 1000), gold: fmt(gain) })}</p>
+        <button class="primary" data-close>${t("ok")}</button>`), 450);
     }
     renderAll();
   }
@@ -119,8 +157,8 @@
   let newArmed = false;
   $("newGameBtn").addEventListener("click", () => {
     if (!newArmed) {
-      newArmed = true; $("newGameBtn").textContent = "再点一次确认（会清空存档）";
-      setTimeout(() => { newArmed = false; $("newGameBtn").textContent = "重新开始"; }, 3000);
+      newArmed = true; $("newGameBtn").textContent = t("newGameConfirm");
+      setTimeout(() => { newArmed = false; $("newGameBtn").textContent = t("newGame"); }, 3000);
       return;
     }
     S = newState(); pot = []; offlineMsg = null; save(); enterGame();
@@ -134,7 +172,7 @@
   // ---------- 地图 ----------
   function renderWorld() {
     $("worldMap").innerHTML = WorldMap.render(
-      D.cities.map(c => ({ ...c, open: S.cities.includes(c.id) })), D.config.startCity);
+      D.cities.map(c => ({ ...c, name: cityName(c.id), open: S.cities.includes(c.id) })), D.config.startCity);
   }
   function openPopup(id, evt) {
     const c = CITY[id], open = S.cities.includes(id);
@@ -145,10 +183,10 @@
     pop.style.left = (pin.left + pin.width / 2 - wrap.left) + "px";
     pop.style.top = (pin.top - wrap.top + 8) + "px";
     pop.innerHTML = `<button class="x" data-closepop>×</button>
-      <div class="name">${open ? c.emoji : "🔒"} ${c.name}</div>
-      <div class="meta">${c.desc}<br>${open ? `图鉴 ${done}/${total}` : `开通需要 🪙 ${fmt(c.unlockCost)}`}</div>
-      ${open ? `<button data-go="${id}">去集市</button>`
-             : `<button data-unlock="${id}" ${S.gold < c.unlockCost ? "disabled" : ""}>开通航线</button>`}`;
+      <div class="name">${open ? c.emoji : "🔒"} ${cityName(id)}</div>
+      <div class="meta">${cityDesc(id)}<br>${open ? t("collection", { done, total }) : t("unlockNeed", { cost: fmt(c.unlockCost) })}</div>
+      ${open ? `<button data-go="${id}">${t("goMarket")}</button>`
+             : `<button data-unlock="${id}" ${S.gold < c.unlockCost ? "disabled" : ""}>${t("openRoute")}</button>`}`;
     pop.classList.remove("hidden");
   }
   $("worldMap").addEventListener("click", e => {
@@ -168,12 +206,12 @@
       const done = D.dishes.filter(d => d.city === c.id && S.dishes.includes(d.id)).length;
       return `<div class="card ${open ? "" : "locked"}">
         <div class="big">${open ? c.emoji : "🔒"}</div>
-        <div class="name">${c.name}</div>
-        <div class="meta">${c.desc}</div>
-        <div class="meta">${open ? `图鉴 ${done}/${total}` : `解锁需要 🪙 ${fmt(c.unlockCost)}`}</div>
+        <div class="name">${cityName(c.id)}</div>
+        <div class="meta">${cityDesc(c.id)}</div>
+        <div class="meta">${open ? t("collection", { done, total }) : t("unlockNeed", { cost: fmt(c.unlockCost) })}</div>
         <div class="row">${open
-          ? `<button data-go="${c.id}">去集市</button>`
-          : `<button data-unlock="${c.id}" ${S.gold < c.unlockCost ? "disabled" : ""}>开通航线</button>`}</div>
+          ? `<button data-go="${c.id}">${t("goMarket")}</button>`
+          : `<button data-unlock="${c.id}" ${S.gold < c.unlockCost ? "disabled" : ""}>${t("openRoute")}</button>`}</div>
       </div>`;
     }).join("");
   }
@@ -183,9 +221,9 @@
     if (go) { marketCity = go; switchTab("market"); }
     if (un && spend(CITY[un].unlockCost)) {
       S.cities.push(un); save();
-      showModal(`<div class="big">✈️</div><h2>${CITY[un].name}航线已开通！</h2>
-        <p>${CITY[un].desc}<br>去当地集市看看有什么新食材吧。</p>
-        <button class="primary" data-close>出发</button>`);
+      showModal(`<div class="big">✈️</div><h2>${t("routeOpened", { city: cityName(un) })}</h2>
+        <p>${t("routeOpenedBody", { desc: cityDesc(un) })}</p>
+        <button class="primary" data-close>${t("depart")}</button>`);
       marketCity = un; renderAll();
     }
   }
@@ -194,24 +232,24 @@
   function renderMarket() {
     if (!S.cities.includes(marketCity)) marketCity = S.cities[0];
     $("marketCityTabs").innerHTML = S.cities.map(id =>
-      `<button data-city="${id}" class="${id === marketCity ? "active" : ""}">${CITY[id].emoji} ${CITY[id].name}</button>`).join("");
+      `<button data-city="${id}" class="${id === marketCity ? "active" : ""}">${CITY[id].emoji} ${cityName(id)}</button>`).join("");
     $("marketIngredients").innerHTML = D.ingredients.filter(i => i.city === marketCity).map(i => `
       <div class="card">
         <div class="big">${i.emoji}</div>
-        <div class="name">${i.name}</div>
-        <div class="meta">🪙 ${i.price} / 份 · 背包 ${S.inventory[i.id] || 0}</div>
+        <div class="name">${ingName(i.id)}</div>
+        <div class="meta">🪙 ${i.price} ${t("perPortion")} · ${t("inBag", { n: S.inventory[i.id] || 0 })}</div>
         <div class="row">
-          <button data-buy="${i.id}" data-n="1" ${S.gold < i.price ? "disabled" : ""}>买 1</button>
-          <button class="ghost" data-buy="${i.id}" data-n="5" ${S.gold < i.price * 5 ? "disabled" : ""}>买 5</button>
+          <button data-buy="${i.id}" data-n="1" ${S.gold < i.price ? "disabled" : ""}>${t("buy1")}</button>
+          <button class="ghost" data-buy="${i.id}" data-n="5" ${S.gold < i.price * 5 ? "disabled" : ""}>${t("buy5")}</button>
         </div>
       </div>`).join("");
     $("marketRecipes").innerHTML = D.dishes.filter(d => d.city === marketCity).map(d => {
       const owned = S.recipes.includes(d.id) || S.dishes.includes(d.id);
       return `<div class="card">
         <div class="big">📜</div>
-        <div class="name">${d.name} 菜谱</div>
-        <div class="meta">${owned ? "已拥有" : `🪙 ${fmt(d.recipePrice)}`}</div>
-        <div class="row">${owned ? "" : `<button data-recipe="${d.id}" ${S.gold < d.recipePrice ? "disabled" : ""}>购买</button>`}</div>
+        <div class="name">${t("recipeOf", { dish: dishText(d, "name") })}</div>
+        <div class="meta">${owned ? t("owned") : `🪙 ${fmt(d.recipePrice)}`}</div>
+        <div class="row">${owned ? "" : `<button data-recipe="${d.id}" ${S.gold < d.recipePrice ? "disabled" : ""}>${t("buy")}</button>`}</div>
       </div>`;
     }).join("");
   }
@@ -224,17 +262,17 @@
       const n = +e.target.dataset.n;
       if (spend(ING[id].price * n)) {
         S.inventory[id] = (S.inventory[id] || 0) + n; save();
-        toast(`买到了 ${ING[id].emoji} ${ING[id].name} ×${n}`); renderAll();
+        toast(t("bought", { item: `${ING[id].emoji} ${ingName(id)}`, n })); renderAll();
       }
     }
     const r = e.target.dataset.recipe;
     if (r && spend(dish(r).recipePrice)) {
       S.recipes.push(r); save();
       const d = dish(r);
-      showModal(`<div class="big">📜</div><h2>${d.name}</h2>
-        <p>配方：${d.ingredients.map(x => `${ING[x].emoji} ${ING[x].name}`).join(" + ")}</p>
-        <p class="sub">配方已记在手帐里。</p>
-        <button class="primary" data-close>记住了</button>`);
+      showModal(`<div class="big">📜</div><h2>${dishText(d, "name")}</h2>
+        <p>${t("recipeLabel")}${d.ingredients.map(x => `${ING[x].emoji} ${ingName(x)}`).join(" + ")}</p>
+        <p class="sub">${t("recipeSaved")}</p>
+        <button class="primary" data-close>${t("gotIt")}</button>`);
       renderAll();
     }
   });
@@ -246,10 +284,10 @@
     $("bag").innerHTML = owned.length ? owned.map(i => {
       const n = available(i.id);
       return `<div class="ing ${n <= 0 ? "empty" : ""}" draggable="${n > 0}" data-add="${i.id}">
-        <span class="c">×${n}</span><div class="e">${i.emoji}</div><div class="n">${i.name}</div></div>`;
-    }).join("") : `<p class="sub">背包空空的，先去集市进点货吧。</p>`;
+        <span class="c">×${n}</span><div class="e">${i.emoji}</div><div class="n">${ingName(i.id)}</div></div>`;
+    }).join("") : `<p class="sub">${t("bagEmpty")}</p>`;
     $("potItems").innerHTML = pot.map((id, idx) =>
-      `<div class="ing" data-remove="${idx}" title="点击拿出"><div class="e">${ING[id].emoji}</div><div class="n">${ING[id].name}</div></div>`).join("");
+      `<div class="ing" data-remove="${idx}" title="${t("takeOut")}"><div class="e">${ING[id].emoji}</div><div class="n">${ingName(id)}</div></div>`).join("");
   }
   function addToPot(id) {
     if (available(id) <= 0) return;
@@ -277,30 +315,30 @@
   const key = arr => [...arr].sort().join("|");
   $("cookBtn").addEventListener("click", () => {
     const msg = $("cookMsg");
-    if (!pot.length) { msg.textContent = "锅里还是空的呢～"; return; }
+    if (!pot.length) { msg.textContent = t("potEmpty"); return; }
     const match = D.dishes.find(d => key(d.ingredients) === key(pot));
     if (!match) {
       // 零惩罚：食材原样退回，只给温馨提示
       const set = new Set(pot);
       const close = D.dishes.find(d => d.ingredients.every(x => set.has(x)) || [...set].every(x => d.ingredients.includes(x)));
-      let tip = "这个组合好像不太对劲……食材已经退回背包，换个搭配试试吧。";
-      if (close && [...set].every(x => close.ingredients.includes(x))) tip = "闻起来有点意思！好像还少了点什么。（食材已退回）";
-      else if (close) tip = "味道有点杂，也许有的食材是多余的？（食材已退回）";
-      if (pot.length !== set.size) tip = "同一种食材放一份就够啦。（食材已退回）";
+      let tip = t("tipWrong");
+      if (close && [...set].every(x => close.ingredients.includes(x))) tip = t("tipMissing");
+      else if (close) tip = t("tipExtra");
+      if (pot.length !== set.size) tip = t("tipDup");
       msg.textContent = tip; pot = []; renderKitchen(); return;
     }
     if (S.dishes.includes(match.id)) {
-      msg.textContent = `「${match.name}」已经收录在手帐里啦，食材已退回。`; pot = []; renderKitchen(); return;
+      msg.textContent = t("already", { dish: dishText(match, "name") }); pot = []; renderKitchen(); return;
     }
     pot.forEach(id => S.inventory[id]--);
     pot = [];
     S.dishes.push(match.id); save();
     msg.textContent = "";
     showModal(`<div class="big">${match.emoji}</div>
-      <h2>研发成功：${match.name}！</h2>
-      <p>${match.story}</p>
-      <p>手帐收益 <b style="color:var(--accent-2)">+${match.incomeBonus} 金币/秒</b></p>
-      <button class="primary" data-close>收入手帐</button>`);
+      <h2>${t("success", { dish: dishText(match, "name") })}</h2>
+      <p>${dishText(match, "story")}</p>
+      <p>${t("incomeGain")} <b style="color:var(--accent-2)">+${match.incomeBonus} ${t("coinsPerSec")}</b></p>
+      <button class="primary" data-close>${t("addToJournal")}</button>`);
     lastUnlocked = match.id;
     renderAll();
   });
@@ -313,13 +351,13 @@
       const got = S.dishes.includes(d.id);
       const cityOpen = S.cities.includes(d.city);
       const recipe = S.recipes.includes(d.id) || got;
-      const recipeText = d.ingredients.map(x => `${ING[x].emoji}${ING[x].name}`).join(" + ");
+      const recipeText = d.ingredients.map(x => `${ING[x].emoji} ${ingName(x)}`).join(" + ");
       return `<div class="card ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}">
         <div class="big">${got ? d.emoji : cityOpen ? d.emoji : "🔒"}</div>
-        <div class="name">${got || cityOpen ? d.name : "？？？"}</div>
-        <div class="meta">${CITY[d.city].emoji} ${CITY[d.city].name} · +${d.incomeBonus}/秒</div>
-        ${got ? `<div class="story">${d.story}</div>` :
-          cityOpen ? `<div class="meta">💡 ${d.hint}</div>` : `<div class="meta">开通${CITY[d.city].name}航线后解锁</div>`}
+        <div class="name">${got || cityOpen ? dishText(d, "name") : t("unknown")}</div>
+        <div class="meta">${CITY[d.city].emoji} ${cityName(d.city)} · +${d.incomeBonus}${t("perSec")}</div>
+        ${got ? `<div class="story">${dishText(d, "story")}</div>` :
+          cityOpen ? `<div class="meta">💡 ${dishText(d, "hint")}</div>` : `<div class="meta">${t("lockedUntil", { city: cityName(d.city) })}</div>`}
         ${recipe && cityOpen ? `<div class="recipe">${recipeText}</div>` : ""}
       </div>`;
     }).join("");
@@ -352,24 +390,26 @@
   document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
 
   $("resetBtn").addEventListener("click", () => {
-    if (confirmReset()) { S = newState(); pot = []; save(); renderAll(); toast("存档已重置"); }
+    if (confirmReset()) { S = newState(); pot = []; save(); renderAll(); renderTitle(); toast(t("resetDone")); }
   });
   let resetArmed = false;
   function confirmReset() {    // 不用浏览器弹窗：点两次确认
-    if (resetArmed) { resetArmed = false; $("resetBtn").textContent = "重置存档"; return true; }
-    resetArmed = true; $("resetBtn").textContent = "再点一次确认重置";
-    setTimeout(() => { resetArmed = false; $("resetBtn").textContent = "重置存档"; }, 3000);
+    if (resetArmed) { resetArmed = false; $("resetBtn").textContent = t("reset"); return true; }
+    resetArmed = true; $("resetBtn").textContent = t("resetConfirm");
+    setTimeout(() => { resetArmed = false; $("resetBtn").textContent = t("reset"); }, 3000);
     return false;
   }
 
   // 测试用：网址后加 ?debug 显示加金币按钮
   if (location.search.includes("debug")) {
     const b = document.createElement("button");
-    b.className = "link"; b.textContent = "[调试] +5000 金币";
+    b.className = "link debug-btn"; b.textContent = t("debug");
     b.onclick = () => { S.gold += 5000; renderAll(); };
     document.querySelector("footer").appendChild(b);
   }
 
+  applyStatic();
+  $("resetBtn").textContent = t("reset");
   renderAll();
   renderTitle();
   requestAnimationFrame(tick);
