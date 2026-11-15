@@ -11,48 +11,41 @@
 </head>
 <body>
 
-<!-- 开始界面 / Title screen -->
+<!-- 开始界面 -->
 <div id="title" class="title-screen">
-  <div class="lang-switch title-lang" role="group" aria-label="Language">
-    <button data-lang="zh">中文</button><button data-lang="en">EN</button>
-  </div>
   <div class="floaters" id="floaters"></div>
   <div class="title-inner">
-    <div class="seal" data-i18n="seal">寻味</div>
+    <div class="seal">寻味</div>
     <h1 class="logo">吃</h1>
-    <div class="logo-pinyin">Chī</div>
-    <p class="tagline" data-i18n-html="tagline"></p>
+    <p class="tagline">走过大江南北与远方，<br>把人间烟火写进一本手帐。</p>
     <div id="saveInfo" class="save-info"></div>
     <div class="title-buttons">
-      <button id="startBtn" class="big-btn"></button>
-      <button id="newGameBtn" class="link hidden"></button>
+      <button id="startBtn" class="big-btn">开始旅程</button>
+      <button id="newGameBtn" class="link hidden">重新开始</button>
     </div>
   </div>
-  <div class="title-foot" data-i18n="footVersion"></div>
+  <div class="title-foot">原型 v0.2 · 美术为占位</div>
 </div>
 
 <header class="topbar">
-  <button class="logo-small" id="homeBtn" data-i18n-title="homeTitle">吃</button>
+  <button class="logo-small" id="homeBtn" title="回到开始界面">吃</button>
   <div class="stats">
     <span class="gold">🪙 <b id="gold">0</b></span>
-    <span class="income">+<b id="income">0</b><span data-i18n="perSec"></span></span>
-    <div class="lang-switch" role="group" aria-label="Language">
-      <button data-lang="zh">中文</button><button data-lang="en">EN</button>
-    </div>
+    <span class="income">+<b id="income">0</b>/秒</span>
   </div>
 </header>
 
 <nav class="tabs">
-  <button data-tab="map" class="active" data-i18n="tabMap"></button>
-  <button data-tab="market" data-i18n="tabMarket"></button>
-  <button data-tab="kitchen" data-i18n="tabKitchen"></button>
-  <button data-tab="journal"><span data-i18n="tabJournal"></span> <span id="journalCount"></span></button>
+  <button data-tab="map" class="active">🗺️ 地图</button>
+  <button data-tab="market">🧺 集市</button>
+  <button data-tab="kitchen">🍳 厨房</button>
+  <button data-tab="journal">📖 手帐 <span id="journalCount"></span></button>
 </nav>
 
 <main>
   <section id="tab-map" class="panel active">
-    <h2 data-i18n="mapTitle"></h2>
-    <p class="sub" data-i18n="mapSub"></p>
+    <h2>世界地图</h2>
+    <p class="sub">点击地图上的城市：已开通的去逛集市，未开通的花金币开通航线。金币会自动累积（关掉页面也会）。</p>
     <div class="map-wrap">
       <div id="worldMap"></div>
       <div id="mapPopup" class="map-popup hidden"></div>
@@ -61,30 +54,30 @@
   </section>
 
   <section id="tab-market" class="panel">
-    <h2 data-i18n="marketTitle"></h2>
+    <h2>本地集市</h2>
     <div id="marketCityTabs" class="pills"></div>
-    <h3 data-i18n="ingredients"></h3>
+    <h3>食材</h3>
     <div id="marketIngredients" class="cards small"></div>
-    <h3><span data-i18n="recipeShop"></span> <span class="sub" data-i18n="recipeShopSub"></span></h3>
+    <h3>菜谱铺 <span class="sub">买下菜谱即可在手帐里看到完整配方</span></h3>
     <div id="marketRecipes" class="cards small"></div>
   </section>
 
   <section id="tab-kitchen" class="panel">
-    <h2 data-i18n="kitchenTitle"></h2>
-    <p class="sub" data-i18n="kitchenSub"></p>
+    <h2>厨房</h2>
+    <p class="sub">点击或拖动背包里的食材放进锅里，凑出正确组合就能做出新菜。做错了不扣食材。</p>
     <div class="kitchen">
       <div class="bag">
-        <h3 data-i18n="bag"></h3>
+        <h3>背包</h3>
         <div id="bag" class="bag-grid"></div>
       </div>
       <div class="pot-area">
-        <div id="pot" class="pot" data-i18n-title="potHint">
+        <div id="pot" class="pot" title="把食材拖到这里">
           <div id="potItems" class="pot-items"></div>
-          <div class="pot-label" data-i18n="pot"></div>
+          <div class="pot-label">🍲 铁锅</div>
         </div>
         <div class="pot-actions">
-          <button id="clearPot" class="ghost" data-i18n="clear"></button>
-          <button id="cookBtn" class="primary" data-i18n="cook"></button>
+          <button id="clearPot" class="ghost">清空</button>
+          <button id="cookBtn" class="primary">下锅！</button>
         </div>
         <div id="cookMsg" class="msg"></div>
       </div>
@@ -92,7 +85,7 @@
   </section>
 
   <section id="tab-journal" class="panel">
-    <h2 data-i18n="journalTitle"></h2>
+    <h2>美食手帐</h2>
     <div id="journal" class="cards journal"></div>
   </section>
 </main>
@@ -103,11 +96,10 @@
 <div id="toast" class="toast"></div>
 
 <footer>
-  <button id="resetBtn" class="link"></button>
+  <button id="resetBtn" class="link">重置存档</button>
 </footer>
 
 <script src="data/game.js"></script>
-<script src="i18n.js"></script>
 <script src="worldmap.js"></script>
 <script src="game.js"></script>
 </body>

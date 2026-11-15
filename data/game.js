@@ -78,39 +78,3 @@ window.GAME_DATA = {
       "story": "Cacio e Pepe 源自罗马牧羊人，干粮只需奶酪与胡椒便于携带，是罗马最古老的面食之一。" }
   ]
 };
-
-// English translations of the game text, keyed by id (英文翻译，按 id 对应上面的数据)
-window.GAME_DATA_EN = {
-  "cities": {
-    "chengdu": { "name": "Chengdu", "desc": "Land of abundance — numbing, spicy and fragrant." },
-    "beijing": { "name": "Beijing", "desc": "In the shadow of the imperial city, rich with savory sauces." },
-    "rome":    { "name": "Rome",    "desc": "The Eternal City, where a bowl of pasta is an art." }
-  },
-  "ingredients": {
-    "tofu": "Silken Tofu", "minced_pork": "Minced Pork", "pork_belly": "Pork Belly",
-    "doubanjiang": "Pixian Chili Bean Paste", "sichuan_pepper": "Hanyuan Sichuan Pepper", "garlic_sprout": "Garlic Sprouts",
-    "noodles": "Hand-rolled Noodles", "yellow_paste": "Liubiju Soybean Paste", "cucumber": "Shredded Cucumber",
-    "tenderloin": "Pork Tenderloin", "sweet_paste": "Sweet Bean Sauce", "scallion": "Zhangqiu Scallion", "tofu_skin": "Tofu Skin",
-    "spaghetti": "Spaghetti", "egg": "Egg Yolk", "guanciale": "Guanciale", "pecorino": "Pecorino Romano", "black_pepper": "Black Pepper"
-  },
-  "dishes": {
-    "mapo_tofu": { "name": "Mapo Tofu",
-      "hint": "Numbing, spicy, piping hot — soft white cubes meet crumbled meat in red chili oil.",
-      "story": "Legend says that in the late Qing dynasty, a pockmarked woman surnamed Chen cooked tofu for porters by Wanfu Bridge in northern Chengdu. Its fiery, numbing flavor became known as \"Pockmarked Grandma Chen's Tofu\"." },
-    "twice_cooked_pork": { "name": "Twice-cooked Pork",
-      "hint": "Boiled, then stir-fried: slices of fatty-lean pork curl into little \"lamp cups\", with a touch of green.",
-      "story": "Sichuan families would \"return to the wok\" the pork boiled for ancestral offerings — hence the name. Often called the king of Sichuan dishes, the slices should curl like little oil lamps." },
-    "zhajiangmian": { "name": "Old Beijing Zhajiang Noodles",
-      "hint": "A bowl of noodles and a spoonful of sauce; the meat comes from the south, topped with crisp green shreds.",
-      "story": "Beijingers take their toppings seriously — toon sprouts in spring, cucumber in summer. The sauce is simmered slowly until the soybean and pork aromas become one." },
-    "jingjiang_rousi": { "name": "Shredded Pork in Beijing Sauce",
-      "hint": "Pork shreds glazed in sweet sauce, joined by scallion and rolled up in a thin wrapper.",
-      "story": "It is said an old man once rolled sauced pork and scallion in tofu skin for his grandson; chefs refined the idea into a beloved Beijing home-style dish." },
-    "carbonara": { "name": "Roman Carbonara",
-      "hint": "Golden yolk, salty pork cheek, sheep's cheese and black pepper — no cream!",
-      "story": "The true Roman recipe uses only egg yolk, guanciale, pecorino and black pepper, relying on residual heat to turn the eggs into a silky sauce." },
-    "cacio_e_pepe": { "name": "Cacio e Pepe",
-      "hint": "Just three things: pasta, sheep's cheese and pepper. Less is more.",
-      "story": "Born among Roman shepherds who carried cheese and pepper as easy provisions, Cacio e Pepe is one of Rome's oldest pasta dishes." }
-  }
-};
