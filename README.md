@@ -182,7 +182,11 @@ A 2D game UI asset icon of 【a single chunky piece of raw pork】. Pure solid w
 | `data/game.js` | 游戏数据（JSON） |
 
 ### 部署
-网站通过 GitHub Pages 从 `main` 分支根目录发布，推送到 `main` 后约 1 分钟自动更新。
+网站通过 GitHub Pages 从 `gh-pages` 分支发布。开发在 `main` 上进行，发布时执行：
+```bash
+git push origin main:gh-pages
+```
+约 1 分钟后网址自动更新。（也可以在 Settings → Pages 把来源改成 `main` 分支，之后只推 `main` 即可。）
 
 ---
 
