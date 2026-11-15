@@ -1,4 +1,4 @@
-// 《寻味之旅》游戏数据 —— 策划可直接修改这里的数值，无需改代码。
+// 《吃》游戏数据（城市的 lat/lon 为经纬度，决定世界地图上图钉的位置） —— 策划可直接修改这里的数值，无需改代码。
 // 注意：等号后面是标准 JSON，将来迁移 Godot 时可原样复制为 game.json。
 window.GAME_DATA = {
   "config": {
@@ -10,10 +10,13 @@ window.GAME_DATA = {
 
   "cities": [
     { "id": "chengdu", "name": "成都", "emoji": "🐼", "unlockCost": 0,
+      "lat": 30.7, "lon": 104.1,
       "desc": "天府之国，麻辣鲜香。" },
     { "id": "beijing", "name": "北京", "emoji": "🏯", "unlockCost": 2000,
+      "lat": 39.9, "lon": 116.4,
       "desc": "皇城根下，酱香浓郁。" },
     { "id": "rome", "name": "罗马", "emoji": "🏛️", "unlockCost": 8000,
+      "lat": 41.9, "lon": 12.5,
       "desc": "永恒之城，一碗面的艺术。" }
   ],
 

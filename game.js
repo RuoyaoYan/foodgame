@@ -1,4 +1,4 @@
-// 《寻味之旅》网页原型 —— 核心逻辑
+// 《吃》网页原型 —— 核心逻辑
 (() => {
   const D = window.GAME_DATA;
   const SAVE_KEY = "xunwei_save_v1";
@@ -42,7 +42,8 @@
     S.gold -= n; return true;
   }
 
-  // 离线收益
+  // 离线收益（进入游戏后再弹出提示）
+  let offlineMsg = null;
   (function offline() {
     const capMs = D.config.offlineCapHours * 3600 * 1000;
     const away = Math.min(Date.now() - S.lastSeen, capMs);
@@ -50,11 +51,7 @@
       const gain = Math.floor((away / 1000) * income());
       if (gain > 0) {
         S.gold += gain;
-        setTimeout(() => showModal(`
-          <div class="big">🌙</div>
-          <h2>欢迎回来！</h2>
-          <p>你离开的 ${fmtTime(away / 1000)} 里，<br>美食手帐为你赚了 <b>🪙 ${fmt(gain)}</b></p>
-          <button class="primary" data-close>好的</button>`), 100);
+        offlineMsg = { away, gain };
       }
     }
   })();
@@ -90,7 +87,80 @@
     renderAll();
   }
 
+  // ---------- 开始界面 ----------
+  const FOODS = ["🌶️","🥟","🍜","🍝","🧀","🥚","🍖","🫙","🥒","🧅","🍤","🥢","🍚","🫓"];
+  $("floaters").innerHTML = Array.from({ length: 16 }, (_, i) => {
+    const left = (i * 61) % 100, dur = 14 + (i * 7) % 12, delay = -((i * 3.7) % dur), size = 28 + (i * 11) % 30;
+    return `<span style="left:${left}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:${delay}s">${FOODS[i % FOODS.length]}</span>`;
+  }).join("");
+  function renderTitle() {
+    const started = S.dishes.length || S.cities.length > 1 || Object.keys(S.inventory).length || S.recipes.length;
+    $("startBtn").textContent = started ? "继续旅程" : "开始旅程";
+    $("newGameBtn").classList.toggle("hidden", !started);
+    $("saveInfo").innerHTML = started
+      ? `手帐 ${S.dishes.length}/${D.dishes.length} · 已到过 ${S.cities.map(c => CITY[c].name).join("、")} · 🪙 ${fmt(S.gold)}`
+      : "";
+  }
+  function enterGame() {
+    const t = $("title");
+    t.classList.add("leaving");
+    setTimeout(() => t.classList.add("gone"), 600);
+    if (offlineMsg) {
+      const { away, gain } = offlineMsg; offlineMsg = null;
+      setTimeout(() => showModal(`
+        <div class="big">🌙</div>
+        <h2>欢迎回来！</h2>
+        <p>你离开的 ${fmtTime(away / 1000)} 里，<br>美食手帐为你赚了 <b>🪙 ${fmt(gain)}</b></p>
+        <button class="primary" data-close>好的</button>`), 450);
+    }
+    renderAll();
+  }
+  $("startBtn").addEventListener("click", enterGame);
+  let newArmed = false;
+  $("newGameBtn").addEventListener("click", () => {
+    if (!newArmed) {
+      newArmed = true; $("newGameBtn").textContent = "再点一次确认（会清空存档）";
+      setTimeout(() => { newArmed = false; $("newGameBtn").textContent = "重新开始"; }, 3000);
+      return;
+    }
+    S = newState(); pot = []; offlineMsg = null; save(); enterGame();
+  });
+  $("homeBtn").addEventListener("click", () => {
+    save(); renderTitle();
+    const t = $("title"); t.classList.remove("gone");
+    requestAnimationFrame(() => t.classList.remove("leaving"));
+  });
+
   // ---------- 地图 ----------
+  function renderWorld() {
+    $("worldMap").innerHTML = WorldMap.render(
+      D.cities.map(c => ({ ...c, open: S.cities.includes(c.id) })), D.config.startCity);
+  }
+  function openPopup(id, evt) {
+    const c = CITY[id], open = S.cities.includes(id);
+    const total = D.dishes.filter(d => d.city === id).length;
+    const done = D.dishes.filter(d => d.city === id && S.dishes.includes(d.id)).length;
+    const pop = $("mapPopup"), wrap = pop.parentElement.getBoundingClientRect();
+    const pin = evt.target.closest(".pin").getBoundingClientRect();
+    pop.style.left = (pin.left + pin.width / 2 - wrap.left) + "px";
+    pop.style.top = (pin.top - wrap.top + 8) + "px";
+    pop.innerHTML = `<button class="x" data-closepop>×</button>
+      <div class="name">${open ? c.emoji : "🔒"} ${c.name}</div>
+      <div class="meta">${c.desc}<br>${open ? `图鉴 ${done}/${total}` : `开通需要 🪙 ${fmt(c.unlockCost)}`}</div>
+      ${open ? `<button data-go="${id}">去集市</button>`
+             : `<button data-unlock="${id}" ${S.gold < c.unlockCost ? "disabled" : ""}>开通航线</button>`}`;
+    pop.classList.remove("hidden");
+  }
+  $("worldMap").addEventListener("click", e => {
+    const pin = e.target.closest(".pin");
+    if (pin) openPopup(pin.dataset.city, e); else $("mapPopup").classList.add("hidden");
+  });
+  $("mapPopup").addEventListener("click", e => {
+    if (e.target.hasAttribute("data-closepop")) { $("mapPopup").classList.add("hidden"); return; }
+    handleCityAction(e);
+    if (e.target.dataset.go || e.target.dataset.unlock) $("mapPopup").classList.add("hidden");
+  });
+
   function renderMap() {
     $("cityList").innerHTML = D.cities.map(c => {
       const open = S.cities.includes(c.id);
@@ -107,7 +177,8 @@
       </div>`;
     }).join("");
   }
-  $("cityList").addEventListener("click", e => {
+  $("cityList").addEventListener("click", handleCityAction);
+  function handleCityAction(e) {
     const go = e.target.dataset.go, un = e.target.dataset.unlock;
     if (go) { marketCity = go; switchTab("market"); }
     if (un && spend(CITY[un].unlockCost)) {
@@ -117,7 +188,7 @@
         <button class="primary" data-close>出发</button>`);
       marketCity = un; renderAll();
     }
-  });
+  }
 
   // ---------- 集市 ----------
   function renderMarket() {
@@ -260,7 +331,7 @@
     $("gold").textContent = fmt(S.gold);
     $("income").textContent = income();
   }
-  function renderAll() { renderTop(); renderMap(); renderMarket(); renderKitchen(); renderJournal(); }
+  function renderAll() { renderTop(); renderWorld(); renderMap();renderMarket(); renderKitchen(); renderJournal(); }
 
   let last = performance.now(), saveAcc = 0, uiAcc = 0;
   function tick(now) {
@@ -300,5 +371,6 @@
   }
 
   renderAll();
+  renderTitle();
   requestAnimationFrame(tick);
 })();

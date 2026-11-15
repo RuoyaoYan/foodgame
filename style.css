@@ -24,7 +24,82 @@ body {
   border-bottom: 3px solid var(--line);
   position: sticky; top: 0; z-index: 5;
 }
-.title { font-size: 22px; font-weight: 800; letter-spacing: 2px; }
+.logo-small {
+  font-family: "Ma Shan Zheng", "STKaiti", "KaiTi", serif; font-size: 34px; line-height: 1;
+  background: none; border: none; color: var(--ink); cursor: pointer; padding: 0;
+}
+
+/* ---------- 开始界面 ---------- */
+.title-screen {
+  position: fixed; inset: 0; z-index: 50; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(ellipse at 50% 40%, #fff8ec 0%, #f6e7cc 55%, #e9d2ac 100%);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.title-screen.leaving { opacity: 0; transform: scale(1.06); pointer-events: none; }
+.title-screen.gone { display: none; }
+.title-inner { position: relative; text-align: center; z-index: 2; animation: rise 1s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.logo {
+  font-family: "Ma Shan Zheng", "STKaiti", "KaiTi", serif; font-weight: normal;
+  font-size: clamp(140px, 26vw, 240px); line-height: 1; margin: 0;
+  color: var(--ink); text-shadow: 6px 8px 0 rgba(217,105,59,.25);
+}
+.seal {
+  position: absolute; right: -36px; top: 26px;
+  writing-mode: vertical-rl; font-family: "ZCOOL XiaoWei", serif; font-size: 18px; letter-spacing: 4px;
+  color: #fff; background: #c2452d; padding: 8px 5px; border-radius: 6px; transform: rotate(6deg);
+  box-shadow: 0 3px 0 rgba(74,52,38,.3);
+}
+.tagline { font-family: "ZCOOL XiaoWei", serif; font-size: 20px; color: var(--ink-soft); line-height: 1.7; margin: 8px 0 22px; }
+.save-info { font-size: 14px; color: var(--ink-soft); min-height: 20px; margin-bottom: 14px; }
+.title-buttons { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.big-btn {
+  font: inherit; font-family: "ZCOOL XiaoWei", serif; font-size: 24px; letter-spacing: 6px;
+  padding: 12px 44px; border-radius: 999px; cursor: pointer;
+  border: 3px solid var(--line); background: var(--accent); color: #fff;
+  box-shadow: 0 6px 0 var(--line); transition: transform .1s, box-shadow .1s;
+}
+.big-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--line); }
+.big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line); }
+.title-foot { position: absolute; bottom: 18px; font-size: 12px; color: var(--ink-soft); z-index: 2; }
+.floaters span {
+  position: absolute; font-size: 40px; opacity: .55; animation: drift linear infinite;
+  filter: drop-shadow(0 4px 0 rgba(74,52,38,.15));
+}
+@keyframes drift {
+  from { transform: translateY(110vh) rotate(0deg); }
+  to { transform: translateY(-20vh) rotate(240deg); }
+}
+.hidden { display: none !important; }
+
+/* ---------- 世界地图 ---------- */
+.map-wrap { position: relative; margin-bottom: 18px; }
+.worldmap { width: 100%; display: block; border: 2.5px solid var(--line); border-radius: 14px; box-shadow: 0 5px 0 rgba(74,52,38,.25); }
+.worldmap .ocean { fill: #cfe3df; }
+.worldmap .grid line { stroke: #fff; stroke-width: .25; opacity: .6; }
+.worldmap .land { fill: #f3e2bf; stroke: var(--line); stroke-width: .7; stroke-linejoin: round; }
+.worldmap .land-shadow { fill: rgba(74,52,38,.18); }
+.worldmap .water { fill: #cfe3df; stroke: var(--line); stroke-width: .5; }
+.worldmap .route { fill: none; stroke: var(--accent); stroke-width: .8; stroke-dasharray: 2 1.6; animation: dash 3s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -14; } }
+.worldmap .pin { cursor: pointer; }
+.worldmap .pin-bg { fill: #fffdf8; stroke: var(--line); stroke-width: .8; transition: r .15s; }
+.worldmap .pin.open .pin-bg { fill: #fff3d6; stroke: var(--accent); stroke-width: 1; }
+.worldmap .pin:hover .pin-bg { r: 6.5; }
+.worldmap .pin-emoji { font-size: 6px; }
+.worldmap .pin-label { font-size: 5px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: #fffdf8; stroke-width: 1.4px; }
+.worldmap .pin.locked .pin-label { fill: var(--ink-soft); }
+.map-popup {
+  position: absolute; transform: translate(-50%, calc(-100% - 22px)); z-index: 4;
+  background: #fffdf8; border: 2.5px solid var(--line); border-radius: 12px; padding: 10px 14px;
+  min-width: 170px; text-align: center; box-shadow: 0 5px 0 rgba(74,52,38,.25);
+}
+.map-popup .name { font-weight: 700; font-size: 17px; }
+.map-popup .meta { font-size: 13px; color: var(--ink-soft); margin: 4px 0 8px; }
+.map-popup button { font: inherit; font-size: 14px; padding: 5px 12px; cursor: pointer; border-radius: 10px; border: 2px solid var(--line); background: var(--accent); color: #fff; font-weight: 700; }
+.map-popup .x { position: absolute; top: 2px; right: 6px; background: none; border: none; color: var(--ink-soft); padding: 0; font-size: 16px; }
 .stats { display: flex; gap: 18px; font-size: 18px; }
 .income { color: var(--accent-2); }
 .tabs { display: flex; gap: 8px; padding: 12px 24px 0; flex-wrap: wrap; }

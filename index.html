@@ -3,12 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>寻味之旅 · 原型</title>
+<title>吃</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<!-- 开始界面 -->
+<div id="title" class="title-screen">
+  <div class="floaters" id="floaters"></div>
+  <div class="title-inner">
+    <div class="seal">寻味</div>
+    <h1 class="logo">吃</h1>
+    <p class="tagline">走过大江南北与远方，<br>把人间烟火写进一本手帐。</p>
+    <div id="saveInfo" class="save-info"></div>
+    <div class="title-buttons">
+      <button id="startBtn" class="big-btn">开始旅程</button>
+      <button id="newGameBtn" class="link hidden">重新开始</button>
+    </div>
+  </div>
+  <div class="title-foot">原型 v0.2 · 美术为占位</div>
+</div>
+
 <header class="topbar">
-  <div class="title">寻味之旅</div>
+  <button class="logo-small" id="homeBtn" title="回到开始界面">吃</button>
   <div class="stats">
     <span class="gold">🪙 <b id="gold">0</b></span>
     <span class="income">+<b id="income">0</b>/秒</span>
@@ -24,8 +44,12 @@
 
 <main>
   <section id="tab-map" class="panel active">
-    <h2>大地图</h2>
-    <p class="sub">金币会自动累积（关掉页面也会）。攒够了就去解锁新城市。</p>
+    <h2>世界地图</h2>
+    <p class="sub">点击地图上的城市：已开通的去逛集市，未开通的花金币开通航线。金币会自动累积（关掉页面也会）。</p>
+    <div class="map-wrap">
+      <div id="worldMap"></div>
+      <div id="mapPopup" class="map-popup hidden"></div>
+    </div>
     <div id="cityList" class="cards"></div>
   </section>
 
@@ -76,6 +100,7 @@
 </footer>
 
 <script src="data/game.js"></script>
+<script src="worldmap.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
