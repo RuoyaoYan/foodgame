@@ -10,6 +10,7 @@
 | 类型 | id |
 |---|---|
 | 菜品 | mapo_tofu, twice_cooked_pork, zhajiangmian, jingjiang_rousi, carbonara, cacio_e_pepe |
-| 成都食材 | tofu, minced_pork, pork_belly, doubanjiang, sichuan_pepper, garlic_sprout |
-| 北京食材 | noodles, yellow_paste, cucumber, tenderloin, sweet_paste, scallion, tofu_skin |
-| 罗马食材 | spaghetti, egg, guanciale, pecorino, black_pepper |
+| 成都原材料 | soybean, pork, chili, sichuan_pepper, broad_bean, garlic_sprout |
+| 北京原材料 | wheat, cucumber, scallion |
+| 罗马原材料 | egg, sheep_milk, black_pepper |
+| 加工品（放在 ingredients 文件夹） | tofu, doubanjiang, yellow_paste, noodles, spaghetti, pecorino, guanciale |

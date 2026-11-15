@@ -6,7 +6,7 @@
 <title>吃</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap&text=%E5%90%83" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -44,7 +44,7 @@
       <button id="newGameBtn" class="link hidden">重新开始</button>
     </div>
   </div>
-  <div class="title-foot">原型 v0.4 · 水彩手帐风</div>
+  <div class="title-foot">原型 v0.5 · 水彩手帐风</div>
 </div>
 
 <header class="topbar">
@@ -84,7 +84,7 @@
         <p class="sub">（音乐和音效素材还没加入，开关会先记住你的选择。）</p>
         <div class="setting-row"><span>🏠 回到开始界面</span><button class="ghost" id="toTitleBtn">前往</button></div>
         <div class="setting-row"><span>🗑️ 重置存档</span><button class="ghost" id="resetBtn">重置</button></div>
-        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.4 · 水彩手帐风</span></div>
+        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.5 · 水彩手帐风</span></div>
         <div id="debugRow"></div>
       </div>
     </div>
@@ -93,7 +93,8 @@
   <!-- 农场 -->
   <section id="tab-farm" class="panel">
     <h2>农场</h2>
-    <p class="sub">在菜地里种菜、在畜栏里养家禽家畜。按现实时间生长，关掉页面也会长，成熟后点“收获”放进仓库。开通对应城市后才能种养。</p>
+    <p class="sub">每块地选一样来种或养，之后会一直产出原材料（关掉页面也会），攒在地里，满了就不再长，记得来收取。升级地块产得更快、攒得更多。开通对应城市后才能种养。</p>
+    <div class="farm-top"><button class="primary" id="collectAll">一键收取</button></div>
     <h3>🌾 菜地</h3>
     <div id="fields" class="cards plots"></div>
     <h3>🐾 畜栏</h3>
@@ -103,7 +104,7 @@
   <!-- 厨房 -->
   <section id="tab-kitchen" class="panel">
     <h2>厨房</h2>
-    <p class="sub">把食材放进锅里猜配方，研发新菜；已经收录的菜，下锅就能做成一份成菜，拿去店铺卖。做错了不扣食材。</p>
+    <p class="sub">集市和农场只有原材料。把食材放进锅里、选一个做法，猜出加工品（豆腐、酱、面……）和菜品。已经研发过的，下锅或在下方一键就能做。做错了不扣食材。</p>
     <div class="kitchen">
       <div class="bag">
         <h3>背包</h3>
@@ -114,6 +115,8 @@
           <div id="potItems" class="pot-items"></div>
           <div class="pot-label">🍲 铁锅</div>
         </div>
+        <div id="methods" class="methods"></div>
+        <div id="potMethod" class="pot-method"></div>
         <div class="pot-actions">
           <button id="clearPot" class="ghost">清空</button>
           <button id="cookBtn" class="primary">下锅！</button>
@@ -121,7 +124,7 @@
         <div id="cookMsg" class="msg"></div>
       </div>
     </div>
-    <h3>📋 已会做的菜 <span class="sub">食材够就能一键出餐</span></h3>
+    <h3>📋 已会做的 <span class="sub">食材够就能一键加工 / 出餐</span></h3>
     <div id="quickCook" class="cards small"></div>
   </section>
 

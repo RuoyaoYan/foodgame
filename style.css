@@ -8,9 +8,10 @@
   --accent: #d8693f;        /* 赭红 */
   --accent-2: #6e9a56;      /* 苔绿 */
   --locked: #cbbfae;
-  --hand: "ZCOOL XiaoWei", "STKaiti", "KaiTi", serif;
+  /* 电脑自带楷体：不依赖网络，字全；毛笔字只用于标题“吃” */
+  --hand: "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", "AR PL UKai CN", "Noto Serif SC", "Songti SC", serif;
   --brush: "Ma Shan Zheng", "STKaiti", "KaiTi", serif;
-  --scribble: "Zhi Mang Xing", "ZCOOL XiaoWei", "STKaiti", serif;
+  --scribble: var(--hand);
   --wobble: 255px 15px 225px 15px / 15px 225px 15px 255px;
 }
 * { box-sizing: border-box; }
@@ -436,3 +437,33 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .back-btn { margin-bottom: 10px; }
 #shopBonus { margin-top: -6px; }
 .toast { bottom: 108px; }
+
+/* =========================================================
+   v0.5：做法按钮 / 农场持续产出 / 字体
+   ========================================================= */
+.journal .hint, .card .hint { font-size: 15px; }
+.methods { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.method {
+  font-family: var(--hand); font-size: 16px; cursor: pointer; color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; min-width: 58px; padding: 6px 8px 4px;
+  border: 2px solid var(--line); border-radius: var(--wobble); background: var(--paper-light);
+  transition: transform .1s;
+}
+.method span { font-size: 22px; line-height: 1.1; }
+.method:hover { transform: translateY(-2px) rotate(-2deg); }
+.method.on { background: radial-gradient(ellipse at 35% 30%, #fff1d6, #f3c69a 85%); box-shadow: 2px 3px 0 var(--line); transform: translateY(-3px); }
+.pot-method { text-align: center; font-family: var(--hand); color: var(--ink-soft); margin-top: 8px; font-size: 15px; }
+.bag-label { grid-column: 1 / -1; font-family: var(--hand); color: var(--ink-soft); font-size: 15px; margin: 4px 0 -2px; border-bottom: 2px dashed rgba(91,58,40,.2); }
+.ing.processed::before { background: #fff6e2; }
+.plot { position: relative; }
+.plot .lv {
+  position: absolute; top: 8px; left: 10px; font-family: var(--hand); font-size: 13px; color: #fff;
+  background: var(--accent-2); border: 2px solid var(--line); border-radius: 999px; padding: 0 8px; z-index: 2;
+}
+.plot .stash { font-size: 20px; min-height: 28px; letter-spacing: 1px; }
+.plot button.picked { background: radial-gradient(ellipse at 35% 30%, #d9ebc6, var(--accent-2) 85%) !important; color: #fff !important; }
+.plot .swap { width: 100%; font-size: 13px; color: var(--ink-soft); }
+.plot .swap summary { cursor: pointer; font-family: var(--hand); font-size: 14px; }
+.plot .swap .row { margin-top: 6px; }
+.add-plot::before { background: transparent !important; border-style: dashed !important; }
+.farm-top { margin: -4px 0 6px; }

@@ -8,6 +8,12 @@
   const DISH = Object.fromEntries(D.dishes.map(d => [d.id, d]));
   const FARM = Object.fromEntries(D.farm.items.map(f => [f.id, f]));
   const FURN = Object.fromEntries(D.furniture.map(f => [f.id, f]));
+  const METHOD = Object.fromEntries(D.methods.map(m => [m.id, m]));
+  const RAW = D.ingredients.filter(i => i.kind === "raw");
+  const PROC = D.ingredients.filter(i => i.kind === "processed");
+  // 所有“锅里能做出来的东西”：加工品 + 菜品
+  const RECIPES = [...PROC.map(i => ({ ...i, ingredients: i.inputs, isProc: true })), ...D.dishes];
+  const FM = D.farm;
   const SH = D.shop;
 
   // ---------- 存档 ----------
@@ -16,13 +22,15 @@
       gold: D.config.startGold,
       cities: [D.config.startCity],
       inventory: {},          // 食材库存
-      dishes: [],             // 已研发（图鉴）
+      dishes: [],             // 已研发的菜（图鉴）
+      processed: [],          // 已研发的加工品
       recipes: [],            // 已购买的菜谱
       seenIngs: [],           // 见过的食材（食材图鉴）
       dishStock: {},          // 成菜库存
       shelfCount: SH.startShelves,
       shelves: [],            // [{dish, count, last}]
-      fields: [], pens: [],   // [{item, readyAt}] 或 null
+      fieldCount: FM.fieldPlots, penCount: FM.pens,
+      fields: [], pens: [],   // [{item, last, level}]，item 为 null 表示空地
       furniture: [],
       settings: { music: true, sfx: true },
       sold: 0,
@@ -33,12 +41,31 @@
     try {
       const s = JSON.parse(localStorage.getItem(SAVE_KEY));
       if (s && typeof s.gold === "number") {
-        const st = Object.assign(newState(), s);
-        if (!s.seenIngs) st.seenIngs = Object.keys(st.inventory);   // 旧存档迁移
-        return st;
+        return migrate(Object.assign(newState(), s), s);
       }
     } catch (e) {}
     return newState();
+  }
+  // 旧存档迁移：v0.4 之前的食材 id 合并/改名，旧农场格式清空
+  function migrate(st, raw) {
+    const RENAME = { minced_pork: "pork", pork_belly: "pork", tenderloin: "pork", tofu_skin: "tofu" };
+    const DROP = ["sweet_paste"];
+    const fixMap = obj => {
+      const out = {};
+      for (const [k, v] of Object.entries(obj || {})) {
+        const id = RENAME[k] || k;
+        if (DROP.includes(id) || !ING[id]) continue;
+        out[id] = (out[id] || 0) + v;
+      }
+      return out;
+    };
+    st.inventory = fixMap(st.inventory);
+    if (!raw.seenIngs) st.seenIngs = Object.keys(st.inventory);
+    st.seenIngs = [...new Set(st.seenIngs.map(k => RENAME[k] || k))].filter(k => ING[k]);
+    const okPlot = p => p && typeof p === "object" && "level" in p;
+    st.fields = (st.fields || []).filter(okPlot);
+    st.pens = (st.pens || []).filter(okPlot);
+    return st;
   }
   function save() {
     S.lastSeen = Date.now();
@@ -47,8 +74,8 @@
   let S = load();
   function normalize() {
     while (S.shelves.length < S.shelfCount) S.shelves.push({ dish: null, count: 0, last: Date.now() });
-    while (S.fields.length < D.farm.fieldPlots) S.fields.push(null);
-    while (S.pens.length < D.farm.pens) S.pens.push(null);
+    while (S.fields.length < S.fieldCount) S.fields.push({ item: null, last: Date.now(), level: 1 });
+    while (S.pens.length < S.penCount) S.pens.push({ item: null, last: Date.now(), level: 1 });
   }
   normalize();
 
@@ -57,12 +84,24 @@
   let currentTab = "home";
   let homeSub = "dishes";
   let lastUnlocked = null;
+  let method = null;          // 厨房当前选择的做法
 
   // ---------- 加成 ----------
   const bonus = eff => S.furniture.reduce((s, id) => s + (FURN[id].effect === eff ? FURN[id].value : 0), 0);
   const priceOf = d => Math.round(d.sellPrice * (1 + bonus("sellPrice")));
   const sellIntervalMs = () => SH.sellIntervalSec * 1000 / (1 + bonus("sellSpeed"));
-  const growMs = item => item.growSec * 1000 / (1 + bonus("farmSpeed"));
+  // 农场：每块地持续产出，产出攒在地里（有上限），点一下收取
+  const plotIv = p => FARM[p.item].produceSec * 1000 / ((1 + FM.levelSpeedBonus * (p.level - 1)) * (1 + bonus("farmSpeed")));
+  const plotCap = p => FM.baseCap + FM.capPerLevel * (p.level - 1);
+  const plotStored = (p, now = Date.now()) => p.item ? Math.min(plotCap(p), Math.floor((now - p.last) / plotIv(p))) : 0;
+  function collectPlot(p) {
+    const n = plotStored(p);
+    if (n > 0) {
+      addIng(FARM[p.item].produces, n);
+      p.last = n >= plotCap(p) ? Date.now() : p.last + n * plotIv(p);
+    }
+    return n;
+  }
 
   // ---------- 店铺结算（在线、离线同一套逻辑） ----------
   function processShop(now) {
@@ -84,7 +123,7 @@
   (function offline() {
     const away = Date.now() - S.lastSeen;
     const r = processShop(Date.now());
-    const ready = [...S.fields, ...S.pens].filter(p => p && p.readyAt <= Date.now()).length;
+    const ready = [...S.fields, ...S.pens].reduce((s, p) => s + plotStored(p), 0);
     if (away > 30000 && (r.sold > 0 || ready > 0)) offlineMsg = { away, ...r, ready };
   })();
 
@@ -166,7 +205,7 @@
     return `<span style="left:${left}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:${delay}s">${FOODS[i % FOODS.length]}</span>`;
   }).join("");
   function renderTitle() {
-    const started = S.dishes.length || S.cities.length > 1 || S.seenIngs.length || S.recipes.length;
+    const started = S.dishes.length || S.processed.length || S.cities.length > 1 || S.seenIngs.length || S.recipes.length;
     $("startBtn").textContent = started ? "继续旅程" : "开始旅程";
     $("newGameBtn").classList.toggle("hidden", !started);
     $("saveInfo").innerHTML = started
@@ -184,7 +223,7 @@
         <h2>欢迎回来！</h2>
         <p>你离开了 ${fmtTime(m.away / 1000)}。<br>
         ${m.sold ? `小店卖出了 <b>${m.sold}</b> 份菜，赚了 <b>🪙 ${fmt(m.gold)}</b>。<br>` : ""}
-        ${m.ready ? `农场有 <b>${m.ready}</b> 处可以收获啦。` : ""}</p>
+        ${m.ready ? `农场攒了 <b>${m.ready}</b> 份食材等你收取。` : ""}</p>
         <button class="primary" data-close>好的</button>`), 450);
     }
     switchTab(currentTab);
@@ -228,29 +267,41 @@
       const got = S.dishes.includes(d.id);
       const cityOpen = S.cities.includes(d.city);
       const recipe = S.recipes.includes(d.id) || got;
-      const recipeText = d.ingredients.map(x => `${ING[x].emoji}${ING[x].name}`).join(" + ");
       return `<div class="card taped ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}">
         ${cityOpen || got ? dishArt(d, "xl") : lockArt("xl")}
         <div class="name">${got || cityOpen ? d.name : "？？？"}</div>
         <div class="meta">${CITY[d.city].emoji} ${CITY[d.city].name} · 售价 🪙${priceOf(d)}</div>
         ${got ? `<div class="story">${d.story}</div>` :
           cityOpen ? `<div class="hint">${d.hint}</div>` : `<div class="meta">开通${CITY[d.city].name}航线后解锁</div>`}
-        ${recipe && cityOpen ? `<div class="recipe">${recipeText}</div>` : ""}
+        ${recipe && cityOpen ? `<div class="recipe">${recipeText(d)}</div>` : ""}
       </div>`;
     }).join("");
     lastUnlocked = null;
   }
   function renderIngDex() {
-    $("ingDex").innerHTML = D.ingredients.map(i => {
-      const seen = S.seenIngs.includes(i.id);
-      const uses = D.dishes.filter(d => d.ingredients.includes(i.id) && S.dishes.includes(d.id)).map(d => d.name);
+    const usesOf = id => [...D.dishes.filter(d => S.dishes.includes(d.id)), ...PROC.filter(p => S.processed.includes(p.id))]
+      .filter(r => (r.ingredients || r.inputs).includes(id)).map(r => r.name);
+    const rawCard = i => {
+      const seen = S.seenIngs.includes(i.id), uses = usesOf(i.id);
       return `<div class="card ${seen ? "" : "locked"}">
         ${seen ? ingArt(i.id, "l") : lockArt("l")}
         <div class="name">${seen ? i.name : "？？？"}</div>
         <div class="meta">${CITY[i.city].emoji} ${CITY[i.city].name}${seen ? ` · 集市 🪙${i.price}` : ""}</div>
         ${seen ? `<div class="meta">用于：${uses.length ? uses.join("、") : "？"}</div>` : ""}
       </div>`;
-    }).join("");
+    };
+    const procCard = i => {
+      const got = S.processed.includes(i.id), uses = usesOf(i.id);
+      return `<div class="card ${got ? "" : "locked"}">
+        ${got ? ingArt(i.id, "l") : lockArt("l")}
+        <div class="name">${got ? i.name : "？？？"}</div>
+        ${got ? `<div class="story">${i.desc}</div><div class="recipe">${recipeText({ ...i, ingredients: i.inputs })}</div>
+                 <div class="meta">用于：${uses.length ? uses.join("、") : "？"}</div>`
+              : `<div class="hint">${i.hint}</div>`}
+      </div>`;
+    };
+    $("ingDex").innerHTML = `<div class="bag-label wide">原材料（集市 / 农场）</div>${RAW.map(rawCard).join("")}
+      <div class="bag-label wide">加工品（在厨房里自己做）</div>${PROC.map(procCard).join("")}`;
   }
   function renderStorage() {
     const ds = D.dishes.filter(d => (S.dishStock[d.id] || 0) > 0);
@@ -296,89 +347,170 @@
     S = newState(); normalize(); pot = []; save(); renderAll(); renderTitle(); toast("存档已重置");
   }));
 
-  // ---------- 农场 ----------
+  // ---------- 农场（参考《洋果子店》：选一次，持续产出，可升级、扩建） ----------
   function renderPlots(kind) {
-    const list = kind === "fields" ? S.fields : S.pens;
-    const type = kind === "fields" ? "crop" : "animal";
+    const list = S[kind], type = kind === "fields" ? "crop" : "animal";
+    const label = type === "crop" ? "菜地" : "畜栏";
     const now = Date.now();
-    $(kind).innerHTML = list.map((p, idx) => {
-      if (!p) {
-        const opts = D.farm.items.filter(f => f.type === type).map(f => {
-          const open = S.cities.includes(f.city);
-          return `<button data-plant="${f.id}" data-kind="${kind}" data-idx="${idx}" ${!open || S.gold < f.cost ? "disabled" : ""}
-            title="${open ? "" : "需先开通" + CITY[f.city].name}">${f.emoji} ${f.name} 🪙${f.cost}${open ? "" : " 🔒" + CITY[f.city].name}</button>`;
-        }).join("");
-        return `<div class="card plot empty-plot">${emoArt(type === "crop" ? "🟫" : "🛖", "l", kind + "e")}
-          <div class="name">空${type === "crop" ? "菜地" : "畜栏"}</div>
-          <div class="meta">${D.farm.items.filter(f => f.type === type).map(f => `${f.emoji}→${ING[f.produces].emoji}×${f.yield} · ${fmtTime(growMs(f) / 1000)}`).join("<br>")}</div>
-          <div class="row col">${opts}</div></div>`;
+    const options = D.farm.items.filter(f => f.type === type);
+    let html = list.map((p, idx) => {
+      const lvl = `<span class="lv">Lv.${p.level}</span>`;
+      const upCost = FM.upgradeCosts[p.level - 1];
+      const upBtn = upCost !== undefined
+        ? `<button class="ghost" data-upgrade="${idx}" data-kind="${kind}" ${S.gold < upCost ? "disabled" : ""}>升级 🪙${fmt(upCost)}</button>`
+        : `<span class="meta">已满级</span>`;
+      const pick = options.map(f => {
+        const open = S.cities.includes(f.city);
+        return `<button class="${p.item === f.id ? "picked" : "ghost"}" data-assign="${f.id}" data-kind="${kind}" data-idx="${idx}"
+          ${!open || p.item === f.id ? "disabled" : ""}>${f.emoji} ${f.name}${open ? "" : " 🔒" + CITY[f.city].name}</button>`;
+      }).join("");
+      if (!p.item) {
+        return `<div class="card plot empty-plot">${lvl}${emoArt(type === "crop" ? "🟫" : "🛖", "l", kind + "e")}
+          <div class="name">空${label}</div>
+          <div class="meta">选一样来${type === "crop" ? "种" : "养"}，之后会一直产出</div>
+          <div class="row col">${pick}</div>
+          <div class="row">${upBtn}</div></div>`;
       }
-      const f = FARM[p.item], total = growMs(f), left = p.readyAt - now, ready = left <= 0;
-      return `<div class="card plot ${ready ? "ready" : ""}">
-        ${ready ? ingArt(f.produces, "l") : emoArt(f.emoji, "l", f.id)}
-        <div class="name">${ready ? "可以收获啦！" : f.name.replace(/^(种|养)/, "") + " 生长中"}</div>
-        <div class="bar"><i style="width:${ready ? 100 : Math.min(100, (1 - left / total) * 100)}%"></i></div>
-        <div class="meta">${ready ? `${ING[f.produces].name} ×${f.yield}` : `还要 ${fmtTime(left / 1000)}`}</div>
-        <div class="row">${ready ? `<button data-harvest="${idx}" data-kind="${kind}">收获</button>` : ""}</div>
+      const f = FARM[p.item], iv = plotIv(p), cap = plotCap(p), n = plotStored(p, now);
+      const full = n >= cap, prog = full ? 1 : ((now - p.last) % iv) / iv;
+      const prod = ING[f.produces];
+      return `<div class="card plot ${n ? "ready" : ""}">${lvl}
+        ${emoArt(f.emoji, "l", f.id)}
+        <div class="name">${f.name} → ${prod.emoji} ${prod.name}</div>
+        <div class="stash">${n ? `${prod.emoji}`.repeat(Math.min(n, 8)) + (n > 8 ? "…" : "") : "<span class='meta'>还没有产出</span>"}</div>
+        <div class="meta">已攒 <b>${n}</b> / ${cap} 份 · 每 ${fmtTime(iv / 1000)} 产 1 份</div>
+        <div class="bar"><i style="width:${prog * 100}%"></i></div>
+        <div class="meta">${full ? "满了！快收取，不然不会再长" : `下一份 ${fmtTime((iv - (now - p.last) % iv) / 1000)}`}</div>
+        <div class="row">
+          <button data-collect="${idx}" data-kind="${kind}" ${n ? "" : "disabled"}>收取${n ? " ×" + n : ""}</button>
+          ${upBtn}
+        </div>
+        <details class="swap" data-swap="${kind}${idx}" ${openSwaps.has(kind + idx) ? "open" : ""}><summary>换${type === "crop" ? "种" : "养"}别的</summary><div class="row col">${pick}</div></details>
       </div>`;
     }).join("");
+    const costs = kind === "fields" ? FM.fieldExpandCosts : FM.penExpandCosts;
+    const extra = list.length - (kind === "fields" ? FM.fieldPlots : FM.pens);
+    html += extra < costs.length
+      ? `<div class="card plot add-plot">${emoArt("➕", "l", kind + "add")}<div class="name">扩建${label}</div>
+          <div class="row"><button data-expand="${kind}" ${S.gold < costs[extra] ? "disabled" : ""}>🪙 ${fmt(costs[extra])}</button></div></div>`
+      : "";
+    $(kind).innerHTML = html;
   }
-  function renderFarm() { renderPlots("fields"); renderPlots("pens"); }
+  const openSwaps = new Set();
+  $("tab-farm").addEventListener("toggle", e => {
+    const d = e.target; if (!d.dataset || !d.dataset.swap) return;
+    if (d.open) openSwaps.add(d.dataset.swap); else openSwaps.delete(d.dataset.swap);
+  }, true);
+  function renderFarm() {
+    renderPlots("fields"); renderPlots("pens");
+    const total = [...S.fields, ...S.pens].reduce((s, p) => s + plotStored(p), 0);
+    $("collectAll").disabled = !total;
+    $("collectAll").textContent = total ? `一键收取 ×${total}` : "一键收取";
+  }
+  $("collectAll").addEventListener("click", () => {
+    let n = 0; [...S.fields, ...S.pens].forEach(p => n += collectPlot(p));
+    if (n) { save(); toast(`收取了 ${n} 份食材，已放进仓库`); renderAll(); }
+  });
   $("tab-farm").addEventListener("click", e => {
-    const t = e.target.closest("button"); if (!t) return;
-    const kind = t.dataset.kind, idx = +t.dataset.idx;
-    if (t.dataset.plant) {
-      const f = FARM[t.dataset.plant];
-      if (spend(f.cost)) {
-        S[kind][idx] = { item: f.id, readyAt: Date.now() + growMs(f) }; save();
-        toast(`${f.emoji} ${f.name}，${fmtTime(growMs(f) / 1000)} 后收获`); renderAll();
+    const t = e.target.closest("button"); if (!t || t.disabled) return;
+    const kind = t.dataset.kind;
+    if (t.dataset.assign) {
+      const p = S[kind][+t.dataset.idx], f = FARM[t.dataset.assign];
+      if (p.item) collectPlot(p);
+      p.item = f.id; p.last = Date.now(); save();
+      toast(`${f.emoji} 开始${f.type === "crop" ? "种" : "养"}${f.name}，会一直产出${ING[f.produces].name}`); renderAll();
+    }
+    if (t.dataset.collect !== undefined) {
+      const p = S[kind][+t.dataset.collect], prod = ING[FARM[p.item].produces], n = collectPlot(p);
+      if (n) { save(); toast(`收取 ${prod.emoji} ${prod.name} ×${n}`); renderAll(); }
+    }
+    if (t.dataset.upgrade !== undefined) {
+      const p = S[kind][+t.dataset.upgrade], cost = FM.upgradeCosts[p.level - 1];
+      if (cost !== undefined && spend(cost)) {
+        if (p.item) collectPlot(p);
+        p.level++; if (p.item) p.last = Date.now(); save();
+        toast(`升到 Lv.${p.level}！产得更快、能攒更多`); renderAll();
       }
     }
-    if (t.dataset.harvest !== undefined) {
-      const hi = +t.dataset.harvest, p = S[kind][hi], f = FARM[p.item];
-      addIng(f.produces, f.yield); S[kind][hi] = null; save();
-      toast(`收获 ${ING[f.produces].emoji} ${ING[f.produces].name} ×${f.yield}`); renderAll();
+    if (t.dataset.expand) {
+      const k = t.dataset.expand, costs = k === "fields" ? FM.fieldExpandCosts : FM.penExpandCosts;
+      const extra = S[k].length - (k === "fields" ? FM.fieldPlots : FM.pens);
+      if (spend(costs[extra])) {
+        if (k === "fields") S.fieldCount++; else S.penCount++;
+        normalize(); save(); toast(`多了一块${k === "fields" ? "菜地" : "畜栏"}！`); renderAll();
+      }
     }
   });
 
   // ---------- 厨房 ----------
+  // 锅里放食材 + 选一个做法 → 加工品或菜品（都要自己猜）
+  const known = r => r.isProc ? S.processed.includes(r.id) : S.dishes.includes(r.id);
+  const methodText = id => `${METHOD[id].emoji}${METHOD[id].name}`;
+  function recipeText(r) { return r.ingredients.map(x => `${ING[x].emoji}${ING[x].name}`).join(" + ") + ` · ${methodText(r.method)}`; }
   function available(id) { return (S.inventory[id] || 0) - pot.filter(x => x === id).length; }
+  function renderMethods() {
+    $("methods").innerHTML = D.methods.map(m =>
+      `<button class="method ${method === m.id ? "on" : ""}" data-method="${m.id}"><span>${m.emoji}</span>${m.name}</button>`).join("");
+  }
+  $("methods").addEventListener("click", e => {
+    const b = e.target.closest("[data-method]"); if (!b) return;
+    method = method === b.dataset.method ? null : b.dataset.method; renderMethods();
+  });
   function renderKitchen() {
+    renderMethods();
     const owned = D.ingredients.filter(i => (S.inventory[i.id] || 0) > 0);
-    $("bag").innerHTML = owned.length ? owned.map(i => {
+    const bagItem = i => {
       const n = available(i.id);
-      return `<div class="ing ${n <= 0 ? "empty" : ""}" draggable="${n > 0}" data-add="${i.id}">
+      return `<div class="ing ${n <= 0 ? "empty" : ""} ${i.kind}" draggable="${n > 0}" data-add="${i.id}">
         <span class="c">×${n}</span>${ingArt(i.id, "m")}<div class="n">${i.name}</div></div>`;
-    }).join("") : `<p class="sub">背包空空的，去地图上的集市进货，或者去农场种点什么吧。</p>`;
+    };
+    const raw = owned.filter(i => i.kind === "raw"), proc = owned.filter(i => i.kind === "processed");
+    $("bag").innerHTML = owned.length
+      ? `${raw.length ? `<div class="bag-label">原材料</div>${raw.map(bagItem).join("")}` : ""}
+         ${proc.length ? `<div class="bag-label">加工品</div>${proc.map(bagItem).join("")}` : ""}`
+      : `<p class="sub">背包空空的，去地图上的集市进货，或者去农场收取吧。</p>`;
     $("potItems").innerHTML = pot.map((id, idx) =>
       `<div class="ing" data-remove="${idx}" title="点击拿出">${ingArt(id, "s")}<div class="n">${ING[id].name}</div></div>`).join("");
+    $("potMethod").textContent = method ? `做法：${methodText(method)}` : "还没选做法";
     renderQuickCook();
   }
-  const canMake = d => Math.min(...d.ingredients.map(x => S.inventory[x] || 0));
+  const canMake = r => Math.min(...r.ingredients.map(x => S.inventory[x] || 0));
   function renderQuickCook() {
-    const known = D.dishes.filter(d => S.dishes.includes(d.id));
-    $("quickCook").innerHTML = known.length ? known.map(d => {
-      const n = canMake(d);
-      return `<div class="card">${dishArt(d, "m")}
-        <div class="name">${d.name}</div>
-        <div class="meta">${d.ingredients.map(x => `<span class="${(S.inventory[x] || 0) ? "" : "missing"}">${ING[x].emoji}${S.inventory[x] || 0}</span>`).join(" ")}</div>
-        <div class="meta">库存 ${S.dishStock[d.id] || 0} 份 · 售价 🪙${priceOf(d)}</div>
+    const list = RECIPES.filter(known);
+    const card = r => {
+      const n = canMake(r);
+      const out = r.isProc ? `得到 ${r.emoji}×${r.yield} · 仓库 ${S.inventory[r.id] || 0}` : `库存 ${S.dishStock[r.id] || 0} 份 · 售价 🪙${priceOf(r)}`;
+      return `<div class="card">${r.isProc ? ingArt(r.id, "m") : dishArt(r, "m")}
+        <div class="name">${r.name}</div>
+        <div class="meta">${r.ingredients.map(x => `<span class="${(S.inventory[x] || 0) ? "" : "missing"}">${ING[x].emoji}${S.inventory[x] || 0}</span>`).join(" ")} · ${methodText(r.method)}</div>
+        <div class="meta">${out}</div>
         <div class="row">
-          <button data-make="${d.id}" data-n="1" ${n < 1 ? "disabled" : ""}>做 1 份</button>
-          <button class="ghost" data-make="${d.id}" data-n="${n}" ${n < 2 ? "disabled" : ""}>全做${n > 1 ? " ×" + n : ""}</button>
+          <button data-make="${r.id}" data-n="1" ${n < 1 ? "disabled" : ""}>做 1 次</button>
+          <button class="ghost" data-make="${r.id}" data-n="${n}" ${n < 2 ? "disabled" : ""}>全做${n > 1 ? " ×" + n : ""}</button>
         </div></div>`;
-    }).join("") : `<p class="sub">还没有研发出任何菜。先在锅里试试看吧！</p>`;
+    };
+    const procs = list.filter(r => r.isProc), dishes = list.filter(r => !r.isProc);
+    $("quickCook").innerHTML = list.length
+      ? `${procs.length ? `<div class="bag-label wide">加工品</div>${procs.map(card).join("")}` : ""}
+         ${dishes.length ? `<div class="bag-label wide">菜品</div>${dishes.map(card).join("")}` : ""}`
+      : `<p class="sub">还没有研发出任何东西。先在锅里试试看吧！</p>`;
   }
-  function makeDish(d, n) {
-    n = Math.min(n, canMake(d)); if (n < 1) return 0;
-    d.ingredients.forEach(x => S.inventory[x] -= n);
-    S.dishStock[d.id] = (S.dishStock[d.id] || 0) + n;
+  // 做 n 次：加工品进背包（每次产 yield 份），菜品进成菜库存
+  function make(r, n) {
+    n = Math.min(n, canMake(r)); if (n < 1) return 0;
+    r.ingredients.forEach(x => S.inventory[x] -= n);
+    if (r.isProc) addIng(r.id, n * r.yield);
+    else S.dishStock[r.id] = (S.dishStock[r.id] || 0) + n;
     return n;
   }
   $("quickCook").addEventListener("click", e => {
     const id = e.target.dataset.make; if (!id) return;
-    const n = makeDish(DISH[id], +e.target.dataset.n);
-    if (n) { save(); toast(`做好了 ${DISH[id].emoji} ${DISH[id].name} ×${n}，去店铺上架吧`); renderAll(); }
+    const r = RECIPES.find(x => x.id === id), n = make(r, +e.target.dataset.n);
+    if (n) {
+      save();
+      toast(r.isProc ? `加工好了 ${r.emoji} ${r.name} ×${n * r.yield}` : `做好了 ${r.emoji} ${r.name} ×${n}，去店铺上架吧`);
+      renderAll();
+    }
   });
   function addToPot(id) {
     if (available(id) <= 0) return;
@@ -402,29 +534,44 @@
   $("cookBtn").addEventListener("click", () => {
     const msg = $("cookMsg");
     if (!pot.length) { msg.textContent = "锅里还是空的呢～"; return; }
-    const match = D.dishes.find(d => key(d.ingredients) === key(pot));
+    if (!method) { msg.textContent = "先在锅边选一个做法吧（磨、发酵、擀、风干、炒、煮）"; return; }
+    const set = new Set(pot);
+    const back = () => { pot = []; renderKitchen(); };
+    if (pot.length !== set.size) { msg.textContent = "同一种食材放一份就够啦。（食材已退回）"; return back(); }
+    const sameIngs = RECIPES.filter(r => key(r.ingredients) === key(pot));
+    const match = sameIngs.find(r => r.method === method);
     if (!match) {   // 零惩罚：食材原样退回，只给温馨提示
-      const set = new Set(pot);
-      const close = D.dishes.find(d => d.ingredients.every(x => set.has(x)) || [...set].every(x => d.ingredients.includes(x)));
       let tip = "这个组合好像不太对劲……食材已经退回背包，换个搭配试试吧。";
-      if (close && [...set].every(x => close.ingredients.includes(x))) tip = "闻起来有点意思！好像还少了点什么。（食材已退回）";
+      const close = RECIPES.find(r => r.ingredients.every(x => set.has(x)) || [...set].every(x => r.ingredients.includes(x)));
+      if (sameIngs.length) tip = `食材对了！但“${METHOD[method].name}”好像不是正确的做法……（食材已退回）`;
+      else if (close && [...set].every(x => close.ingredients.includes(x))) tip = "闻起来有点意思！好像还少了点什么。（食材已退回）";
       else if (close) tip = "味道有点杂，也许有的食材是多余的？（食材已退回）";
-      if (pot.length !== set.size) tip = "同一种食材放一份就够啦。（食材已退回）";
-      msg.textContent = tip; pot = []; renderKitchen(); return;
+      msg.textContent = tip; return back();
     }
     pot = [];
-    makeDish(match, 1);
-    if (S.dishes.includes(match.id)) {
-      save(); msg.textContent = `做好了一份「${match.name}」，去店铺上架吧！`; renderAll(); return;
+    make(match, 1);
+    if (known(match)) {
+      save();
+      msg.textContent = match.isProc ? `加工好了 ${match.name} ×${match.yield}，已放进背包。` : `做好了一份「${match.name}」，去店铺上架吧！`;
+      renderAll(); return;
     }
-    S.dishes.push(match.id); save();
     msg.textContent = "";
-    lastUnlocked = match.id;
-    showModal(`${dishArt(match, "xl")}
-      <h2>研发成功：${match.name}！</h2>
-      <p>${match.story}</p>
-      <p>已做好 1 份，可以拿去店铺卖 <b style="color:var(--accent-2)">🪙${priceOf(match)}</b> / 份。<br>以后在厨房“已会做的菜”里可以一键出餐。</p>
-      <button class="primary" data-close>收入图鉴</button>`);
+    if (match.isProc) {
+      S.processed.push(match.id); save();
+      showModal(`${ingArt(match.id, "xl")}
+        <h2>新加工品：${match.name}！</h2>
+        <p>${match.desc}</p>
+        <p>得到 ${match.emoji} ${match.name} ×${match.yield}，已放进背包。<br>配方：${recipeText(match)}</p>
+        <button class="primary" data-close>收入食材图鉴</button>`);
+    } else {
+      S.dishes.push(match.id); save();
+      lastUnlocked = match.id;
+      showModal(`${dishArt(match, "xl")}
+        <h2>研发成功：${match.name}！</h2>
+        <p>${match.story}</p>
+        <p>已做好 1 份，可以拿去店铺卖 <b style="color:var(--accent-2)">🪙${priceOf(match)}</b> / 份。<br>以后在厨房“已会做的”里可以一键出餐。</p>
+        <button class="primary" data-close>收入图鉴</button>`);
+    }
     renderAll();
   });
 
@@ -537,7 +684,7 @@
     if (go) { marketCity = go; switchTab("market"); }
     if (un && spend(CITY[un].unlockCost)) {
       S.cities.push(un); save();
-      const farmNew = D.farm.items.filter(f => f.city === un).map(f => f.emoji + f.name.replace(/^(种|养)/, "")).join("、");
+      const farmNew = D.farm.items.filter(f => f.city === un).map(f => f.emoji + f.name).join("、");
       showModal(`<div class="big">✈️</div><h2>${CITY[un].name}航线已开通！</h2>
         <p>${CITY[un].desc}<br>去当地集市看看有什么新食材吧。${farmNew ? `<br>农场也可以养/种 ${farmNew} 啦。` : ""}</p>
         <button class="primary" data-close>出发</button>`);
@@ -552,7 +699,7 @@
     $("marketTitle").textContent = `${CITY[marketCity].name} · 本地集市`;
     $("marketCityTabs").innerHTML = S.cities.map(id =>
       `<button data-city="${id}" class="${id === marketCity ? "active" : ""}">${CITY[id].emoji} ${CITY[id].name}</button>`).join("");
-    $("marketIngredients").innerHTML = D.ingredients.filter(i => i.city === marketCity).map(i => `
+    $("marketIngredients").innerHTML = RAW.filter(i => i.city === marketCity).map(i => `
       <div class="card">${ingArt(i.id, "l")}
         <div class="name">${i.name}</div>
         <div class="meta">🪙 ${i.price} / 份 · 仓库 ${S.inventory[i.id] || 0}</div>
@@ -584,7 +731,7 @@
       S.recipes.push(r); save();
       const d = DISH[r];
       showModal(`<div class="big">📜</div><h2>${d.name}</h2>
-        <p>配方：${d.ingredients.map(x => `${ING[x].emoji} ${ING[x].name}`).join(" + ")}</p>
+        <p>配方：${recipeText(d)}</p>
         <p class="sub">配方已记在“我的家 → 菜品图鉴”里。</p>
         <button class="primary" data-close>记住了</button>`);
       renderAll();
@@ -641,7 +788,7 @@
     $("dbgTime").onclick = () => {
       const ms = 5 * 60 * 1000;
       S.shelves.forEach(sh => sh.last -= ms);
-      [...S.fields, ...S.pens].forEach(p => { if (p) p.readyAt -= ms; });
+      [...S.fields, ...S.pens].forEach(p => { p.last -= ms; });
       processShop(Date.now()); save(); renderAll(); toast("时间快进了 5 分钟");
     };
   }
