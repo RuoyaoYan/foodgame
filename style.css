@@ -484,3 +484,7 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .method.locked { opacity: .45; filter: grayscale(.6); }
 .bottom-nav button[data-tab="market"].active { background: #f3d2a8; }
 @media (max-width: 640px) { .bottom-nav button { min-width: 50px; font-size: 12px; padding: 4px 4px; } .bottom-nav .ni { font-size: 22px; } }
+
+/* v0.9：菜谱书 */
+.book-cover::before { background: linear-gradient(135deg, #fff3dc, #fbe1c4) !important; }
+.book-cover .name { font-size: 22px; }

@@ -17,6 +17,8 @@
   const RECIPES = [...PROC.map(i => ({ ...i, ingredients: i.inputs, isProc: true })), ...D.dishes];
   const FM = D.farm;
   const SH = D.shop;
+  const BOOK = Object.fromEntries(D.books.map(b => [b.id, b]));
+  const bookOf = dishId => D.books.find(b => b.dishes.includes(dishId));
 
   // ---------- 存档 ----------
   function newState() {
@@ -36,6 +38,7 @@
       furniture: [],
       settings: { music: true, sfx: true, devView: false },
       methods: D.methods.filter(m => !m.unlockCost).map(m => m.id),   // 已解锁的做法
+      books: D.books.filter(b => !b.price).map(b => b.id),              // 已拥有的菜谱书
       sold: 0,
       lastSeen: Date.now(),
     };
@@ -74,6 +77,10 @@
     st.recipes = (st.recipes || []).filter(k => DISH[k]);
     const base = D.methods.filter(m => !m.unlockCost).map(m => m.id);
     st.methods = [...new Set([...base, ...(st.methods || [])])].filter(k => D.methods.some(m => m.id === k));
+    // 菜谱书：赠送的书 + 旧存档里已经研发过 / 买过菜谱的菜所在的书
+    const owned = new Set([...D.books.filter(b => !b.price).map(b => b.id), ...(st.books || [])]);
+    [...st.dishes, ...st.recipes].forEach(id => { const b = bookOf(id); if (b) owned.add(b.id); });
+    st.books = [...owned].filter(k => BOOK[k]);
     const okPlot = p => p && typeof p === "object" && "level" in p;
     st.fields = (st.fields || []).filter(okPlot);
     st.pens = (st.pens || []).filter(okPlot);
@@ -162,6 +169,7 @@
   });
   // 开发者模式：金钱无限、所有东西都能买
   const DEV = () => S.settings.devView;
+  const hasBook = dishId => DEV() || S.books.includes((bookOf(dishId) || {}).id);
   const G = () => DEV() ? Infinity : S.gold;
   function spend(n) {
     if (DEV()) return true;
@@ -280,18 +288,23 @@
       ${items}${S.furniture.length ? "" : `<div class="room-empty">房间空空的……去“家具”里挑几件吧</div>`}`;
   }
   function renderJournal() {
-    $("journal").innerHTML = D.dishes.map(d => {
-      const got = S.dishes.includes(d.id);
-      const cityOpen = S.cities.includes(d.city);
-      const recipe = S.recipes.includes(d.id) || got;
+    const card = d => {
+      const got = S.dishes.includes(d.id), own = hasBook(d.id);
+      const recipe = S.recipes.includes(d.id) || got || DEV();
       return `<div class="card taped ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}">
-        ${cityOpen || got ? dishArt(d, "xl") : lockArt("xl")}
-        <div class="name">${got || cityOpen ? d.name : "？？？"}</div>
+        ${own || got ? dishArt(d, "xl") : lockArt("xl")}
+        <div class="name">${own || got ? d.name : "？？？"}</div>
         <div class="meta">${CITY[d.city].emoji} ${CITY[d.city].name} · 售价 🪙${priceOf(d)}</div>
         ${got ? `<div class="story">${d.story}</div>` :
-          cityOpen ? `<div class="hint">${d.hint}</div>` : `<div class="meta">开通${CITY[d.city].name}航线后解锁</div>`}
-        ${recipe && cityOpen ? `<div class="recipe">${recipeText(d)}</div>` : ""}
+          own ? `<div class="hint">${d.hint}</div>` : `<div class="meta">去书店买《${bookOf(d.id).name}》后解锁</div>`}
+        ${recipe && own ? `<div class="recipe">${recipeText(d)}</div>` : ""}
       </div>`;
+    };
+    $("journal").innerHTML = D.books.map(b => {
+      const done = b.dishes.filter(id => S.dishes.includes(id)).length;
+      const own = DEV() || S.books.includes(b.id);
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${done}/${b.dishes.length}${own ? "" : " · 🔒 未拥有"}</small></div>` +
+        b.dishes.map(id => card(DISH[id])).join("");
     }).join("");
     lastUnlocked = null;
   }
@@ -579,7 +592,12 @@
     const back = () => { pot = []; renderKitchen(); };
     if (pot.length !== set.size) { msg.textContent = "同一种食材放一份就够啦。（食材已退回）"; return back(); }
     const sameIngs = RECIPES.filter(r => key(r.ingredients) === key(pot));
-    const match = sameIngs.find(r => r.method === method);
+    const match = sameIngs.find(r => r.method === method && (r.isProc || hasBook(r.id)));
+    const needBook = sameIngs.find(r => r.method === method && !r.isProc && !hasBook(r.id));
+    if (needBook) {
+      msg.textContent = `这道菜好像记在《${bookOf(needBook.id).name}》里……去商店街的书店买下这本菜谱书再来研发吧。（食材已退回）`;
+      return back();
+    }
     if (!match) {   // 零惩罚：食材原样退回，只给温馨提示
       let tip = "这个组合好像不太对劲……食材已经退回背包，换个搭配试试吧。";
       const close = RECIPES.find(r => r.ingredients.every(x => set.has(x)) || [...set].every(x => r.ingredients.includes(x)));
@@ -757,16 +775,24 @@
     }).join("") || `<p class="sub">还没有可买的食材。</p>`;
   }
   function renderBookstore() {
-    const list = D.dishes.filter(d => DEV() || S.cities.includes(d.city));
-    $("bookstore").innerHTML = D.cities.filter(c => list.some(d => d.city === c.id)).map(c =>
-      `<div class="bag-label wide cat-head">${c.emoji} ${c.name}</div>` + list.filter(d => d.city === c.id).map(d => {
-        const owned = S.recipes.includes(d.id) || S.dishes.includes(d.id);
-        return `<div class="card">${emoArt("📜", "l", "recipe")}
-          <div class="name">${d.name} 菜谱</div>
-          <div class="meta">${owned ? "已拥有" : `🪙 ${fmt(d.recipePrice)}`}</div>
-          <div class="row">${owned ? "" : `<button data-recipe="${d.id}" ${G() < d.recipePrice ? "disabled" : ""}>购买</button>`}</div>
-        </div>`;
-      }).join("")).join("");
+    $("bookstore").innerHTML = D.books.map(b => {
+      const own = S.books.includes(b.id);
+      const done = b.dishes.filter(id => S.dishes.includes(id)).length;
+      const cover = `<div class="card book-cover ${own ? "" : "locked"}">${emoArt(b.emoji, "xl", "book-" + b.id)}
+        <div class="name">《${b.name}》</div>
+        <div class="meta">${b.desc}</div>
+        <div class="meta">共 ${b.dishes.length} 道菜 · 已研发 ${done}</div>
+        <div class="row">${own ? `<span class="meta">✔ 已拥有</span>`
+          : `<button data-book="${b.id}" ${G() < b.price ? "disabled" : ""}>购买 🪙${fmt(b.price)}</button>`}</div></div>`;
+      const pages = (own || DEV()) ? b.dishes.map(id => {
+        const d = DISH[id], has = S.recipes.includes(id) || S.dishes.includes(id);
+        return `<div class="card">${emoArt("📜", "m", "recipe")}
+          <div class="name">${d.name}</div>
+          <div class="meta">${has ? "完整配方已知" : `看完整配方 🪙${fmt(d.recipePrice)}`}</div>
+          <div class="row">${has ? "" : `<button class="ghost" data-recipe="${id}" ${G() < d.recipePrice ? "disabled" : ""}>购买配方</button>`}</div></div>`;
+      }).join("") : "";
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》</div>${cover}${pages}`;
+    }).join("");
   }
   function renderHardware() {
     const methods = D.methods.filter(m => m.unlockCost).map(m => {
@@ -822,6 +848,16 @@
         <p class="sub">配方已记在“我的家 → 菜品图鉴”里。</p>
         <button class="primary" data-close>记住了</button>`);
       renderAll();
+    }
+    if (t.dataset.book) {
+      const b = BOOK[t.dataset.book];
+      if (spend(b.price)) {
+        S.books.push(b.id); save();
+        showModal(`<div class="big">${b.emoji}</div><h2>买下了《${b.name}》！</h2>
+          <p>${b.desc}<br>书里的 ${b.dishes.length} 道菜已经记进“我的家 → 菜品图鉴”，看着提示去厨房研发吧。</p>
+          <button class="primary" data-close>翻开看看</button>`);
+        renderAll();
+      }
     }
     if (t.dataset.methodBuy) {
       const m = METHOD[t.dataset.methodBuy];
