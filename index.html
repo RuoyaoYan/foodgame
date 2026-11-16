@@ -46,7 +46,7 @@
     </div>
   </div>
   <div class="title-lang" id="titleLang"></div>
-  <div class="title-foot">原型 v0.10 · 水彩手帐风</div>
+  <div class="title-foot">原型 v0.12 · 水彩手帐风</div>
 </div>
 
 <header class="topbar">
@@ -70,7 +70,7 @@
       <button data-home="achievements">🏆 成就</button>
     </div>
     <div id="home-dishes" class="home-sub">
-      <input id="dishSearch" class="search" type="search" placeholder="🔍 搜索料理：名字、食材、城市、食谱书、做法……">
+      <input id="dishSearch" class="search" type="search" placeholder="🔍 搜索料理：名字、食材、国家、食谱书、做法……">
       <div id="journal" class="cards journal"></div>
     </div>
     <div id="home-ingredients" class="home-sub hidden">
@@ -101,7 +101,7 @@
         <div class="setting-row"><span>🛠️ 开发者模式<br><small class="sub">金钱无限、图鉴全部可见、商店街什么都能买、做法全解锁</small></span><button class="toggle" data-setting="devView"></button></div>
         <div class="setting-row"><span>🏠 回到开始界面</span><button class="ghost" id="toTitleBtn">前往</button></div>
         <div class="setting-row"><span>🗑️ 重置存档</span><button class="ghost" id="resetBtn">重置</button></div>
-        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.10 · 水彩手帐风</span></div>
+        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.12 · 水彩手帐风</span></div>
         <div id="debugRow"></div>
       </div>
     </div>
@@ -158,7 +158,7 @@
   <!-- 地图 -->
   <section id="tab-map" class="panel">
     <h2>世界地图</h2>
-    <p class="sub">滚轮或＋－缩放，按住拖动地图。点击城市：未开通的花金币开通航线，开通后当地食材会出现在商店街的食品街里。</p>
+    <p class="sub">滚轮或＋－缩放，按住拖动地图。点击国家：未开通的花金币开通航线，开通后当地食材会出现在商店街的食品街里。</p>
     <div class="map-wrap">
       <div id="worldMap"></div>
       <div class="map-zoom">
@@ -181,8 +181,8 @@
       <button data-street="books">📚 书店</button>
       <button data-street="hardware">🔨 五金店</button>
     </div>
-    <div id="street-food" class="street-sub"><p class="sub">已开通城市的食材都能在这里买，想买多少买多少。</p><div id="foodStreet" class="cards small"></div></div>
-    <div id="street-books" class="street-sub hidden"><p class="sub">只卖食谱书：每本收录 10 道菜，一次买下一整本，买下后才能研发书里的菜。</p><div id="bookstore" class="cards bookstore"></div></div>
+    <div id="street-food" class="street-sub"><p class="sub">已开通国家的食材都能在这里买，想买多少买多少。</p><div id="foodStreet" class="cards small"></div></div>
+    <div id="street-books" class="street-sub hidden"><p class="sub">只卖食谱书：一次买下一整本，买下后才能研发书里的菜。</p><div id="bookstore" class="cards bookstore"></div></div>
     <div id="street-hardware" class="street-sub hidden"><div id="hardware" class="cards small"></div></div>
   </section>
 </main>

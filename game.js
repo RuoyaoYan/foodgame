@@ -21,6 +21,8 @@
   const SH = D.shop;
   const BOOK = Object.fromEntries(D.books.map(b => [b.id, b]));
   const bookOf = dishId => D.books.find(b => b.dishes.includes(dishId));
+  // 菜的“出处”：有关卡的国家显示国家，没有关卡的外国菜显示 origin 国名，都没有就显示“世界”
+  const placeOf = d => d.city && CITY[d.city] ? CITY[d.city] : { emoji: "🌍", name: T(d.origin || "世界") };
 
   // ---------- 存档 ----------
   function newState() {
@@ -46,6 +48,7 @@
       methods: D.methods.filter(m => !m.unlockCost).map(m => m.id),   // 已解锁的做法
       books: D.books.filter(b => !b.price).map(b => b.id),              // 已拥有的食谱书
       sold: 0,
+      v: 2,                   // 存档版本：2 = 关卡改为国家、食谱书按主题重编
       lastSeen: Date.now(),
     };
   }
@@ -87,8 +90,16 @@
     st.recipes = (st.recipes || []).filter(k => DISH[k]);
     const base = D.methods.filter(m => !m.unlockCost).map(m => m.id);
     st.methods = [...new Set([...base, ...(st.methods || [])])].filter(k => D.methods.some(m => m.id === k));
+    // v0.11：关卡由城市改为国家。旧城市 id 合并成国家；旧食谱书按里面的菜折算成新书
+    const MG = D.migration || {};
+    st.cities = [...new Set([D.config.startCity, ...(st.cities || []).map(c => (MG.cityMap || {})[c] || c)])].filter(c => CITY[c]);
+    // 只在 v2 之前的旧存档上折算一次旧书，之后不再重复发书
+    const legacy = !(raw.v >= 2);
+    const legacyDishes = legacy ? (st.books || []).flatMap(k => (MG.oldBookDishes || {})[k] || []) : [];
+    st.v = 2;
     // 食谱书：赠送的书 + 旧存档里已经研发过 / 买过菜谱的菜所在的书
     const owned = new Set([...D.books.filter(b => !b.price).map(b => b.id), ...(st.books || [])]);
+    legacyDishes.forEach(id => { const b = bookOf(id); if (b) owned.add(b.id); });
     [...st.dishes, ...st.recipes].forEach(id => { const b = bookOf(id); if (b) owned.add(b.id); });
     st.books = [...owned].filter(k => BOOK[k]);
     const okPlot = p => p && typeof p === "object" && "level" in p;
@@ -340,7 +351,7 @@
   function dishMatches(d, q) {
     if (!q) return true;
     const own = hasBook(d.id) || S.dishes.includes(d.id);
-    const hay = [CITY[d.city].name, bookOf(d.id).name, ...(own ? [d.name, METHOD[d.method].name, ...d.ingredients.map(x => ING[x].name)] : [])].join(" ");
+    const hay = [placeOf(d).name, bookOf(d.id).name, ...(own ? [d.name, METHOD[d.method].name, ...d.ingredients.map(x => ING[x].name)] : [])].join(" ");
     return hay.toLowerCase().includes(q.toLowerCase());
   }
   function renderJournal() {
@@ -373,7 +384,7 @@
     if (!own && !got) { toast(T("去书店买《{0}》后解锁", bookOf(d.id).name)); return; }
     showModal(`${dishArt(d, "xl")}
       <h2>${d.name}</h2>
-      <p class="sub">${CITY[d.city].emoji} ${CITY[d.city].name} · 《${bookOf(d.id).name}》 · ${T("售价 🪙{0}", priceOf(d))}</p>
+      <p class="sub">${placeOf(d).emoji} ${placeOf(d).name} · 《${bookOf(d.id).name}》 · ${T("售价 🪙{0}", priceOf(d))}</p>
       <div class="recipe">${recipeText(d)}</div>
       ${got ? `<p>${d.story}</p><p class="sub">${masteryText(d.id)} ${T("· 每升一级售价 +{0}%", Math.round(MS.priceBonusPerLevel * 100))}</p>`
             : `<p class="hint">💡 ${d.hint}</p><p class="sub">${T("还没研发：按配方去厨房做一次吧。")}</p>`}
@@ -1062,7 +1073,7 @@
     const q = bookQuery.trim().toLowerCase();
     const books = D.books.filter(b => DEV() || S.books.includes(b.id));
     let html = books.map(b => {
-      const list = b.dishes.map(id => DISH[id]).filter(d => !q || [d.name, METHOD[d.method].name, CITY[d.city].name, ...d.ingredients.map(x => ING[x].name)].join(" ").toLowerCase().includes(q));
+      const list = b.dishes.map(id => DISH[id]).filter(d => !q || [d.name, METHOD[d.method].name, placeOf(d).name, ...d.ingredients.map(x => ING[x].name)].join(" ").toLowerCase().includes(q));
       if (!list.length) return "";
       return `<div class="bv-book">${b.emoji} 《${b.name}》</div>` + list.map(d => {
         const got = S.dishes.includes(d.id), mOk = DEV() || S.methods.includes(d.method);
