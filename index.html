@@ -64,6 +64,7 @@
     <div id="room" class="room"></div>
     <div id="homeTabs" class="pills">
       <button data-home="dishes" class="active">📖 料理图鉴</button>
+      <button data-home="unlocked">🍽️ 已解锁料理</button>
       <button data-home="ingredients">🧺 食材图鉴</button>
       <button data-home="storage">📦 仓库</button>
       <button data-home="furniture">🪑 家具</button>
@@ -72,6 +73,10 @@
     <div id="home-dishes" class="home-sub">
       <input id="dishSearch" class="search" type="search" placeholder="🔍 搜索料理：名字、食材、国家、食谱书、做法……">
       <div id="journal" class="cards journal"></div>
+    </div>
+    <div id="home-unlocked" class="home-sub hidden">
+      <p class="sub">按食谱书分类，只显示你已经研发出来的料理。</p>
+      <div id="unlockedList" class="cards journal"></div>
     </div>
     <div id="home-ingredients" class="home-sub hidden">
       <div id="dexCats" class="pills"></div>

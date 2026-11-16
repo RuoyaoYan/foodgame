@@ -576,3 +576,14 @@ html[lang="ja"] h2, html[lang="ja"] h3 { letter-spacing: 0; }
 .pot-actions { flex-wrap: wrap; }
 .pot-actions button, .method { white-space: nowrap; }
 html[lang="ja"] .bottom-nav button { font-size: 11px; }
+
+/* v0.12：书店小卡片（一行好几本）/ 已解锁料理 */
+.cards.bookstore { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px 12px; align-items: stretch; }
+.book-mini { padding: 10px 8px 8px; gap: 3px; text-align: center; }
+.book-mini::before { background: linear-gradient(135deg, #fff3dc, #fbe1c4) !important; }
+.book-mini .name { font-size: 16px; line-height: 1.25; }
+.book-mini .meta { font-size: 11px; line-height: 1.35; }
+.book-mini .row { margin-top: auto; }
+.book-mini .row button { padding: 4px 10px; font-size: 13px; }
+.book-mini .sticker.m { --size: 44px; }
+@media (max-width: 700px) { .cards.bookstore { grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); } }

@@ -247,21 +247,21 @@ window.GAME_DATA = {
 
   // 食谱书：按主题成书，每本数量不限。买了书即公开书里所有料理的完整配方，并可以研发。price 为 0 表示开局赠送。
   "books": [
-    {"id":"homestyle","name":"下饭小炒","emoji":"🍳","price":0,"desc":"十道最下饭的家常小炒，从番茄炒蛋到宫保鸡丁。开局赠送。","dishes":["fanqie_chaodan","suanla_tudousi","disanxian","gongbao_jiding","yuxiang_pork","dry_fried_beans","jingjiang_rousi","congbao_yangrou","xiaoji_dun_mogu","dapan_ji"]},
-    {"id":"spicy_hot","name":"无辣不欢","emoji":"🌶️","price":400,"desc":"八道让人又痛又爽的麻辣名菜。","dishes":["mapo_tofu","twice_cooked_pork","shuizhu_beef","laziji","fuqi_feipian","koushui_ji","garlic_pork","xiaochao_huangniurou"]},
-    {"id":"noodles","name":"面面观","emoji":"🍜","price":500,"desc":"九碗面，从热干面、担担面到兰州拉面，一碗一个故事。","dishes":["dandanmian","reganmian","lanzhou_lamian","zhajiangmian","saozi_mian","youpo_mian","sweet_water_noodles","shacha_mian","liangpi"]},
-    {"id":"street","name":"路边摊与早点铺","emoji":"🍢","price":600,"desc":"七样街头小吃，从羊肉串到臭豆腐、胡辣汤。","dishes":["yangrouchuan","mianjin_chuan","choudoufu","ezai_jian","red_oil_wontons","douzhir","hulatang"]},
-    {"id":"dumplings","name":"世界上的饺子","emoji":"🥟","price":700,"desc":"十种包着馅的面皮，从韭菜鸡蛋饺子到土耳其 manti，一起环游世界。","dishes":["jiucai_jiaozi","niurou_dacong","huntun","yidali_jiao","riben_jianjiao","bolan_jiaozi","momo","manti","ukraine_jiaozi","german_knodel"]},
-    {"id":"buns","name":"热气腾腾的面点铺","emoji":"🫓","price":800,"desc":"七样蒸笼和炉子里的面点，包子、烧饼和肉夹馍。","dishes":["xiaolongbao","shengjianbao","tangbao","goubuli","mending_roubing","shaobing","roujiamo"]},
-    {"id":"ricebook","name":"大米不只是白饭","emoji":"🍚","price":900,"desc":"六碗用米做的主角，炒饭、米粉、卤肉饭都在这里。","dishes":["danchaofan","lurou_fan","guoqiao_mixian","luosifen","guilin_mifen","ganchao_niuhe"]},
-    {"id":"dimsum","name":"来一笼早茶","emoji":"🫖","price":1000,"desc":"五样广式早茶点心，一盅两件，慢慢叹。","dishes":["har_gow","xiaren_shaomai","changfen","tingzai_zhou","shuangpinai"]},
-    {"id":"soups","name":"咕嘟咕嘟一锅汤","emoji":"🍲","price":1100,"desc":"八锅慢慢煮出来的汤与锅，从火锅到佛跳墙。","dishes":["chongqing_huoguo","shuan_yangrou","fotiaoqiang","laohuo_liangtang","lianou_paigu_tang","yangrou_paomo","suantang_yu","qiguo_ji"]},
-    {"id":"festival","name":"中国节日吃什么","emoji":"🏮","price":1200,"desc":"六样节日的味道，汤圆、粽子、月饼和老北京的小甜点。","dishes":["tangyuan","zongzi","yuebing","lvdagun","wandouhuang","zenggao"]},
-    {"id":"roast","name":"烧腊铺的玻璃柜","emoji":"🍖","price":1300,"desc":"五样挂在玻璃柜里的烧腊与煲仔饭。","dishes":["baiqieji","shao_e","cuipi_shaorou","char_siu","baozai_fan"]},
-    {"id":"sweetsour","name":"酸酸甜甜","emoji":"🍬","price":1400,"desc":"八道糖醋口味的名菜，酸里有甜，甜里有酸。","dishes":["tangcu_paigu","tangcu_liji","guobaorou","lizhi_rou","culiu_baicai","songshu_guiyu","tangcu_liyu","xihu_cuyu"]},
-    {"id":"seafood","name":"水里游的","emoji":"🐟","price":1600,"desc":"五道水里来的鲜味，清蒸、剁椒、龙井与海参。","dishes":["qingzheng_yu","duojiao_yutou","wuchang_yu","longjing_xiaren","congshao_haishen"]},
-    {"id":"newyear","name":"中国新年的硬菜","emoji":"🧧","price":2000,"desc":"九道年夜饭上的大菜，东坡肉、烤鸭、狮子头，端上来全家欢喜。","dishes":["dongpo_rou","hongshao_rou","xiefen_shizitou","jiuzhuan_dachang","dezhou_pa_ji","jiaohua_ji","peking_duck","la_niurou","fenzhengrou"]},
-    {"id":"world","name":"世界风味（暂存）","emoji":"🌍","price":1500,"desc":"暂时没有归属的外国名菜，之后会拆成各地的食谱书。","dishes":["carbonara","cacio_e_pepe","miso_soup","tempura","fish_and_chips","scone"]}
+    {"id":"homestyle","name":"下饭小炒","emoji":"🍳","price":0,"desc":"最下饭的家常小炒。开局赠送。","dishes":["fanqie_chaodan","suanla_tudousi","disanxian","gongbao_jiding","yuxiang_pork","dry_fried_beans","jingjiang_rousi","congbao_yangrou","xiaoji_dun_mogu","dapan_ji"]},
+    {"id":"spicy_hot","name":"无辣不欢","emoji":"🌶️","price":400,"desc":"让人又痛又爽的麻辣名菜。","dishes":["mapo_tofu","twice_cooked_pork","shuizhu_beef","laziji","fuqi_feipian","koushui_ji","garlic_pork","xiaochao_huangniurou"]},
+    {"id":"noodles","name":"面面观","emoji":"🍜","price":500,"desc":"一碗面，一个故事。","dishes":["dandanmian","reganmian","lanzhou_lamian","zhajiangmian","saozi_mian","youpo_mian","sweet_water_noodles","shacha_mian","liangpi"]},
+    {"id":"street","name":"路边摊与早点铺","emoji":"🍢","price":600,"desc":"街头巷尾的小吃。","dishes":["yangrouchuan","mianjin_chuan","choudoufu","ezai_jian","red_oil_wontons","douzhir","hulatang"]},
+    {"id":"dumplings","name":"世界上的饺子","emoji":"🥟","price":700,"desc":"包着馅的面皮，一起环游世界。","dishes":["jiucai_jiaozi","niurou_dacong","huntun","yidali_jiao","riben_jianjiao","bolan_jiaozi","momo","manti","ukraine_jiaozi","german_knodel"]},
+    {"id":"buns","name":"热气腾腾的面点铺","emoji":"🫓","price":800,"desc":"蒸笼和炉子里的热气腾腾。","dishes":["xiaolongbao","shengjianbao","tangbao","goubuli","mending_roubing","shaobing","roujiamo"]},
+    {"id":"ricebook","name":"大米不只是白饭","emoji":"🍚","price":900,"desc":"让大米当主角。","dishes":["danchaofan","lurou_fan","guoqiao_mixian","luosifen","guilin_mifen","ganchao_niuhe"]},
+    {"id":"dimsum","name":"来一笼早茶","emoji":"🫖","price":1000,"desc":"一盅两件，慢慢叹。","dishes":["har_gow","xiaren_shaomai","changfen","tingzai_zhou","shuangpinai"]},
+    {"id":"soups","name":"咕嘟咕嘟一锅汤","emoji":"🍲","price":1100,"desc":"咕嘟咕嘟，慢慢煮出来的。","dishes":["chongqing_huoguo","shuan_yangrou","fotiaoqiang","laohuo_liangtang","lianou_paigu_tang","yangrou_paomo","suantang_yu","qiguo_ji"]},
+    {"id":"festival","name":"中国节日吃什么","emoji":"🏮","price":1200,"desc":"节日里才有的味道。","dishes":["tangyuan","zongzi","yuebing","lvdagun","wandouhuang","zenggao"]},
+    {"id":"roast","name":"烧腊铺的玻璃柜","emoji":"🍖","price":1300,"desc":"挂在玻璃柜里的香气。","dishes":["baiqieji","shao_e","cuipi_shaorou","char_siu","baozai_fan"]},
+    {"id":"sweetsour","name":"酸酸甜甜","emoji":"🍬","price":1400,"desc":"酸里有甜，甜里有酸。","dishes":["tangcu_paigu","tangcu_liji","guobaorou","lizhi_rou","culiu_baicai","songshu_guiyu","tangcu_liyu","xihu_cuyu"]},
+    {"id":"seafood","name":"水里游的","emoji":"🐟","price":1600,"desc":"水里来的鲜味。","dishes":["qingzheng_yu","duojiao_yutou","wuchang_yu","longjing_xiaren","congshao_haishen"]},
+    {"id":"newyear","name":"中国新年的硬菜","emoji":"🧧","price":2000,"desc":"年夜饭桌上的大菜。","dishes":["dongpo_rou","hongshao_rou","xiefen_shizitou","jiuzhuan_dachang","dezhou_pa_ji","jiaohua_ji","peking_duck","la_niurou","fenzhengrou"]},
+    {"id":"world","name":"世界风味（暂存）","emoji":"🌍","price":1500,"desc":"暂时没有归属的外国名菜。","dishes":["carbonara","cacio_e_pepe","miso_soup","tempura","fish_and_chips","scone"]}
   ],
 
   "dishes": [

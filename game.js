@@ -194,7 +194,7 @@
         set(v) { if (v === last) return; last = v; desc.set.call(this, v); },
       });
     });
-  })(["room", "journal", "dexCats", "ingDex", "storageDishes", "storageIngs", "furnitureList", "achList",
+  })(["room", "journal", "unlockedList", "dexCats", "ingDex", "storageDishes", "storageIngs", "furnitureList", "achList",
       "fields", "pens", "shopBonus", "shelves", "shelfExpand", "cityList", "foodStreet", "bookstore", "hardware",
       "bag", "potItems", "methods", "quickCook", "bookViewerList", "saveInfo"]);
   const fmt = n => Math.floor(n).toLocaleString(I18N.locale);
@@ -333,6 +333,7 @@
     document.querySelectorAll(".home-sub").forEach(el => el.classList.toggle("hidden", el.id !== "home-" + homeSub));
     renderRoom();
     if (homeSub === "dishes") renderJournal();
+    if (homeSub === "unlocked") renderUnlocked();
     if (homeSub === "ingredients") renderIngDex();
     if (homeSub === "storage") renderStorage();
     if (homeSub === "furniture") renderFurniture();
@@ -376,9 +377,24 @@
     $("journal").innerHTML = `<div class="dex-total wide">${T("已解锁 <b>{0}</b> / {1} 道料理", done, total)}</div>` + body;
     lastUnlocked = null;
   }
+  // 我的家 → 已解锁料理：按已拥有的食谱书分组，只显示已经研发出来的料理
+  function renderUnlocked() {
+    const books = D.books.filter(b => DEV() || S.books.includes(b.id));
+    let html = books.map(b => {
+      const got = b.dishes.map(id => DISH[id]).filter(d => S.dishes.includes(d.id));
+      const cards = got.length ? got.map(d => `<div class="card dish-mini" data-dish="${d.id}" title="${d.name}">${dishArt(d, "m")}
+        <div class="name">${d.name}</div><div class="meta">Lv.${masteryLv(d.id)}</div></div>`).join("")
+        : `<p class="sub wide">${T("这本书里还没有解锁的料理，去厨房研发吧。")}</p>`;
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${got.length}/${b.dishes.length}</small></div>` + cards;
+    }).join("");
+    if (!books.length) html = `<p class="sub wide">${T("还没有食谱书，去商店街的书店看看吧。")}</p>`;
+    $("unlockedList").innerHTML = html;
+  }
   const debounce = (fn, ms = 120) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
   $("dishSearch").addEventListener("input", debounce(e => { dishQuery = e.target.value; renderJournal(); }));
-  $("journal").addEventListener("click", e => {
+  $("journal").addEventListener("click", openDishCard);
+  $("unlockedList").addEventListener("click", openDishCard);
+  function openDishCard(e) {
     const el = e.target.closest("[data-dish]"); if (!el) return;
     const d = DISH[el.dataset.dish], got = S.dishes.includes(d.id), own = hasBook(d.id);
     if (!own && !got) { toast(T("去书店买《{0}》后解锁", bookOf(d.id).name)); return; }
@@ -389,7 +405,7 @@
       ${got ? `<p>${d.story}</p><p class="sub">${masteryText(d.id)} ${T("· 每升一级售价 +{0}%", Math.round(MS.priceBonusPerLevel * 100))}</p>`
             : `<p class="hint">💡 ${d.hint}</p><p class="sub">${T("还没研发：按配方去厨房做一次吧。")}</p>`}
       <p><button class="primary" data-close>${T("合上")}</button></p>`);
-  });
+  }
   function renderIngDex() {
     const dev = S.settings.devView;
     const usesOf = id => [...D.dishes.filter(d => dev || S.dishes.includes(d.id)), ...PROC.filter(p => dev || S.processed.includes(p.id))]
@@ -939,16 +955,15 @@
     }).join("") || `<p class="sub">${T("还没有可买的食材。")}</p>`;
   }
   function renderBookstore() {
+    // 书店只卖书：小卡片一行放好几本，不显示书里有哪些菜（买了以后去“我的家 → 已解锁料理”看）
     $("bookstore").innerHTML = D.books.map(b => {
       const own = S.books.includes(b.id);
-      const done = b.dishes.filter(id => S.dishes.includes(id)).length;
-      const cover = `<div class="card book-cover ${own ? "" : "locked"}">${emoArt(b.emoji, "xl", "book-" + b.id)}
+      return `<div class="card book-mini ${own ? "" : "locked"}">${emoArt(b.emoji, "m", "book-" + b.id)}
         <div class="name">《${b.name}》</div>
         <div class="meta">${b.desc}</div>
-        <div class="meta">${T("共 {0} 道菜 · 已研发 {1}", b.dishes.length, done)}</div>
+        <div class="meta">${T("共 {0} 道菜", b.dishes.length)}</div>
         <div class="row">${own ? `<span class="meta">${T("✔ 已拥有")}</span>`
           : `<button data-book="${b.id}" ${G() < b.price ? "disabled" : ""}>${T("购买 🪙{0}", fmt(b.price))}</button>`}</div></div>`;
-      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》</div>${cover}`;
     }).join("");
   }
   function renderHardware() {
