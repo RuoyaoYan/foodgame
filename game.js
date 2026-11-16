@@ -54,8 +54,9 @@
   // 旧存档迁移：v0.4 之前的食材 id 合并/改名，旧农场格式清空
   function migrate(st, raw) {
     const RENAME = { minced_pork: "pork", pork_belly: "pork", tenderloin: "pork", tofu_skin: "tofu",
-      pecorino: "cheese", cream_cheese: "cheese", raw_noodles: "noodles" };
-    const DROP = ["sweet_paste"];
+      pecorino: "cheese", cream_cheese: "cheese", raw_noodles: "noodles",
+      spaghetti: "noodles", chili: "spicy_spice", sichuan_pepper: "spicy_spice", scallion: "onion" };
+    const DROP = ["sweet_paste", "doubanjiang", "yellow_paste", "guanciale", "garlic_sprout"];
     const fixMap = obj => {
       const out = {};
       for (const [k, v] of Object.entries(obj || {})) {

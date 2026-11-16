@@ -9,17 +9,9 @@
 
 | 类型 | id |
 |---|---|
-| 菜品 | mapo_tofu, twice_cooked_pork, zhajiangmian, jingjiang_rousi, carbonara, cacio_e_pepe |
-| 成都原材料 | soybean, pork, chili, sichuan_pepper, broad_bean, garlic_sprout |
-| 北京原材料 | wheat, cucumber, scallion |
-| 罗马原材料 | egg, sheep_milk, black_pepper |
-| 加工品（放在 ingredients 文件夹） | tofu, doubanjiang, yellow_paste, noodles, spaghetti, pecorino, guanciale |
-| 面粉类·原本有的（开发中） | wheat_flour, gelatin, shiratama_flour, starch, baking_powder, cinnamon, butter_crust, warabi_flour, soy_flour, buckwheat_flour, yeast, curry_powder |
-| 面粉类·需要自己做的（开发中） | tart_shell, rice_flour, french_bread, choux, dough, hard_dough, monaka_shell, pizza_base, baguette, danish, croissant, hotdog_bun, toast, bagel_dough, bagel |
-| 畜产类·原本有的（开发中） | cream, custard, milk, cream_cheese, butter, caramel, sausage, bacon, chicken, roast_beef, condensed_milk |
-| 畜产类·需要自己做的（开发中） | cheese, yogurt |
-| 农作物类·原本有的（开发中） | red_bean, rice, glutinous_rice, matcha, black_tea, coffee_bean, pumpkin, sweet_potato, mugwort, potato, ginger, corn, black_sesame, lettuce, spinach, tomato, carrot, onion, rye, mushroom, hojicha, mint, edible_rose, oats, white_kidney_bean, spicy_spice, garlic |
-| 农作物类·需要自己做的（开发中） | soy_milk |
-| 生果类（开发中） | almond, chestnut, strawberry, apple, melon, orange, cacao, banana, mango, lemon, blueberry, peach, grape, pomelo, raspberry, cherry, plum, mixed_nuts, vanilla, avocado, cranberry, pineapple, white_strawberry, muscat, pear, watermelon, coconut, fig, apricot |
-| 其他类·原本有的（开发中） | agar, shiratama, sugar, shrimp, kuromitsu, soy_sauce, salt, nori, consomme, water, brandy, honey, sakura, wasanbon, chocolate, sakura_paste, fish_fillet, mentaiko, natural_yeast, gold_leaf, herring, food_coloring, koji, raw_noodles, canned_fruit, soda_water, olive_oil, tapioca, salmon, shellfish, vinegar |
-| 其他类·需要自己做的（开发中） | raw_chocolate, miso, vanilla_icecream, cookie, strawberry_macaron, matcha_macaron, marshmallow, cotton_candy, mayonnaise |
+| 菜品（images/dishes/） | mapo_tofu, twice_cooked_pork, zhajiangmian, jingjiang_rousi, carbonara, cacio_e_pepe, char_siu, har_gow, miso_soup, tempura, fish_and_chips, scone |
+| 面粉（images/ingredients/） | noodles, wheat_flour, gelatin, shiratama_flour, starch, baking_powder, cinnamon, butter_crust, warabi_flour, soy_flour, buckwheat_flour, yeast, curry_powder, tart_shell, rice_flour, french_bread, choux, dough, hard_dough, monaka_shell, pizza_base, baguette, danish, croissant, hotdog_bun, toast, bagel_dough, bagel |
+| 畜产（images/ingredients/） | pork, egg, sheep_milk, cheese, cream, custard, milk, butter, caramel, sausage, bacon, chicken, roast_beef, condensed_milk, yogurt |
+| 农作物（images/ingredients/） | soybean, broad_bean, wheat, cucumber, black_pepper, tofu, red_bean, rice, glutinous_rice, matcha, black_tea, coffee_bean, pumpkin, sweet_potato, mugwort, potato, ginger, corn, black_sesame, lettuce, spinach, tomato, carrot, onion, rye, mushroom, hojicha, mint, edible_rose, oats, white_kidney_bean, spicy_spice, garlic, soy_milk |
+| 生果（images/ingredients/） | almond, chestnut, strawberry, apple, melon, orange, cacao, banana, mango, lemon, blueberry, peach, grape, pomelo, raspberry, cherry, plum, mixed_nuts, vanilla, avocado, cranberry, pineapple, white_strawberry, muscat, pear, watermelon, coconut, fig, apricot |
+| 其他（images/ingredients/） | agar, shiratama, sugar, shrimp, kuromitsu, soy_sauce, salt, nori, consomme, water, brandy, honey, sakura, wasanbon, chocolate, sakura_paste, fish_fillet, mentaiko, natural_yeast, gold_leaf, herring, food_coloring, koji, canned_fruit, soda_water, olive_oil, tapioca, salmon, shellfish, vinegar, raw_chocolate, miso, vanilla_icecream, cookie, strawberry_macaron, matcha_macaron, marshmallow, cotton_candy, mayonnaise |
