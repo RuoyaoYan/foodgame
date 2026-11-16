@@ -948,11 +948,7 @@
         <div class="meta">${T("共 {0} 道菜 · 已研发 {1}", b.dishes.length, done)}</div>
         <div class="row">${own ? `<span class="meta">${T("✔ 已拥有")}</span>`
           : `<button data-book="${b.id}" ${G() < b.price ? "disabled" : ""}>${T("购买 🪙{0}", fmt(b.price))}</button>`}</div></div>`;
-      const pages = b.dishes.map(id => {
-        const d = DISH[id];
-        return `<div class="card dish-mini ${S.dishes.includes(id) ? "" : "locked"}">${(own || DEV()) ? dishArt(d, "m") : lockArt("m")}<div class="name">${(own || DEV()) ? d.name : "？？？"}</div></div>`;
-      }).join("");
-      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》</div>${cover}<div class="book-pages">${pages}</div>`;
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》</div>${cover}`;
     }).join("");
   }
   function renderHardware() {

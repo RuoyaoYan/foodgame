@@ -68,7 +68,6 @@ window.GAME_DATA = {
     {"id":"buckwheat_flour","category":"flour","kind":"raw","todo":true,"name":"荞麦粉","emoji":"🥞","desc":"荞麦磨成的粉"},
     {"id":"yeast","category":"flour","kind":"raw","name":"酵母","emoji":"🫧","desc":"让面包发起来的种子","city":"china","price":6},
     {"id":"curry_powder","category":"flour","kind":"raw","todo":true,"name":"咖喱粉","emoji":"🍛","desc":"香料的粉"},
-    {"id":"tart_shell","category":"flour","kind":"processed","todo":true,"name":"塔皮","emoji":"🥧","desc":"像器皿的饼皮","ref":"洋果子店：做曲奇时有机会顺带得到（副产品）"},
     {"id":"rice_flour","category":"flour","kind":"processed","name":"米粉","emoji":"🍙","desc":"大米发酵、磨浆、压成细条，是南方人的主食。米线、河粉、米粉，都算米粉。","inputs":["rice"],"method":"ferment","yield":2,"hint":"米发酵后磨成浆，压成一缕缕细长的粉。"},
     {"id":"french_bread","category":"flour","kind":"processed","todo":true,"name":"法式面包","emoji":"🫓","desc":"很硬的面包","ref":"洋果子店：硬面粉团 · 烤"},
     {"id":"choux","category":"flour","kind":"processed","todo":true,"name":"泡芙","emoji":"🧁","desc":"蓬松的圆形小面包","ref":"洋果子店：做可丽饼时有机会顺带得到（副产品）"},
