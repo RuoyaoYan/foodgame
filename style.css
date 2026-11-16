@@ -493,3 +493,23 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .worldmap .pin-emoji { font-size: 4.4px; }
 .worldmap .pin-label { font-size: 4.2px; }
 .worldmap .pin:hover .pin-bg { r: 4.8; }
+
+/* v0.10：小号菜品卡片（一行至少 10 个）/ 图鉴总数 / 书店只卖书 */
+.cards.journal { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 12px 10px; }
+.dish-mini { padding: 8px 4px 6px; gap: 2px; cursor: pointer; transform: none !important; }
+.dish-mini::before { border-width: 2px !important; box-shadow: 2px 3px 0 rgba(91,58,40,.15) !important; }
+.dish-mini .name { font-size: 13px; line-height: 1.25; }
+.dish-mini .meta { font-size: 11px; color: var(--accent-2); margin-top: -2px; }
+.dish-mini:hover { transform: translateY(-2px) !important; }
+.dex-total { grid-column: 1 / -1; font-family: var(--hand); font-size: 20px; padding: 2px 4px; }
+.dex-total b { color: var(--accent); font-size: 26px; }
+.cards.bookstore { grid-template-columns: 240px 1fr; align-items: start; }
+.cards.bookstore .cat-head { grid-column: 1 / -1; }
+.book-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.book-pages .dish-mini { cursor: default; }
+@media (max-width: 700px) { .cards.bookstore { grid-template-columns: 1fr; } }
+.cards.bookstore { grid-template-columns: 210px 1fr; }
+.book-pages { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px; }
+.book-pages .dish-mini .sticker.m { --size: 44px; }
+.book-pages .dish-mini .name { font-size: 12px; }
+@media (max-width: 1000px) { .book-pages { grid-template-columns: repeat(5, minmax(0, 1fr)); } }

@@ -293,24 +293,31 @@
   function renderJournal() {
     const card = d => {
       const got = S.dishes.includes(d.id), own = hasBook(d.id);
-      const recipe = S.recipes.includes(d.id) || got || DEV();
-      return `<div class="card taped ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}">
-        ${own || got ? dishArt(d, "xl") : lockArt("xl")}
+      return `<div class="card dish-mini ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}" data-dish="${d.id}" title="${own || got ? d.name : "？？？"}">
+        ${own || got ? dishArt(d, "m") : lockArt("m")}
         <div class="name">${own || got ? d.name : "？？？"}</div>
-        <div class="meta">${CITY[d.city].emoji} ${CITY[d.city].name} · 售价 🪙${priceOf(d)}</div>
-        ${got ? `<div class="story">${d.story}</div>` :
-          own ? `<div class="hint">${d.hint}</div>` : `<div class="meta">去书店买《${bookOf(d.id).name}》后解锁</div>`}
-        ${recipe && own ? `<div class="recipe">${recipeText(d)}</div>` : ""}
+        ${got ? `<div class="meta">✔</div>` : ""}
       </div>`;
     };
-    $("journal").innerHTML = D.books.map(b => {
-      const done = b.dishes.filter(id => S.dishes.includes(id)).length;
+    const total = D.dishes.length, done = S.dishes.filter(id => DISH[id]).length;
+    $("journal").innerHTML = `<div class="dex-total wide">已解锁 <b>${done}</b> / ${total} 道菜品</div>` + D.books.map(b => {
+      const n = b.dishes.filter(id => S.dishes.includes(id)).length;
       const own = DEV() || S.books.includes(b.id);
-      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${done}/${b.dishes.length}${own ? "" : " · 🔒 未拥有"}</small></div>` +
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${n}/${b.dishes.length}${own ? "" : " · 🔒 去书店购买"}</small></div>` +
         b.dishes.map(id => card(DISH[id])).join("");
     }).join("");
     lastUnlocked = null;
   }
+  $("journal").addEventListener("click", e => {
+    const el = e.target.closest("[data-dish]"); if (!el) return;
+    const d = DISH[el.dataset.dish], got = S.dishes.includes(d.id), own = hasBook(d.id);
+    if (!own && !got) { toast(`去书店买《${bookOf(d.id).name}》后解锁`); return; }
+    showModal(`${dishArt(d, "xl")}
+      <h2>${d.name}</h2>
+      <p class="sub">${CITY[d.city].emoji} ${CITY[d.city].name} · 《${bookOf(d.id).name}》 · 售价 🪙${priceOf(d)}</p>
+      ${got ? `<p>${d.story}</p><div class="recipe">${recipeText(d)}</div>` : `<p class="hint">💡 ${d.hint}</p>${DEV() ? `<div class="recipe">${recipeText(d)}</div>` : ""}`}
+      <p><button class="primary" data-close>合上</button></p>`);
+  });
   function renderIngDex() {
     const dev = S.settings.devView;
     const usesOf = id => [...D.dishes.filter(d => dev || S.dishes.includes(d.id)), ...PROC.filter(p => dev || S.processed.includes(p.id))]
@@ -787,14 +794,11 @@
         <div class="meta">共 ${b.dishes.length} 道菜 · 已研发 ${done}</div>
         <div class="row">${own ? `<span class="meta">✔ 已拥有</span>`
           : `<button data-book="${b.id}" ${G() < b.price ? "disabled" : ""}>购买 🪙${fmt(b.price)}</button>`}</div></div>`;
-      const pages = (own || DEV()) ? b.dishes.map(id => {
-        const d = DISH[id], has = S.recipes.includes(id) || S.dishes.includes(id);
-        return `<div class="card">${emoArt("📜", "m", "recipe")}
-          <div class="name">${d.name}</div>
-          <div class="meta">${has ? "完整配方已知" : `看完整配方 🪙${fmt(d.recipePrice)}`}</div>
-          <div class="row">${has ? "" : `<button class="ghost" data-recipe="${id}" ${G() < d.recipePrice ? "disabled" : ""}>购买配方</button>`}</div></div>`;
-      }).join("") : "";
-      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》</div>${cover}${pages}`;
+      const pages = b.dishes.map(id => {
+        const d = DISH[id];
+        return `<div class="card dish-mini ${S.dishes.includes(id) ? "" : "locked"}">${(own || DEV()) ? dishArt(d, "m") : lockArt("m")}<div class="name">${(own || DEV()) ? d.name : "？？？"}</div></div>`;
+      }).join("");
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》</div>${cover}<div class="book-pages">${pages}</div>`;
     }).join("");
   }
   function renderHardware() {
@@ -841,16 +845,6 @@
     if (id) {
       const n = +t.dataset.n, i = ING[id];
       if (spend(priceOfIng(i) * n)) { addIng(id, n); save(); toast(`买到了 ${i.emoji} ${i.name} ×${n}`); renderAll(); }
-    }
-    const r = t.dataset.recipe;
-    if (r && spend(DISH[r].recipePrice)) {
-      S.recipes.push(r); save();
-      const d = DISH[r];
-      showModal(`<div class="big">📜</div><h2>${d.name}</h2>
-        <p>配方：${recipeText(d)}</p>
-        <p class="sub">配方已记在“我的家 → 菜品图鉴”里。</p>
-        <button class="primary" data-close>记住了</button>`);
-      renderAll();
     }
     if (t.dataset.book) {
       const b = BOOK[t.dataset.book];
