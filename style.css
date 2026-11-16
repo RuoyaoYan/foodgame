@@ -513,3 +513,26 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .book-pages .dish-mini .sticker.m { --size: 44px; }
 .book-pages .dish-mini .name { font-size: 12px; }
 @media (max-width: 1000px) { .book-pages { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+/* v0.10：成就 / 搜索 / 查看食谱书 / 设置页 */
+.search {
+  width: 100%; max-width: 520px; font: inherit; font-size: 15px; padding: 8px 14px; margin: 4px 0 12px;
+  border: 2.5px solid var(--line); border-radius: var(--wobble); background: #fffdf7; color: var(--ink); outline: none;
+}
+.search:focus { box-shadow: 0 0 0 4px rgba(216,105,63,.25); }
+.ach .ach-icon { font-size: 34px; line-height: 1.1; }
+.ach.done::before { background: #fff6dd !important; }
+.ach .bar { width: 90%; }
+.book-viewer { max-width: 680px; width: 92vw; max-height: 82vh; display: flex; flex-direction: column; text-align: left; }
+.book-viewer h2 { text-align: center; }
+.book-viewer .search { max-width: none; }
+.book-viewer .x { position: absolute; top: 6px; right: 12px; background: none; border: none; font-size: 22px; color: var(--ink-soft); cursor: pointer; }
+.bv-list { overflow-y: auto; padding-right: 4px; }
+.bv-book { font-family: var(--hand); font-size: 18px; margin: 12px 0 4px; border-bottom: 2px dashed rgba(91,58,40,.25); }
+.bv-row { display: flex; align-items: center; gap: 10px; padding: 6px 2px; border-bottom: 1px dashed rgba(91,58,40,.12); }
+.bv-main { flex: 1; font-size: 14px; line-height: 1.5; }
+.bv-main small { color: var(--ink-soft); }
+.bv-ings { font-size: 13px; color: var(--ink-soft); }
+.bv-row button { white-space: nowrap; }
+.bottom-nav button[data-tab="settings"].active { background: #e3dccf; }
+@media (max-width: 720px) { .bottom-nav button { min-width: 44px; font-size: 11px; padding: 4px 3px; } .bottom-nav .ni { font-size: 20px; } }

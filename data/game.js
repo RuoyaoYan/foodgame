@@ -260,7 +260,46 @@ window.GAME_DATA = {
     { "id": "kelp", "category": "other", "kind": "raw", "todo": true, "name": "海带", "emoji": "🌊", "desc": "海里的宽叶海藻" }
   ],
 
-  // 菜谱书：每本 10 道菜。买了书，书里的菜才会进图鉴、可以研发。price 为 0 表示开局赠送。
+  // 料理熟练度：每做出 1 份料理 +1 点；达到 levels 里的点数即升级；每升一级售价 +priceBonusPerLevel
+  "mastery": { "levels": [0, 5, 15, 30, 50], "priceBonusPerLevel": 0.1 },
+
+  // 成就：达成后自动发放 reward 金币。type：dishes 研发料理数 / bought 累计买食材份数 / methodUsed 用某做法做出东西 /
+  //       methodsUnlocked 已解锁做法数 / masteryLv 任意料理熟练度等级 / cooked 累计做出料理份数
+  "achievementCategories": [
+    { "id": "discover", "name": "料理发现", "emoji": "📖" },
+    { "id": "market",   "name": "市场采购", "emoji": "🧺" },
+    { "id": "method",   "name": "烹饪方式", "emoji": "🔥" },
+    { "id": "mastery",  "name": "料理熟练", "emoji": "⭐" }
+  ],
+  "achievements": [
+    {"id": "discover_1", "cat": "discover", "type": "dishes", "target": 1, "reward": 50, "name": "料理新手", "desc": "研发出 1 道料理"},
+    {"id": "discover_5", "cat": "discover", "type": "dishes", "target": 5, "reward": 150, "name": "发现 5 道料理", "desc": "研发出 5 道料理"},
+    {"id": "discover_10", "cat": "discover", "type": "dishes", "target": 10, "reward": 300, "name": "发现 10 道料理", "desc": "研发出 10 道料理"},
+    {"id": "discover_20", "cat": "discover", "type": "dishes", "target": 20, "reward": 800, "name": "发现 20 道料理", "desc": "研发出 20 道料理"},
+    {"id": "discover_30", "cat": "discover", "type": "dishes", "target": 30, "reward": 1500, "name": "发现 30 道料理", "desc": "研发出 30 道料理"},
+    {"id": "market_10", "cat": "market", "type": "bought", "target": 10, "reward": 30, "name": "第一次采购", "desc": "在食品街累计买 10 份食材"},
+    {"id": "market_50", "cat": "market", "type": "bought", "target": 50, "reward": 100, "name": "常客", "desc": "在食品街累计买 50 份食材"},
+    {"id": "market_200", "cat": "market", "type": "bought", "target": 200, "reward": 300, "name": "大客户", "desc": "在食品街累计买 200 份食材"},
+    {"id": "market_500", "cat": "market", "type": "bought", "target": 500, "reward": 800, "name": "批发商", "desc": "在食品街累计买 500 份食材"},
+    {"id": "market_1000", "cat": "market", "type": "bought", "target": 1000, "reward": 1500, "name": "市场之王", "desc": "在食品街累计买 1000 份食材"},
+    {"id": "method_direct", "cat": "method", "type": "methodUsed", "method": "direct", "target": 1, "reward": 100, "name": "初试直接加工", "desc": "第一次用「直接加工」做出东西"},
+    {"id": "method_cook", "cat": "method", "type": "methodUsed", "method": "cook", "target": 1, "reward": 100, "name": "初试烤焗煎煮", "desc": "第一次用「烤焗煎煮」做出东西"},
+    {"id": "method_ferment", "cat": "method", "type": "methodUsed", "method": "ferment", "target": 1, "reward": 100, "name": "初试发酵", "desc": "第一次用「发酵」做出东西"},
+    {"id": "method_steam", "cat": "method", "type": "methodUsed", "method": "steam", "target": 1, "reward": 100, "name": "初试蒸焖", "desc": "第一次用「蒸焖」做出东西"},
+    {"id": "method_fry", "cat": "method", "type": "methodUsed", "method": "fry", "target": 1, "reward": 100, "name": "初试油炸", "desc": "第一次用「油炸」做出东西"},
+    {"id": "method_drink", "cat": "method", "type": "methodUsed", "method": "drink", "target": 1, "reward": 100, "name": "初试做成饮料", "desc": "第一次用「做成饮料」做出东西"},
+    {"id": "method_freeze", "cat": "method", "type": "methodUsed", "method": "freeze", "target": 1, "reward": 100, "name": "初试冷冻", "desc": "第一次用「冷冻」做出东西"},
+    {"id": "method_all", "cat": "method", "type": "methodsUnlocked", "target": 7, "reward": 1000, "name": "十八般厨艺", "desc": "解锁全部 7 种食材制作方式"},
+    {"id": "mastery_lv2", "cat": "mastery", "type": "masteryLv", "target": 2, "reward": 100, "name": "熟能生巧 Lv.2", "desc": "任意一道料理熟练度达到 Lv.2"},
+    {"id": "mastery_lv3", "cat": "mastery", "type": "masteryLv", "target": 3, "reward": 300, "name": "熟能生巧 Lv.3", "desc": "任意一道料理熟练度达到 Lv.3"},
+    {"id": "mastery_lv5", "cat": "mastery", "type": "masteryLv", "target": 5, "reward": 1000, "name": "一代宗师", "desc": "任意一道料理熟练度达到 Lv.5"},
+    {"id": "cooked_10", "cat": "mastery", "type": "cooked", "target": 10, "reward": 50, "name": "出餐 10 份", "desc": "累计做出 10 份料理"},
+    {"id": "cooked_50", "cat": "mastery", "type": "cooked", "target": 50, "reward": 200, "name": "出餐 50 份", "desc": "累计做出 50 份料理"},
+    {"id": "cooked_200", "cat": "mastery", "type": "cooked", "target": 200, "reward": 600, "name": "出餐 200 份", "desc": "累计做出 200 份料理"},
+    {"id": "cooked_1000", "cat": "mastery", "type": "cooked", "target": 1000, "reward": 2000, "name": "出餐 1000 份", "desc": "累计做出 1000 份料理"}
+  ],
+
+  // 食谱书：每本 10 道料理。买了书即公开这 10 道料理的完整配方，并可以研发。price 为 0 表示开局赠送。
   "books": [
     {"id": "spicy", "name": "无辣不欢-成都", "emoji": "🌶️", "price": 0, "desc": "十道四川成都的麻辣名菜。开局赠送。", "dishes": ["shuizhu_beef", "laziji", "twice_cooked_pork", "yuxiang_pork", "dry_fried_beans", "sweet_water_noodles", "garlic_pork", "fuqi_feipian", "mapo_tofu", "red_oil_wontons"]},
     {"id": "xian", "name": "长安味道-西安", "emoji": "🏺", "price": 500, "desc": "十道西安的名吃，从肉夹馍、泡馍到甑糕。", "dishes": ["roujiamo", "yangrou_paomo", "liangpi", "youpo_mian", "saozi_mian", "hulatang", "zenggao", "tangbao", "la_niurou", "fenzhengrou"]},

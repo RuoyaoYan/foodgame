@@ -13,7 +13,7 @@
   const RAW = D.ingredients.filter(i => i.kind === "raw" && !i.todo);
   const PROC = D.ingredients.filter(i => i.kind === "processed" && !i.todo);
   const CAT = Object.fromEntries(D.categories.map(c => [c.id, c]));
-  // 所有“锅里能做出来的东西”：加工品 + 菜品
+  // 所有“锅里能做出来的东西”：加工品 + 料理
   const RECIPES = [...PROC.map(i => ({ ...i, ingredients: i.inputs, isProc: true })), ...D.dishes];
   const FM = D.farm;
   const SH = D.shop;
@@ -37,8 +37,12 @@
       fields: [], pens: [],   // [{item, last, level}]，item 为 null 表示空地
       furniture: [],
       settings: { music: true, sfx: true, devView: false },
+      mastery: {},            // 料理熟练度点数 { 料理id: 点数 }
+      stats: { bought: 0, cooked: 0 },
+      methodsUsed: [],        // 用过的做法（成就）
+      achievements: [],       // 已达成的成就
       methods: D.methods.filter(m => !m.unlockCost).map(m => m.id),   // 已解锁的做法
-      books: D.books.filter(b => !b.price).map(b => b.id),              // 已拥有的菜谱书
+      books: D.books.filter(b => !b.price).map(b => b.id),              // 已拥有的食谱书
       sold: 0,
       lastSeen: Date.now(),
     };
@@ -48,6 +52,7 @@
       const s = JSON.parse(localStorage.getItem(SAVE_KEY));
       if (s && typeof s.gold === "number") {
         const st = migrate(Object.assign(newState(), s), s);
+        st.stats = Object.assign({ bought: 0, cooked: 0 }, st.stats);
         st.settings = Object.assign({ music: true, sfx: true, devView: false }, st.settings);
         return st;
       }
@@ -80,7 +85,7 @@
     st.recipes = (st.recipes || []).filter(k => DISH[k]);
     const base = D.methods.filter(m => !m.unlockCost).map(m => m.id);
     st.methods = [...new Set([...base, ...(st.methods || [])])].filter(k => D.methods.some(m => m.id === k));
-    // 菜谱书：赠送的书 + 旧存档里已经研发过 / 买过菜谱的菜所在的书
+    // 食谱书：赠送的书 + 旧存档里已经研发过 / 买过菜谱的菜所在的书
     const owned = new Set([...D.books.filter(b => !b.price).map(b => b.id), ...(st.books || [])]);
     [...st.dishes, ...st.recipes].forEach(id => { const b = bookOf(id); if (b) owned.add(b.id); });
     st.books = [...owned].filter(k => BOOK[k]);
@@ -111,7 +116,18 @@
 
   // ---------- 加成 ----------
   const bonus = eff => S.furniture.reduce((s, id) => s + (FURN[id].effect === eff ? FURN[id].value : 0), 0);
-  const priceOf = d => Math.round(d.sellPrice * (1 + bonus("sellPrice")));
+  // 熟练度
+  const MS = D.mastery;
+  const masteryLv = id => { const xp = S.mastery[id] || 0; let lv = 1; MS.levels.forEach((need, i) => { if (xp >= need) lv = i + 1; }); return lv; };
+  const nextNeed = id => MS.levels[masteryLv(id)];   // undefined = 满级
+  const priceOf = d => Math.round(d.sellPrice * (1 + bonus("sellPrice")) * (1 + MS.priceBonusPerLevel * (masteryLv(d.id) - 1)));
+  const masteryText = id => { const lv = masteryLv(id), nx = nextNeed(id); return `熟练度 Lv.${lv}${nx !== undefined ? `（${S.mastery[id] || 0}/${nx}）` : "（满级）"}`; };
+  function gainMastery(id, n) {
+    const before = masteryLv(id);
+    S.mastery[id] = (S.mastery[id] || 0) + n; S.stats.cooked += n;
+    const after = masteryLv(id);
+    if (after > before) setTimeout(() => toast(`⭐ ${DISH[id].name} 熟练度升到 Lv.${after}！售价 +${Math.round(MS.priceBonusPerLevel * (after - 1) * 100)}%`), 900);
+  }
   const sellIntervalMs = () => SH.sellIntervalSec * 1000 / (1 + bonus("sellSpeed"));
   // 农场：每块地持续产出，产出攒在地里（有上限），点一下收取
   const plotIv = p => FARM[p.item].produceSec * 1000 / ((1 + FM.levelSpeedBonus * (p.level - 1)) * (1 + bonus("farmSpeed")));
@@ -173,6 +189,7 @@
   // 开发者模式：金钱无限、所有东西都能买
   const DEV = () => S.settings.devView;
   const hasBook = dishId => DEV() || S.books.includes((bookOf(dishId) || {}).id);
+  // 买了食谱书 = 知道这本书里所有料理的完整配方
   const G = () => DEV() ? Infinity : S.gold;
   function spend(n) {
     if (DEV()) return true;
@@ -190,7 +207,7 @@
   }
 
   // ---------- 美术：图片位置 + 水彩贴纸 ----------
-  // 把图片放到 images/ingredients/<食材id>.png 或 images/dishes/<菜品id>.png 就会自动替换 emoji
+  // 把图片放到 images/ingredients/<食材id>.png 或 images/dishes/<料理id>.png 就会自动替换 emoji
   const WASH = ["#f4c3a6", "#c8dcae", "#b9d5e4", "#f3db97", "#eeb3ab", "#d3c5e6", "#f1cf9f", "#bfe0d2"];
   const artOK = {};
   function washOf(id) { let h = 0; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return WASH[h % WASH.length]; }
@@ -280,7 +297,7 @@
     if (homeSub === "ingredients") renderIngDex();
     if (homeSub === "storage") renderStorage();
     if (homeSub === "furniture") renderFurniture();
-    if (homeSub === "settings") renderSettings();
+    if (homeSub === "achievements") renderAchievements();
   }
   function renderRoom() {
     const items = S.furniture.map(id => {
@@ -290,24 +307,37 @@
     $("room").innerHTML = `<div class="room-wall"><div class="room-window">🌤️</div></div><div class="room-floor"></div>
       ${items}${S.furniture.length ? "" : `<div class="room-empty">房间空空的……去“家具”里挑几件吧</div>`}`;
   }
+  let dishQuery = "";
+  // 搜索：料理名、食材名、城市、食谱书名、做法
+  function dishMatches(d, q) {
+    if (!q) return true;
+    const own = hasBook(d.id) || S.dishes.includes(d.id);
+    const hay = [CITY[d.city].name, bookOf(d.id).name, ...(own ? [d.name, METHOD[d.method].name, ...d.ingredients.map(x => ING[x].name)] : [])].join(" ");
+    return hay.toLowerCase().includes(q.toLowerCase());
+  }
   function renderJournal() {
     const card = d => {
       const got = S.dishes.includes(d.id), own = hasBook(d.id);
       return `<div class="card dish-mini ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}" data-dish="${d.id}" title="${own || got ? d.name : "？？？"}">
         ${own || got ? dishArt(d, "m") : lockArt("m")}
         <div class="name">${own || got ? d.name : "？？？"}</div>
-        ${got ? `<div class="meta">✔</div>` : ""}
+        ${got ? `<div class="meta">Lv.${masteryLv(d.id)}</div>` : ""}
       </div>`;
     };
     const total = D.dishes.length, done = S.dishes.filter(id => DISH[id]).length;
-    $("journal").innerHTML = `<div class="dex-total wide">已解锁 <b>${done}</b> / ${total} 道菜品</div>` + D.books.map(b => {
+    const q = dishQuery.trim();
+    let body = D.books.map(b => {
+      const list = b.dishes.map(id => DISH[id]).filter(d => dishMatches(d, q));
+      if (!list.length) return "";
       const n = b.dishes.filter(id => S.dishes.includes(id)).length;
       const own = DEV() || S.books.includes(b.id);
-      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${n}/${b.dishes.length}${own ? "" : " · 🔒 去书店购买"}</small></div>` +
-        b.dishes.map(id => card(DISH[id])).join("");
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${n}/${b.dishes.length}${own ? "" : " · 🔒 去书店购买"}</small></div>` + list.map(card).join("");
     }).join("");
+    if (!body) body = `<p class="sub wide">没有找到和“${q}”有关的料理。</p>`;
+    $("journal").innerHTML = `<div class="dex-total wide">已解锁 <b>${done}</b> / ${total} 道料理</div>` + body;
     lastUnlocked = null;
   }
+  $("dishSearch").addEventListener("input", e => { dishQuery = e.target.value; renderJournal(); });
   $("journal").addEventListener("click", e => {
     const el = e.target.closest("[data-dish]"); if (!el) return;
     const d = DISH[el.dataset.dish], got = S.dishes.includes(d.id), own = hasBook(d.id);
@@ -315,7 +345,9 @@
     showModal(`${dishArt(d, "xl")}
       <h2>${d.name}</h2>
       <p class="sub">${CITY[d.city].emoji} ${CITY[d.city].name} · 《${bookOf(d.id).name}》 · 售价 🪙${priceOf(d)}</p>
-      ${got ? `<p>${d.story}</p><div class="recipe">${recipeText(d)}</div>` : `<p class="hint">💡 ${d.hint}</p>${DEV() ? `<div class="recipe">${recipeText(d)}</div>` : ""}`}
+      <div class="recipe">${recipeText(d)}</div>
+      ${got ? `<p>${d.story}</p><p class="sub">${masteryText(d.id)} · 每升一级售价 +${Math.round(MS.priceBonusPerLevel * 100)}%</p>`
+            : `<p class="hint">💡 ${d.hint}</p><p class="sub">还没研发：按配方去厨房做一次吧。</p>`}
       <p><button class="primary" data-close>合上</button></p>`);
   });
   function renderIngDex() {
@@ -501,7 +533,7 @@
   });
 
   // ---------- 厨房 ----------
-  // 锅里放食材 + 选一个做法 → 加工品或菜品（都要自己猜）
+  // 锅里放食材 + 选一个做法 → 加工品或料理（都要自己猜）
   const known = r => r.isProc ? S.processed.includes(r.id) : S.dishes.includes(r.id);
   const methodText = id => `${METHOD[id].emoji}${METHOD[id].name}`;
   function recipeText(r) { return r.ingredients.map(x => `${ING[x].emoji}${ING[x].name}`).join(" + ") + ` · ${methodText(r.method)}`; }
@@ -542,7 +574,7 @@
     const list = RECIPES.filter(known);
     const card = r => {
       const n = canMake(r);
-      const out = r.isProc ? `得到 ${r.emoji}×${r.yield} · 仓库 ${S.inventory[r.id] || 0}` : `库存 ${S.dishStock[r.id] || 0} 份 · 售价 🪙${priceOf(r)}`;
+      const out = r.isProc ? `得到 ${r.emoji}×${r.yield} · 仓库 ${S.inventory[r.id] || 0}` : `库存 ${S.dishStock[r.id] || 0} 份 · 🪙${priceOf(r)} · Lv.${masteryLv(r.id)}`;
       return `<div class="card">${r.isProc ? ingArt(r.id, "m") : dishArt(r, "m")}
         <div class="name">${r.name}</div>
         <div class="meta">${r.ingredients.map(x => `<span class="${(S.inventory[x] || 0) ? "" : "missing"}">${ING[x].emoji}${S.inventory[x] || 0}</span>`).join(" ")} · ${methodText(r.method)}</div>
@@ -555,15 +587,16 @@
     const procs = list.filter(r => r.isProc), dishes = list.filter(r => !r.isProc);
     $("quickCook").innerHTML = list.length
       ? `${procs.length ? `<div class="bag-label wide">加工品</div>${procs.map(card).join("")}` : ""}
-         ${dishes.length ? `<div class="bag-label wide">菜品</div>${dishes.map(card).join("")}` : ""}`
+         ${dishes.length ? `<div class="bag-label wide">料理</div>${dishes.map(card).join("")}` : ""}`
       : `<p class="sub">还没有研发出任何东西。先在锅里试试看吧！</p>`;
   }
-  // 做 n 次：加工品进背包（每次产 yield 份），菜品进成菜库存
+  // 做 n 次：加工品进背包（每次产 yield 份），料理进成菜库存
   function make(r, n) {
     n = Math.min(n, canMake(r)); if (n < 1) return 0;
     r.ingredients.forEach(x => S.inventory[x] -= n);
     if (r.isProc) addIng(r.id, n * r.yield);
-    else S.dishStock[r.id] = (S.dishStock[r.id] || 0) + n;
+    else { S.dishStock[r.id] = (S.dishStock[r.id] || 0) + n; gainMastery(r.id, n); }
+    if (!S.methodsUsed.includes(r.method)) S.methodsUsed.push(r.method);
     return n;
   }
   $("quickCook").addEventListener("click", e => {
@@ -605,7 +638,7 @@
     const match = sameIngs.find(r => r.method === method && (r.isProc || hasBook(r.id)));
     const needBook = sameIngs.find(r => r.method === method && !r.isProc && !hasBook(r.id));
     if (needBook) {
-      msg.textContent = `这道菜好像记在《${bookOf(needBook.id).name}》里……去商店街的书店买下这本菜谱书再来研发吧。（食材已退回）`;
+      msg.textContent = `这道菜好像记在《${bookOf(needBook.id).name}》里……去商店街的书店买下这本食谱书再来研发吧。（食材已退回）`;
       return back();
     }
     if (!match) {   // 零惩罚：食材原样退回，只给温馨提示
@@ -844,14 +877,14 @@
     const id = t.dataset.buy;
     if (id) {
       const n = +t.dataset.n, i = ING[id];
-      if (spend(priceOfIng(i) * n)) { addIng(id, n); save(); toast(`买到了 ${i.emoji} ${i.name} ×${n}`); renderAll(); }
+      if (spend(priceOfIng(i) * n)) { addIng(id, n); S.stats.bought += n; save(); toast(`买到了 ${i.emoji} ${i.name} ×${n}`); renderAll(); }
     }
     if (t.dataset.book) {
       const b = BOOK[t.dataset.book];
       if (spend(b.price)) {
         S.books.push(b.id); save();
         showModal(`<div class="big">${b.emoji}</div><h2>买下了《${b.name}》！</h2>
-          <p>${b.desc}<br>书里的 ${b.dishes.length} 道菜已经记进“我的家 → 菜品图鉴”，看着提示去厨房研发吧。</p>
+          <p>${b.desc}<br>书里的 ${b.dishes.length} 道菜已经记进“我的家 → 料理图鉴”，看着提示去厨房研发吧。</p>
           <button class="primary" data-close>翻开看看</button>`);
         renderAll();
       }
@@ -872,6 +905,84 @@
     streetTab = b.dataset.goshop; switchTab("market");
   });
 
+  // ---------- 成就 ----------
+  const ACAT = D.achievementCategories;
+  function achProgress(a) {
+    switch (a.type) {
+      case "dishes": return S.dishes.filter(id => DISH[id]).length;
+      case "bought": return S.stats.bought;
+      case "methodUsed": return S.methodsUsed.includes(a.method) ? 1 : 0;
+      case "methodsUnlocked": return S.methods.length;
+      case "masteryLv": return Math.max(1, ...Object.keys(S.mastery).filter(id => DISH[id]).map(masteryLv));
+      case "cooked": return S.stats.cooked;
+    }
+    return 0;
+  }
+  function checkAchievements() {
+    let got = 0;
+    D.achievements.forEach(a => {
+      if (S.achievements.includes(a.id) || achProgress(a) < a.target) return;
+      S.achievements.push(a.id); S.gold += a.reward; got++;
+      setTimeout(() => toast(`🏆 达成成就「${a.name}」！奖励 🪙${a.reward}`), 300 + got * 1900);
+    });
+    if (got) { save(); renderTop(); }
+  }
+  function renderAchievements() {
+    const done = S.achievements.length, total = D.achievements.length;
+    $("achList").innerHTML = `<div class="dex-total wide">已达成 <b>${done}</b> / ${total} 个成就</div>` + ACAT.map(c => {
+      const list = D.achievements.filter(a => a.cat === c.id);
+      const n = list.filter(a => S.achievements.includes(a.id)).length;
+      return `<div class="bag-label wide cat-head">${c.emoji} ${c.name} <small>${n}/${list.length}</small></div>` + list.map(a => {
+        const ok = S.achievements.includes(a.id), v = Math.min(achProgress(a), a.target);
+        return `<div class="card ach ${ok ? "done" : "locked"}">
+          <div class="ach-icon">${ok ? "🏆" : c.emoji}</div>
+          <div class="name">${a.name}</div>
+          <div class="meta">${a.desc}</div>
+          <div class="bar"><i style="width:${v / a.target * 100}%"></i></div>
+          <div class="meta">${ok ? "✔ 已达成" : `${v} / ${a.target}`} · 🪙${a.reward}</div>
+        </div>`;
+      }).join("");
+    }).join("");
+  }
+
+  // ---------- 厨房：查看食谱书（可搜索，可一键放进锅里） ----------
+  let bookQuery = "";
+  function openBookViewer() { $("bookViewer").classList.remove("hidden"); $("bookSearch").value = bookQuery; renderBookViewer(); $("bookSearch").focus(); }
+  function renderBookViewer() {
+    const q = bookQuery.trim().toLowerCase();
+    const books = D.books.filter(b => DEV() || S.books.includes(b.id));
+    let html = books.map(b => {
+      const list = b.dishes.map(id => DISH[id]).filter(d => !q || [d.name, METHOD[d.method].name, CITY[d.city].name, ...d.ingredients.map(x => ING[x].name)].join(" ").toLowerCase().includes(q));
+      if (!list.length) return "";
+      return `<div class="bv-book">${b.emoji} 《${b.name}》</div>` + list.map(d => {
+        const got = S.dishes.includes(d.id), mOk = DEV() || S.methods.includes(d.method);
+        const ings = d.ingredients.map(x => `<span class="${(S.inventory[x] || 0) ? "" : "missing"}">${ING[x].emoji}${ING[x].name}</span>`).join(" + ");
+        return `<div class="bv-row">
+          ${dishArt(d, "s")}
+          <div class="bv-main"><b>${d.name}</b> ${got ? `<small>✔ Lv.${masteryLv(d.id)}</small>` : `<small>未研发</small>`}<br>
+            <span class="bv-ings">${ings} · ${METHOD[d.method].emoji}${METHOD[d.method].name}${mOk ? "" : " 🔒"}</span></div>
+          <button class="ghost" data-fill="${d.id}">放进锅里</button>
+        </div>`;
+      }).join("");
+    }).join("");
+    if (!books.length) html = `<p class="sub">还没有食谱书，去商店街的书店看看吧。</p>`;
+    else if (!html) html = `<p class="sub">没有找到和“${bookQuery}”有关的食谱。</p>`;
+    $("bookViewerList").innerHTML = html;
+  }
+  $("openBooks").addEventListener("click", openBookViewer);
+  $("bookSearch").addEventListener("input", e => { bookQuery = e.target.value; renderBookViewer(); });
+  $("bookViewer").addEventListener("click", e => {
+    if (e.target.id === "bookViewer" || e.target.hasAttribute("data-closebv")) { $("bookViewer").classList.add("hidden"); return; }
+    const b = e.target.closest("[data-fill]"); if (!b) return;
+    const d = DISH[b.dataset.fill];
+    pot = []; const missing = [];
+    d.ingredients.forEach(x => { if ((S.inventory[x] || 0) > 0) pot.push(x); else missing.push(ING[x].name); });
+    if (DEV() || S.methods.includes(d.method)) method = d.method;
+    $("bookViewer").classList.add("hidden");
+    renderKitchen();
+    $("cookMsg").textContent = missing.length ? `还缺：${missing.join("、")}。先去商店街或农场弄来吧。` : `「${d.name}」的食材已经放好，点“下锅！”吧。`;
+  });
+
   // ---------- 渲染与主循环 ----------
   function renderTop() {
     $("gold").textContent = DEV() ? "∞" : fmt(S.gold);
@@ -885,6 +996,7 @@
     if (currentTab === "shop") renderShop();
     if (currentTab === "map") { renderWorld(); renderMap(); }
     if (currentTab === "market") renderStreet();
+    if (currentTab === "settings") renderSettings();
   }
 
   let shopAcc = 0, uiAcc = 0, saveAcc = 0, last = performance.now();
@@ -900,7 +1012,7 @@
       }
     }
     if (uiAcc > 1) {          // 每秒刷新计时与按钮状态（厨房不刷新，避免打断拖拽）
-      uiAcc = 0; renderTop();
+      uiAcc = 0; renderTop(); checkAchievements();
       if (currentTab === "shop") renderShop();
       if (currentTab === "farm") renderFarm();
       if (currentTab === "market") renderStreet();

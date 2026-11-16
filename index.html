@@ -44,7 +44,7 @@
       <button id="newGameBtn" class="link hidden">重新开始</button>
     </div>
   </div>
-  <div class="title-foot">原型 v0.9 · 水彩手帐风</div>
+  <div class="title-foot">原型 v0.10 · 水彩手帐风</div>
 </div>
 
 <header class="topbar">
@@ -61,13 +61,16 @@
     <h2>我的家</h2>
     <div id="room" class="room"></div>
     <div id="homeTabs" class="pills">
-      <button data-home="dishes" class="active">📖 菜品图鉴</button>
+      <button data-home="dishes" class="active">📖 料理图鉴</button>
       <button data-home="ingredients">🧺 食材图鉴</button>
       <button data-home="storage">📦 仓库</button>
       <button data-home="furniture">🪑 家具</button>
-      <button data-home="settings">⚙️ 设置</button>
+      <button data-home="achievements">🏆 成就</button>
     </div>
-    <div id="home-dishes" class="home-sub"><div id="journal" class="cards journal"></div></div>
+    <div id="home-dishes" class="home-sub">
+      <input id="dishSearch" class="search" type="search" placeholder="🔍 搜索料理：名字、食材、城市、食谱书、做法……">
+      <div id="journal" class="cards journal"></div>
+    </div>
     <div id="home-ingredients" class="home-sub hidden">
       <div id="dexCats" class="pills"></div>
       <p id="devNote" class="sub dev-note hidden">🛠️ 开发者模式已开启：显示所有条目（包括未解锁的）。可在“设置”里关闭。</p>
@@ -81,7 +84,13 @@
       <p class="sub">买下的家具会摆进房间，并带来一点小加成。</p>
       <div id="furnitureList" class="cards small"></div>
     </div>
-    <div id="home-settings" class="home-sub hidden">
+    <div id="home-achievements" class="home-sub hidden"><div id="achList" class="cards small"></div></div>
+  </section>
+
+  <!-- 设置 -->
+  <section id="tab-settings" class="panel">
+    <h2>设置</h2>
+    <div id="settingsBox">
       <div class="settings">
         <div class="setting-row"><span>🎵 背景音乐</span><button class="toggle" data-setting="music"></button></div>
         <div class="setting-row"><span>🔔 音效</span><button class="toggle" data-setting="sfx"></button></div>
@@ -89,7 +98,7 @@
         <div class="setting-row"><span>🛠️ 开发者模式<br><small class="sub">金钱无限、图鉴全部可见、商店街什么都能买、做法全解锁</small></span><button class="toggle" data-setting="devView"></button></div>
         <div class="setting-row"><span>🏠 回到开始界面</span><button class="ghost" id="toTitleBtn">前往</button></div>
         <div class="setting-row"><span>🗑️ 重置存档</span><button class="ghost" id="resetBtn">重置</button></div>
-        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.9 · 水彩手帐风</span></div>
+        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.10 · 水彩手帐风</span></div>
         <div id="debugRow"></div>
       </div>
     </div>
@@ -109,7 +118,7 @@
   <!-- 厨房 -->
   <section id="tab-kitchen" class="panel">
     <h2>厨房</h2>
-    <p class="sub">商店街和农场只有原材料。把食材放进锅里、选一个做法，猜出加工品（豆腐、酱、面……）和菜品。已经研发过的，下锅或在下方一键就能做。做错了不扣食材。</p>
+    <p class="sub">商店街和农场只有原材料。把食材放进锅里、选一个做法，猜出加工品（豆腐、酱、面……）和料理。已经研发过的，下锅或在下方一键就能做。做错了不扣食材。</p>
     <div class="kitchen">
       <div class="bag">
         <h3>背包</h3>
@@ -123,6 +132,7 @@
         <div id="methods" class="methods"></div>
         <div id="potMethod" class="pot-method"></div>
         <div class="pot-actions">
+          <button id="openBooks" class="ghost">📖 查看食谱书</button>
           <button id="clearPot" class="ghost">清空</button>
           <button id="cookBtn" class="primary">下锅！</button>
         </div>
@@ -156,14 +166,14 @@
   <!-- 商店街 -->
   <section id="tab-market" class="panel">
     <h2>商店街</h2>
-    <p class="sub">食品街买食材（不限量），书店买菜谱书，五金店买新农场、新的食材制作方式和新店。</p>
+    <p class="sub">食品街买食材（不限量），书店买食谱书，五金店买新农场、新的食材制作方式和新店。</p>
     <div id="streetTabs" class="pills">
       <button data-street="food" class="active">🥕 食品街</button>
       <button data-street="books">📚 书店</button>
       <button data-street="hardware">🔨 五金店</button>
     </div>
     <div id="street-food" class="street-sub"><p class="sub">已开通城市的食材都能在这里买，想买多少买多少。</p><div id="foodStreet" class="cards small"></div></div>
-    <div id="street-books" class="street-sub hidden"><p class="sub">只卖菜谱书：每本收录 10 道菜，一次买下一整本，买下后才能研发书里的菜。</p><div id="bookstore" class="cards bookstore"></div></div>
+    <div id="street-books" class="street-sub hidden"><p class="sub">只卖食谱书：每本收录 10 道菜，一次买下一整本，买下后才能研发书里的菜。</p><div id="bookstore" class="cards bookstore"></div></div>
     <div id="street-hardware" class="street-sub hidden"><div id="hardware" class="cards small"></div></div>
   </section>
 </main>
@@ -175,12 +185,21 @@
   <button data-tab="shop"><span class="ni">🏪</span>店铺</button>
   <button data-tab="market"><span class="ni">🏮</span>商店街</button>
   <button data-tab="map"><span class="ni">🗺️</span>地图</button>
+  <button data-tab="settings"><span class="ni">⚙️</span>设置</button>
 </nav>
 
 <div id="modal" class="modal hidden">
   <div class="modal-card" id="modalCard"></div>
 </div>
 <div id="toast" class="toast"></div>
+<div id="bookViewer" class="modal hidden">
+  <div class="modal-card book-viewer">
+    <button class="x" data-closebv>×</button>
+    <h2>📖 我的食谱书</h2>
+    <input id="bookSearch" class="search" type="search" placeholder="🔍 搜索食谱：料理名、食材、做法……">
+    <div id="bookViewerList" class="bv-list"></div>
+  </div>
+</div>
 
 <script src="data/game.js"></script>
 <script src="worldmap.js"></script>
