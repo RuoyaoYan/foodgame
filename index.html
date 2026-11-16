@@ -44,7 +44,7 @@
       <button id="newGameBtn" class="link hidden">重新开始</button>
     </div>
   </div>
-  <div class="title-foot">原型 v0.6 · 水彩手帐风</div>
+  <div class="title-foot">原型 v0.7 · 水彩手帐风</div>
 </div>
 
 <header class="topbar">
@@ -70,7 +70,7 @@
     <div id="home-dishes" class="home-sub"><div id="journal" class="cards journal"></div></div>
     <div id="home-ingredients" class="home-sub hidden">
       <div id="dexCats" class="pills"></div>
-      <p id="devNote" class="sub dev-note hidden">🛠️ 开发者视图已开启：显示所有条目（包括未解锁的）。可在“设置”里关闭。</p>
+      <p id="devNote" class="sub dev-note hidden">🛠️ 开发者模式已开启：显示所有条目（包括未解锁的）。可在“设置”里关闭。</p>
       <div id="ingDex" class="cards small"></div>
     </div>
     <div id="home-storage" class="home-sub hidden">
@@ -86,10 +86,10 @@
         <div class="setting-row"><span>🎵 背景音乐</span><button class="toggle" data-setting="music"></button></div>
         <div class="setting-row"><span>🔔 音效</span><button class="toggle" data-setting="sfx"></button></div>
         <p class="sub">（音乐和音效素材还没加入，开关会先记住你的选择。）</p>
-        <div class="setting-row"><span>🛠️ 开发者视图<br><small class="sub">图鉴里显示所有条目和配方，方便开发</small></span><button class="toggle" data-setting="devView"></button></div>
+        <div class="setting-row"><span>🛠️ 开发者模式<br><small class="sub">金钱无限、图鉴全部可见、商店街什么都能买、做法全解锁</small></span><button class="toggle" data-setting="devView"></button></div>
         <div class="setting-row"><span>🏠 回到开始界面</span><button class="ghost" id="toTitleBtn">前往</button></div>
         <div class="setting-row"><span>🗑️ 重置存档</span><button class="ghost" id="resetBtn">重置</button></div>
-        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.6 · 水彩手帐风</span></div>
+        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.7 · 水彩手帐风</span></div>
         <div id="debugRow"></div>
       </div>
     </div>
@@ -109,7 +109,7 @@
   <!-- 厨房 -->
   <section id="tab-kitchen" class="panel">
     <h2>厨房</h2>
-    <p class="sub">集市和农场只有原材料。把食材放进锅里、选一个做法，猜出加工品（豆腐、酱、面……）和菜品。已经研发过的，下锅或在下方一键就能做。做错了不扣食材。</p>
+    <p class="sub">商店街和农场只有原材料。把食材放进锅里、选一个做法，猜出加工品（豆腐、酱、面……）和菜品。已经研发过的，下锅或在下方一键就能做。做错了不扣食材。</p>
     <div class="kitchen">
       <div class="bag">
         <h3>背包</h3>
@@ -145,7 +145,7 @@
   <!-- 地图 -->
   <section id="tab-map" class="panel">
     <h2>世界地图</h2>
-    <p class="sub">点击城市：已开通的可以去逛当地集市，未开通的花金币开通航线。</p>
+    <p class="sub">点击城市：未开通的花金币开通航线，开通后当地食材会出现在商店街的食品街里。</p>
     <div class="map-wrap">
       <div id="worldMap"></div>
       <div id="mapPopup" class="map-popup hidden"></div>
@@ -153,15 +153,18 @@
     <div id="cityList" class="cards"></div>
   </section>
 
-  <!-- 集市（从地图进入） -->
+  <!-- 商店街 -->
   <section id="tab-market" class="panel">
-    <button class="ghost back-btn" id="backToMap">← 返回地图</button>
-    <h2 id="marketTitle">本地集市</h2>
-    <div id="marketCityTabs" class="pills"></div>
-    <h3>食材</h3>
-    <div id="marketIngredients" class="cards small"></div>
-    <h3>菜谱铺 <span class="sub">买下菜谱即可在图鉴里看到完整配方</span></h3>
-    <div id="marketRecipes" class="cards small"></div>
+    <h2>商店街</h2>
+    <p class="sub">食品街买食材（不限量），书店买菜谱，五金店买新农场、新的食材制作方式和新店。</p>
+    <div id="streetTabs" class="pills">
+      <button data-street="food" class="active">🥕 食品街</button>
+      <button data-street="books">📚 书店</button>
+      <button data-street="hardware">🔨 五金店</button>
+    </div>
+    <div id="street-food" class="street-sub"><p class="sub">已开通城市的食材都能在这里买，想买多少买多少。</p><div id="foodStreet" class="cards small"></div></div>
+    <div id="street-books" class="street-sub hidden"><p class="sub">买下菜谱即可在图鉴里看到完整配方和做法。</p><div id="bookstore" class="cards small"></div></div>
+    <div id="street-hardware" class="street-sub hidden"><div id="hardware" class="cards small"></div></div>
   </section>
 </main>
 
@@ -170,6 +173,7 @@
   <button data-tab="farm"><span class="ni">🌾</span>农场</button>
   <button data-tab="kitchen"><span class="ni">🍳</span>厨房</button>
   <button data-tab="shop"><span class="ni">🏪</span>店铺</button>
+  <button data-tab="market"><span class="ni">🏮</span>商店街</button>
   <button data-tab="map"><span class="ni">🗺️</span>地图</button>
 </nav>
 

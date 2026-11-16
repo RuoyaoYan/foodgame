@@ -479,3 +479,8 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .card.todo::before { background: repeating-linear-gradient(-45deg, #fffdf7 0 12px, #fbf3dd 12px 24px) !important; }
 .pills small { color: var(--ink-soft); font-size: 12px; }
 .dev-note { background: #eef5e6; border: 2px dashed var(--accent-2); border-radius: 10px; padding: 6px 12px; display: inline-block; }
+
+/* v0.7：商店街 / 做法锁定 / 底部导航 6 项 */
+.method.locked { opacity: .45; filter: grayscale(.6); }
+.bottom-nav button[data-tab="market"].active { background: #f3d2a8; }
+@media (max-width: 640px) { .bottom-nav button { min-width: 50px; font-size: 12px; padding: 4px 4px; } .bottom-nav .ni { font-size: 22px; } }

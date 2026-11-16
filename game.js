@@ -35,6 +35,7 @@
       fields: [], pens: [],   // [{item, last, level}]，item 为 null 表示空地
       furniture: [],
       settings: { music: true, sfx: true, devView: false },
+      methods: D.methods.filter(m => !m.unlockCost).map(m => m.id),   // 已解锁的做法
       sold: 0,
       lastSeen: Date.now(),
     };
@@ -52,7 +53,8 @@
   }
   // 旧存档迁移：v0.4 之前的食材 id 合并/改名，旧农场格式清空
   function migrate(st, raw) {
-    const RENAME = { minced_pork: "pork", pork_belly: "pork", tenderloin: "pork", tofu_skin: "tofu" };
+    const RENAME = { minced_pork: "pork", pork_belly: "pork", tenderloin: "pork", tofu_skin: "tofu",
+      pecorino: "cheese", cream_cheese: "cheese", raw_noodles: "noodles" };
     const DROP = ["sweet_paste"];
     const fixMap = obj => {
       const out = {};
@@ -66,6 +68,11 @@
     st.inventory = fixMap(st.inventory);
     if (!raw.seenIngs) st.seenIngs = Object.keys(st.inventory);
     st.seenIngs = [...new Set(st.seenIngs.map(k => RENAME[k] || k))].filter(k => ING[k]);
+    st.processed = [...new Set((st.processed || []).map(k => RENAME[k] || k))].filter(k => ING[k]);
+    st.dishes = (st.dishes || []).filter(k => DISH[k]);
+    st.recipes = (st.recipes || []).filter(k => DISH[k]);
+    const base = D.methods.filter(m => !m.unlockCost).map(m => m.id);
+    st.methods = [...new Set([...base, ...(st.methods || [])])].filter(k => D.methods.some(m => m.id === k));
     const okPlot = p => p && typeof p === "object" && "level" in p;
     st.fields = (st.fields || []).filter(okPlot);
     st.pens = (st.pens || []).filter(okPlot);
@@ -84,7 +91,7 @@
   normalize();
 
   let pot = [];
-  let marketCity = D.config.startCity;
+  let streetTab = "food";     // 商店街：food 食品街 / books 书店 / hardware 五金店
   let currentTab = "home";
   let homeSub = "dishes";
   let lastUnlocked = null;
@@ -152,8 +159,12 @@
   $("modal").addEventListener("click", e => {
     if (e.target.id === "modal" || e.target.hasAttribute("data-close")) $("modal").classList.add("hidden");
   });
+  // 开发者模式：金钱无限、所有东西都能买
+  const DEV = () => S.settings.devView;
+  const G = () => DEV() ? Infinity : S.gold;
   function spend(n) {
-    if (S.gold < n) { toast("金币不够哦，先去店铺卖点菜吧"); return false; }
+    if (DEV()) return true;
+    if (G() < n) { toast("金币不够哦，先去店铺卖点菜吧"); return false; }
     S.gold -= n; return true;
   }
   function addIng(id, n) {
@@ -195,7 +206,7 @@
   });
   function switchTab(name) {
     currentTab = name;
-    const navTab = name === "market" ? "map" : name;
+    const navTab = name;
     document.querySelectorAll("#bottomNav button").forEach(b => b.classList.toggle("active", b.dataset.tab === navTab));
     document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "tab-" + name));
     $("mapPopup").classList.add("hidden");
@@ -351,7 +362,7 @@
         <div class="name">${f.name}</div>
         <div class="meta">${EFFECT_TEXT[f.effect]} +${pct(f.value)}</div>
         <div class="row">${owned ? `<span class="meta">✔ 已摆放</span>`
-          : `<button data-furn="${f.id}" ${S.gold < f.price ? "disabled" : ""}>🪙 ${fmt(f.price)}</button>`}</div>
+          : `<button data-furn="${f.id}" ${G() < f.price ? "disabled" : ""}>🪙 ${fmt(f.price)}</button>`}</div>
       </div>`;
     }).join("");
   }
@@ -370,7 +381,7 @@
     });
   }
   document.querySelectorAll("[data-setting]").forEach(b => b.addEventListener("click", () => {
-    S.settings[b.dataset.setting] = !S.settings[b.dataset.setting]; save(); renderSettings();
+    S.settings[b.dataset.setting] = !S.settings[b.dataset.setting]; save(); renderAll();
   }));
   $("toTitleBtn").addEventListener("click", toTitle);
   $("resetBtn").addEventListener("click", e => twoClick(e.target, "重置", "再点一次确认", () => {
@@ -387,7 +398,7 @@
       const lvl = `<span class="lv">Lv.${p.level}</span>`;
       const upCost = FM.upgradeCosts[p.level - 1];
       const upBtn = upCost !== undefined
-        ? `<button class="ghost" data-upgrade="${idx}" data-kind="${kind}" ${S.gold < upCost ? "disabled" : ""}>升级 🪙${fmt(upCost)}</button>`
+        ? `<button class="ghost" data-upgrade="${idx}" data-kind="${kind}" ${G() < upCost ? "disabled" : ""}>升级 🪙${fmt(upCost)}</button>`
         : `<span class="meta">已满级</span>`;
       const pick = options.map(f => {
         const open = S.cities.includes(f.city);
@@ -422,7 +433,8 @@
     const extra = list.length - (kind === "fields" ? FM.fieldPlots : FM.pens);
     html += extra < costs.length
       ? `<div class="card plot add-plot">${emoArt("➕", "l", kind + "add")}<div class="name">扩建${label}</div>
-          <div class="row"><button data-expand="${kind}" ${S.gold < costs[extra] ? "disabled" : ""}>🪙 ${fmt(costs[extra])}</button></div></div>`
+          <div class="meta">去商店街的五金店扩建</div>
+          <div class="row"><button class="ghost" data-goshop="hardware">去五金店</button></div></div>`
       : "";
     $(kind).innerHTML = html;
   }
@@ -462,14 +474,6 @@
         toast(`升到 Lv.${p.level}！产得更快、能攒更多`); renderAll();
       }
     }
-    if (t.dataset.expand) {
-      const k = t.dataset.expand, costs = k === "fields" ? FM.fieldExpandCosts : FM.penExpandCosts;
-      const extra = S[k].length - (k === "fields" ? FM.fieldPlots : FM.pens);
-      if (spend(costs[extra])) {
-        if (k === "fields") S.fieldCount++; else S.penCount++;
-        normalize(); save(); toast(`多了一块${k === "fields" ? "菜地" : "畜栏"}！`); renderAll();
-      }
-    }
   });
 
   // ---------- 厨房 ----------
@@ -479,11 +483,15 @@
   function recipeText(r) { return r.ingredients.map(x => `${ING[x].emoji}${ING[x].name}`).join(" + ") + ` · ${methodText(r.method)}`; }
   function available(id) { return (S.inventory[id] || 0) - pot.filter(x => x === id).length; }
   function renderMethods() {
-    $("methods").innerHTML = D.methods.map(m =>
-      `<button class="method ${method === m.id ? "on" : ""}" data-method="${m.id}"><span>${m.emoji}</span>${m.name}</button>`).join("");
+    $("methods").innerHTML = D.methods.map(m => {
+      const ok = DEV() || S.methods.includes(m.id);
+      return `<button class="method ${method === m.id ? "on" : ""} ${ok ? "" : "locked"}" data-method="${m.id}" ${ok ? "" : `title="去商店街的五金店解锁"`}>
+        <span>${ok ? m.emoji : "🔒"}</span>${m.name}</button>`;
+    }).join("");
   }
   $("methods").addEventListener("click", e => {
     const b = e.target.closest("[data-method]"); if (!b) return;
+    if (!DEV() && !S.methods.includes(b.dataset.method)) { toast(`“${METHOD[b.dataset.method].name}”还没解锁，去商店街的五金店看看吧`); return; }
     method = method === b.dataset.method ? null : b.dataset.method; renderMethods();
   });
   function renderKitchen() {
@@ -565,7 +573,7 @@
   $("cookBtn").addEventListener("click", () => {
     const msg = $("cookMsg");
     if (!pot.length) { msg.textContent = "锅里还是空的呢～"; return; }
-    if (!method) { msg.textContent = "先在锅边选一个做法吧（磨、发酵、擀、风干、炒、煮）"; return; }
+    if (!method) { msg.textContent = "先在锅边选一个做法吧"; return; }
     const set = new Set(pot);
     const back = () => { pot = []; renderKitchen(); };
     if (pot.length !== set.size) { msg.textContent = "同一种食材放一份就够啦。（食材已退回）"; return back(); }
@@ -632,9 +640,8 @@
           <button class="ghost" data-unstock="${idx}">撤下</button>
         </div></div>`;
     }).join("");
-    const extra = S.shelfCount - SH.startShelves;
-    $("shelfExpand").innerHTML = extra < SH.expandCosts.length
-      ? `<button class="primary" id="expandBtn" ${S.gold < SH.expandCosts[extra] ? "disabled" : ""}>🔨 扩建一个货架 · 🪙${fmt(SH.expandCosts[extra])}</button>`
+    $("shelfExpand").innerHTML = S.shelfCount - SH.startShelves < SH.expandCosts.length
+      ? `<button class="ghost" data-goshop="hardware">🔨 想要更多货架？去商店街的五金店扩建</button>`
       : `<span class="sub">货架已经扩建到最大啦</span>`;
   }
   function stockShelf(sh, dishId) {
@@ -659,10 +666,6 @@
       S.dishStock[sh.dish] = (S.dishStock[sh.dish] || 0) + sh.count;
       sh.dish = null; sh.count = 0; save(); renderAll();
     }
-    if (t.id === "expandBtn") {
-      const cost = SH.expandCosts[S.shelfCount - SH.startShelves];
-      if (spend(cost)) { S.shelfCount++; normalize(); save(); toast("小店多了一个货架！"); renderAll(); }
-    }
   });
 
   // ---------- 地图 ----------
@@ -684,8 +687,8 @@
     pop.innerHTML = `<button class="x" data-closepop>×</button>
       <div class="name">${open ? c.emoji : "🔒"} ${c.name}</div>
       <div class="meta">${c.desc}<br>${open ? cityProgress(id) : `开通需要 🪙 ${fmt(c.unlockCost)}`}</div>
-      ${open ? `<button data-go="${id}">逛集市</button>`
-             : `<button data-unlock="${id}" ${S.gold < c.unlockCost ? "disabled" : ""}>开通航线</button>`}`;
+      ${open ? `<button data-go="${id}">逛商店街</button>`
+             : `<button data-unlock="${id}" ${G() < c.unlockCost ? "disabled" : ""}>开通航线</button>`}`;
     pop.classList.remove("hidden");
   }
   $("worldMap").addEventListener("click", e => {
@@ -704,60 +707,112 @@
         <div class="name">${c.name}</div>
         <div class="meta">${c.desc}</div>
         <div class="meta">${open ? cityProgress(c.id) : `开通需要 🪙 ${fmt(c.unlockCost)}`}</div>
-        <div class="row">${open ? `<button data-go="${c.id}">逛集市</button>`
-          : `<button data-unlock="${c.id}" ${S.gold < c.unlockCost ? "disabled" : ""}>开通航线</button>`}</div>
+        <div class="row">${open ? `<button data-go="${c.id}">逛商店街</button>`
+          : `<button data-unlock="${c.id}" ${G() < c.unlockCost ? "disabled" : ""}>开通航线</button>`}</div>
       </div>`;
     }).join("");
   }
   $("cityList").addEventListener("click", handleCityAction);
   function handleCityAction(e) {
     const go = e.target.dataset.go, un = e.target.dataset.unlock;
-    if (go) { marketCity = go; switchTab("market"); }
+    if (go) { streetTab = "food"; switchTab("market"); }
     if (un && spend(CITY[un].unlockCost)) {
       S.cities.push(un); save();
       const farmNew = D.farm.items.filter(f => f.city === un).map(f => f.emoji + f.name).join("、");
       showModal(`<div class="big">✈️</div><h2>${CITY[un].name}航线已开通！</h2>
         <p>${CITY[un].desc}<br>去当地集市看看有什么新食材吧。${farmNew ? `<br>农场也可以养/种 ${farmNew} 啦。` : ""}</p>
         <button class="primary" data-close>出发</button>`);
-      marketCity = un; switchTab("market");
+      streetTab = "food"; switchTab("market");
     }
   }
 
-  // ---------- 集市 ----------
-  $("backToMap").addEventListener("click", () => switchTab("map"));
-  function renderMarket() {
-    if (!S.cities.includes(marketCity)) marketCity = S.cities[0];
-    $("marketTitle").textContent = `${CITY[marketCity].name} · 本地集市`;
-    $("marketCityTabs").innerHTML = S.cities.map(id =>
-      `<button data-city="${id}" class="${id === marketCity ? "active" : ""}">${CITY[id].emoji} ${CITY[id].name}</button>`).join("");
-    $("marketIngredients").innerHTML = RAW.filter(i => i.city === marketCity).map(i => `
-      <div class="card">${ingArt(i.id, "l")}
-        <div class="name">${i.name}</div>
-        <div class="meta">🪙 ${i.price} / 份 · 仓库 ${S.inventory[i.id] || 0}</div>
-        <div class="row">
-          <button data-buy="${i.id}" data-n="1" ${S.gold < i.price ? "disabled" : ""}>买 1</button>
-          <button class="ghost" data-buy="${i.id}" data-n="5" ${S.gold < i.price * 5 ? "disabled" : ""}>买 5</button>
-        </div>
-      </div>`).join("");
-    $("marketRecipes").innerHTML = D.dishes.filter(d => d.city === marketCity).map(d => {
-      const owned = S.recipes.includes(d.id) || S.dishes.includes(d.id);
-      return `<div class="card">${emoArt("📜", "l", "recipe")}
-        <div class="name">${d.name} 菜谱</div>
-        <div class="meta">${owned ? "已拥有" : `🪙 ${fmt(d.recipePrice)}`}</div>
-        <div class="row">${owned ? "" : `<button data-recipe="${d.id}" ${S.gold < d.recipePrice ? "disabled" : ""}>购买</button>`}</div>
-      </div>`;
-    }).join("");
+  // ---------- 商店街：食品街 / 书店 / 五金店 ----------
+  const priceOfIng = i => i.price || D.config.todoPrice;
+  // 食品街：正常模式卖“已开通城市的、已启用的原材料”；开发者模式什么都卖
+  const buyableIngs = () => DEV() ? D.ingredients : RAW.filter(i => S.cities.includes(i.city));
+  function renderStreet() {
+    document.querySelectorAll("#streetTabs button").forEach(b => b.classList.toggle("active", b.dataset.street === streetTab));
+    document.querySelectorAll(".street-sub").forEach(el => el.classList.toggle("hidden", el.id !== "street-" + streetTab));
+    if (streetTab === "food") renderFoodStreet();
+    if (streetTab === "books") renderBookstore();
+    if (streetTab === "hardware") renderHardware();
   }
-  $("marketCityTabs").addEventListener("click", e => {
-    if (e.target.dataset.city) { marketCity = e.target.dataset.city; renderMarket(); }
+  function renderFoodStreet() {
+    const list = buyableIngs();
+    $("foodStreet").innerHTML = D.categories.map(c => {
+      const items = list.filter(i => i.category === c.id);
+      if (!items.length) return "";
+      return `<div class="bag-label wide cat-head">${c.emoji} ${c.name}</div>` + items.map(i => {
+        const pr = priceOfIng(i);
+        return `<div class="card ${i.todo ? "todo" : ""}">${ingArt(i.id, "l")}
+          <div class="name">${i.name}</div>
+          <div class="meta">${i.city ? `${CITY[i.city].emoji} ${CITY[i.city].name} · ` : ""}🪙 ${pr} / 份${i.todo ? "（临时价）" : ""}</div>
+          <div class="meta">仓库 ${S.inventory[i.id] || 0}</div>
+          <div class="row">
+            <button data-buy="${i.id}" data-n="1" ${G() < pr ? "disabled" : ""}>买 1</button>
+            <button class="ghost" data-buy="${i.id}" data-n="10" ${G() < pr * 10 ? "disabled" : ""}>买 10</button>
+          </div></div>`;
+      }).join("");
+    }).join("") || `<p class="sub">还没有可买的食材。</p>`;
+  }
+  function renderBookstore() {
+    const list = D.dishes.filter(d => DEV() || S.cities.includes(d.city));
+    $("bookstore").innerHTML = D.cities.filter(c => list.some(d => d.city === c.id)).map(c =>
+      `<div class="bag-label wide cat-head">${c.emoji} ${c.name}</div>` + list.filter(d => d.city === c.id).map(d => {
+        const owned = S.recipes.includes(d.id) || S.dishes.includes(d.id);
+        return `<div class="card">${emoArt("📜", "l", "recipe")}
+          <div class="name">${d.name} 菜谱</div>
+          <div class="meta">${owned ? "已拥有" : `🪙 ${fmt(d.recipePrice)}`}</div>
+          <div class="row">${owned ? "" : `<button data-recipe="${d.id}" ${G() < d.recipePrice ? "disabled" : ""}>购买</button>`}</div>
+        </div>`;
+      }).join("")).join("");
+  }
+  function renderHardware() {
+    const methods = D.methods.filter(m => m.unlockCost).map(m => {
+      const own = S.methods.includes(m.id);
+      return `<div class="card">${emoArt(m.emoji, "l", "m-" + m.id)}
+        <div class="name">${m.name}</div><div class="meta">新的食材制作方式</div>
+        <div class="row">${own ? `<span class="meta">✔ 已解锁</span>`
+          : `<button data-method-buy="${m.id}" ${G() < m.unlockCost ? "disabled" : ""}>🪙 ${fmt(m.unlockCost)}</button>`}</div></div>`;
+    }).join("");
+    const plotCard = (k, label, emoji) => {
+      const costs = k === "fields" ? FM.fieldExpandCosts : FM.penExpandCosts;
+      const extra = S[k].length - (k === "fields" ? FM.fieldPlots : FM.pens);
+      return `<div class="card">${emoArt(emoji, "l", "hw-" + k)}
+        <div class="name">新${label}</div><div class="meta">现有 ${S[k].length} 块</div>
+        <div class="row">${extra < costs.length
+          ? `<button data-expand="${k}" ${G() < costs[extra] ? "disabled" : ""}>🪙 ${fmt(costs[extra])}</button>`
+          : `<span class="meta">已到上限</span>`}</div></div>`;
+    };
+    const extraShelf = S.shelfCount - SH.startShelves;
+    const shelf = `<div class="card">${emoArt("🧺", "l", "hw-shelf")}
+      <div class="name">新货架</div><div class="meta">现有 ${S.shelfCount} 个</div>
+      <div class="row">${extraShelf < SH.expandCosts.length
+        ? `<button data-shelf-buy="1" ${G() < SH.expandCosts[extraShelf] ? "disabled" : ""}>🪙 ${fmt(SH.expandCosts[extraShelf])}</button>`
+        : `<span class="meta">已到上限</span>`}</div></div>`;
+    $("hardware").innerHTML = `<div class="bag-label wide cat-head">🍳 新食材制作方式</div>${methods}
+      <div class="bag-label wide cat-head">🌾 新农场</div>${plotCard("fields", "菜地", "🟫")}${plotCard("pens", "畜栏", "🛖")}
+      <div class="bag-label wide cat-head">🏪 新店（货架）</div>${shelf}`;
+  }
+  $("streetTabs").addEventListener("click", e => {
+    const b = e.target.closest("[data-street]"); if (!b) return;
+    streetTab = b.dataset.street; renderStreet();
   });
+  function expandPlot(k) {
+    const costs = k === "fields" ? FM.fieldExpandCosts : FM.penExpandCosts;
+    const extra = S[k].length - (k === "fields" ? FM.fieldPlots : FM.pens);
+    if (extra >= costs.length || !spend(costs[extra])) return;
+    if (k === "fields") S.fieldCount++; else S.penCount++;
+    normalize(); save(); toast(`农场多了一块${k === "fields" ? "菜地" : "畜栏"}！`); renderAll();
+  }
   $("tab-market").addEventListener("click", e => {
-    const id = e.target.dataset.buy;
+    const t = e.target.closest("button"); if (!t || t.disabled) return;
+    const id = t.dataset.buy;
     if (id) {
-      const n = +e.target.dataset.n;
-      if (spend(ING[id].price * n)) { addIng(id, n); save(); toast(`买到了 ${ING[id].emoji} ${ING[id].name} ×${n}`); renderAll(); }
+      const n = +t.dataset.n, i = ING[id];
+      if (spend(priceOfIng(i) * n)) { addIng(id, n); save(); toast(`买到了 ${i.emoji} ${i.name} ×${n}`); renderAll(); }
     }
-    const r = e.target.dataset.recipe;
+    const r = t.dataset.recipe;
     if (r && spend(DISH[r].recipePrice)) {
       S.recipes.push(r); save();
       const d = DISH[r];
@@ -767,11 +822,25 @@
         <button class="primary" data-close>记住了</button>`);
       renderAll();
     }
+    if (t.dataset.methodBuy) {
+      const m = METHOD[t.dataset.methodBuy];
+      if (spend(m.unlockCost)) { S.methods.push(m.id); save(); toast(`解锁了新做法：${m.emoji} ${m.name}`); renderAll(); }
+    }
+    if (t.dataset.expand) expandPlot(t.dataset.expand);
+    if (t.dataset.shelfBuy) {
+      const cost = SH.expandCosts[S.shelfCount - SH.startShelves];
+      if (cost !== undefined && spend(cost)) { S.shelfCount++; normalize(); save(); toast("小店多了一个货架！"); renderAll(); }
+    }
+  });
+  // 农场 / 店铺里的“去五金店”按钮
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-goshop]"); if (!b) return;
+    streetTab = b.dataset.goshop; switchTab("market");
   });
 
   // ---------- 渲染与主循环 ----------
   function renderTop() {
-    $("gold").textContent = fmt(S.gold);
+    $("gold").textContent = DEV() ? "∞" : fmt(S.gold);
     $("onShelf").textContent = S.shelves.reduce((s, sh) => s + (sh.dish ? sh.count : 0), 0);
   }
   function renderAll() {
@@ -781,7 +850,7 @@
     if (currentTab === "kitchen") renderKitchen();
     if (currentTab === "shop") renderShop();
     if (currentTab === "map") { renderWorld(); renderMap(); }
-    if (currentTab === "market") renderMarket();
+    if (currentTab === "market") renderStreet();
   }
 
   let shopAcc = 0, uiAcc = 0, saveAcc = 0, last = performance.now();
@@ -800,7 +869,7 @@
       uiAcc = 0; renderTop();
       if (currentTab === "shop") renderShop();
       if (currentTab === "farm") renderFarm();
-      if (currentTab === "market") renderMarket();
+      if (currentTab === "market") renderStreet();
       if (currentTab === "map") renderMap();
       if (currentTab === "home" && homeSub === "furniture") renderFurniture();
     }
