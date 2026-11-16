@@ -74,6 +74,9 @@
     st.seenIngs = [...new Set(st.seenIngs.map(k => RENAME[k] || k))].filter(k => ING[k]);
     st.processed = [...new Set((st.processed || []).map(k => RENAME[k] || k))].filter(k => ING[k]);
     st.dishes = (st.dishes || []).filter(k => DISH[k]);
+    // 已删除的菜：从成菜库存和货架上清掉
+    st.dishStock = Object.fromEntries(Object.entries(st.dishStock || {}).filter(([k]) => DISH[k]));
+    (st.shelves || []).forEach(sh => { if (sh.dish && !DISH[sh.dish]) { sh.dish = null; sh.count = 0; } });
     st.recipes = (st.recipes || []).filter(k => DISH[k]);
     const base = D.methods.filter(m => !m.unlockCost).map(m => m.id);
     st.methods = [...new Set([...base, ...(st.methods || [])])].filter(k => D.methods.some(m => m.id === k));

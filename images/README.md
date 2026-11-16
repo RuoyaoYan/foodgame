@@ -9,7 +9,7 @@
 
 | 类型 | id |
 |---|---|
-| 菜品（images/dishes/） | mapo_tofu, twice_cooked_pork, kung_pao_chicken, red_oil_wontons, fuqi_feipian, zhong_dumplings, sweet_water_noodles, lai_tangyuan, boiled_cabbage, zhangcha_duck, zhajiangmian, jingjiang_rousi, carbonara, cacio_e_pepe, char_siu, har_gow, miso_soup, tempura, fish_and_chips, scone |
+| 菜品（images/dishes/） | mapo_tofu, twice_cooked_pork, red_oil_wontons, shuizhu_beef, laziji, yuxiang_pork, dry_fried_beans, garlic_pork, peking_duck, zhajiangmian, jingjiang_rousi, shuan_yangrou, congbao_yangrou, mending_roubing, culiu_baicai, lvdagun, wandouhuang, douzhir, fuqi_feipian, sweet_water_noodles, carbonara, cacio_e_pepe, char_siu, har_gow, miso_soup, tempura, fish_and_chips, scone |
 | 面粉（images/ingredients/） | noodles, wheat_flour, gelatin, shiratama_flour, starch, baking_powder, cinnamon, butter_crust, warabi_flour, soy_flour, buckwheat_flour, yeast, curry_powder, tart_shell, rice_flour, french_bread, choux, dough, hard_dough, monaka_shell, pizza_base, baguette, danish, croissant, hotdog_bun, toast, bagel_dough, bagel |
 | 畜产（images/ingredients/） | pork, egg, sheep_milk, cheese, cream, custard, milk, butter, caramel, sausage, bacon, chicken, condensed_milk, yogurt, beef, lamb, duck |
 | 农作物（images/ingredients/） | soybean, broad_bean, wheat, cucumber, black_pepper, tofu, red_bean, rice, glutinous_rice, matcha, black_tea, coffee_bean, pumpkin, sweet_potato, mugwort, potato, ginger, corn, black_sesame, lettuce, spinach, tomato, carrot, onion, rye, mushroom, hojicha, mint, edible_rose, oats, white_kidney_bean, spicy_spice, garlic, soy_milk, green_pepper, pea, celery, eggplant, mung_bean, napa_cabbage, daikon, peanut, chive, winter_melon, lotus_root, green_bean, bamboo_shoot |
