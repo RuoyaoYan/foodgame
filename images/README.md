@@ -21,3 +21,5 @@
 | 农作物类·原本有的（开发中） | red_bean, rice, glutinous_rice, matcha, black_tea, coffee_bean, pumpkin, sweet_potato, mugwort, potato, ginger, corn, black_sesame, lettuce, spinach, tomato, carrot, onion, rye, mushroom, hojicha, mint, edible_rose, oats, white_kidney_bean, spicy_spice, garlic |
 | 农作物类·需要自己做的（开发中） | soy_milk |
 | 生果类（开发中） | almond, chestnut, strawberry, apple, melon, orange, cacao, banana, mango, lemon, blueberry, peach, grape, pomelo, raspberry, cherry, plum, mixed_nuts, vanilla, avocado, cranberry, pineapple, white_strawberry, muscat, pear, watermelon, coconut, fig, apricot |
+| 其他类·原本有的（开发中） | agar, shiratama, sugar, shrimp, kuromitsu, soy_sauce, salt, nori, consomme, water, brandy, honey, sakura, wasanbon, chocolate, sakura_paste, fish_fillet, mentaiko, natural_yeast, gold_leaf, herring, food_coloring, koji, raw_noodles, canned_fruit, soda_water, olive_oil, tapioca, salmon, shellfish, vinegar |
+| 其他类·需要自己做的（开发中） | raw_chocolate, miso, vanilla_icecream, cookie, strawberry_macaron, matcha_macaron, marshmallow, cotton_candy, mayonnaise |
