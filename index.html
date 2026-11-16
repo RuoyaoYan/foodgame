@@ -44,7 +44,7 @@
       <button id="newGameBtn" class="link hidden">重新开始</button>
     </div>
   </div>
-  <div class="title-foot">原型 v0.5 · 水彩手帐风</div>
+  <div class="title-foot">原型 v0.6 · 水彩手帐风</div>
 </div>
 
 <header class="topbar">
@@ -68,7 +68,11 @@
       <button data-home="settings">⚙️ 设置</button>
     </div>
     <div id="home-dishes" class="home-sub"><div id="journal" class="cards journal"></div></div>
-    <div id="home-ingredients" class="home-sub hidden"><div id="ingDex" class="cards small"></div></div>
+    <div id="home-ingredients" class="home-sub hidden">
+      <div id="dexCats" class="pills"></div>
+      <p id="devNote" class="sub dev-note hidden">🛠️ 开发者视图已开启：显示所有条目（包括未解锁的）。可在“设置”里关闭。</p>
+      <div id="ingDex" class="cards small"></div>
+    </div>
     <div id="home-storage" class="home-sub hidden">
       <h3>成菜</h3><div id="storageDishes" class="cards small"></div>
       <h3>食材</h3><div id="storageIngs" class="cards small"></div>
@@ -82,9 +86,10 @@
         <div class="setting-row"><span>🎵 背景音乐</span><button class="toggle" data-setting="music"></button></div>
         <div class="setting-row"><span>🔔 音效</span><button class="toggle" data-setting="sfx"></button></div>
         <p class="sub">（音乐和音效素材还没加入，开关会先记住你的选择。）</p>
+        <div class="setting-row"><span>🛠️ 开发者视图<br><small class="sub">图鉴里显示所有条目和配方，方便开发</small></span><button class="toggle" data-setting="devView"></button></div>
         <div class="setting-row"><span>🏠 回到开始界面</span><button class="ghost" id="toTitleBtn">前往</button></div>
         <div class="setting-row"><span>🗑️ 重置存档</span><button class="ghost" id="resetBtn">重置</button></div>
-        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.5 · 水彩手帐风</span></div>
+        <div class="setting-row about"><span>ℹ️ 关于</span><span class="sub">《吃》网页原型 v0.6 · 水彩手帐风</span></div>
         <div id="debugRow"></div>
       </div>
     </div>

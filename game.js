@@ -9,8 +9,10 @@
   const FARM = Object.fromEntries(D.farm.items.map(f => [f.id, f]));
   const FURN = Object.fromEntries(D.furniture.map(f => [f.id, f]));
   const METHOD = Object.fromEntries(D.methods.map(m => [m.id, m]));
-  const RAW = D.ingredients.filter(i => i.kind === "raw");
-  const PROC = D.ingredients.filter(i => i.kind === "processed");
+  // todo = 开发中：只进图鉴，不能买、种、做
+  const RAW = D.ingredients.filter(i => i.kind === "raw" && !i.todo);
+  const PROC = D.ingredients.filter(i => i.kind === "processed" && !i.todo);
+  const CAT = Object.fromEntries(D.categories.map(c => [c.id, c]));
   // 所有“锅里能做出来的东西”：加工品 + 菜品
   const RECIPES = [...PROC.map(i => ({ ...i, ingredients: i.inputs, isProc: true })), ...D.dishes];
   const FM = D.farm;
@@ -32,7 +34,7 @@
       fieldCount: FM.fieldPlots, penCount: FM.pens,
       fields: [], pens: [],   // [{item, last, level}]，item 为 null 表示空地
       furniture: [],
-      settings: { music: true, sfx: true },
+      settings: { music: true, sfx: true, devView: false },
       sold: 0,
       lastSeen: Date.now(),
     };
@@ -41,7 +43,9 @@
     try {
       const s = JSON.parse(localStorage.getItem(SAVE_KEY));
       if (s && typeof s.gold === "number") {
-        return migrate(Object.assign(newState(), s), s);
+        const st = migrate(Object.assign(newState(), s), s);
+        st.settings = Object.assign({ music: true, sfx: true, devView: false }, st.settings);
+        return st;
       }
     } catch (e) {}
     return newState();
@@ -85,6 +89,7 @@
   let homeSub = "dishes";
   let lastUnlocked = null;
   let method = null;          // 厨房当前选择的做法
+  let dexCat = "all";         // 食材图鉴当前分类
 
   // ---------- 加成 ----------
   const bonus = eff => S.furniture.reduce((s, id) => s + (FURN[id].effect === eff ? FURN[id].value : 0), 0);
@@ -279,30 +284,55 @@
     lastUnlocked = null;
   }
   function renderIngDex() {
-    const usesOf = id => [...D.dishes.filter(d => S.dishes.includes(d.id)), ...PROC.filter(p => S.processed.includes(p.id))]
+    const dev = S.settings.devView;
+    const usesOf = id => [...D.dishes.filter(d => dev || S.dishes.includes(d.id)), ...PROC.filter(p => dev || S.processed.includes(p.id))]
       .filter(r => (r.ingredients || r.inputs).includes(id)).map(r => r.name);
-    const rawCard = i => {
-      const seen = S.seenIngs.includes(i.id), uses = usesOf(i.id);
-      return `<div class="card ${seen ? "" : "locked"}">
-        ${seen ? ingArt(i.id, "l") : lockArt("l")}
-        <div class="name">${seen ? i.name : "？？？"}</div>
-        <div class="meta">${CITY[i.city].emoji} ${CITY[i.city].name}${seen ? ` · 集市 🪙${i.price}` : ""}</div>
-        ${seen ? `<div class="meta">用于：${uses.length ? uses.join("、") : "？"}</div>` : ""}
-      </div>`;
-    };
-    const procCard = i => {
-      const got = S.processed.includes(i.id), uses = usesOf(i.id);
-      return `<div class="card ${got ? "" : "locked"}">
-        ${got ? ingArt(i.id, "l") : lockArt("l")}
-        <div class="name">${got ? i.name : "？？？"}</div>
-        ${got ? `<div class="story">${i.desc}</div><div class="recipe">${recipeText({ ...i, ingredients: i.inputs })}</div>
+    const card = i => {
+      const unlocked = i.kind === "raw" ? S.seenIngs.includes(i.id) : S.processed.includes(i.id);
+      const show = unlocked || dev;
+      const uses = usesOf(i.id);
+      let body;
+      if (i.todo) {
+        body = `<div class="todo-badge">🚧 开发中</div>
+          <div class="meta">${i.kind === "raw" ? "原本有的（来源、价格待定）" : "需要自己做的（配方待定）"}</div>
+          ${show ? `<div class="story">${i.desc || ""}</div>${i.ref ? `<div class="recipe">${i.ref}</div>` : ""}` : ""}`;
+      } else if (i.kind === "raw") {
+        body = `<div class="meta">${CITY[i.city].emoji} ${CITY[i.city].name}${show ? ` · 集市 🪙${i.price}` : ""}</div>
+          ${show ? `<div class="meta">用于：${uses.length ? uses.join("、") : "？"}</div>` : ""}`;
+      } else {
+        body = show ? `<div class="story">${i.desc}</div><div class="recipe">${recipeText({ ...i, ingredients: i.inputs })}</div>
                  <div class="meta">用于：${uses.length ? uses.join("、") : "？"}</div>`
-              : `<div class="hint">${i.hint}</div>`}
+              : `<div class="hint">${i.hint}</div>`;
+      }
+      return `<div class="card ${unlocked ? "" : "locked"} ${i.todo ? "todo" : ""}">
+        ${show ? ingArt(i.id, "l") : lockArt("l")}
+        <div class="name">${show ? i.name : "？？？"}</div>
+        <div class="meta cat-tag">${CAT[i.category].emoji} ${CAT[i.category].name} · ${i.kind === "raw" ? "原材料" : "加工品"}</div>
+        ${body}
       </div>`;
     };
-    $("ingDex").innerHTML = `<div class="bag-label wide">原材料（集市 / 农场）</div>${RAW.map(rawCard).join("")}
-      <div class="bag-label wide">加工品（在厨房里自己做）</div>${PROC.map(procCard).join("")}`;
+    const cats = D.categories.filter(c => D.ingredients.some(i => i.category === c.id));
+    const count = c => {
+      const list = D.ingredients.filter(i => i.category === c.id);
+      const got = list.filter(i => i.kind === "raw" ? S.seenIngs.includes(i.id) : S.processed.includes(i.id)).length;
+      return `${got}/${list.length}`;
+    };
+    $("dexCats").innerHTML = `<button data-dexcat="all" class="${dexCat === "all" ? "active" : ""}">全部</button>` +
+      cats.map(c => `<button data-dexcat="${c.id}" class="${dexCat === c.id ? "active" : ""}">${c.emoji} ${c.name} <small>${count(c)}</small></button>`).join("");
+    const shown = dexCat === "all" ? cats : cats.filter(c => c.id === dexCat);
+    $("ingDex").innerHTML = shown.map(c => {
+      const list = D.ingredients.filter(i => i.category === c.id);
+      const raw = list.filter(i => i.kind === "raw"), proc = list.filter(i => i.kind === "processed");
+      return `<div class="bag-label wide cat-head">${c.emoji} ${c.name}</div>
+        ${raw.length ? `<div class="bag-label wide sub-head">原本有的</div>${raw.map(card).join("")}` : ""}
+        ${proc.length ? `<div class="bag-label wide sub-head">需要自己做的</div>${proc.map(card).join("")}` : ""}`;
+    }).join("");
+    $("devNote").classList.toggle("hidden", !dev);
   }
+  $("dexCats").addEventListener("click", e => {
+    const b = e.target.closest("[data-dexcat]"); if (!b) return;
+    dexCat = b.dataset.dexcat; renderIngDex();
+  });
   function renderStorage() {
     const ds = D.dishes.filter(d => (S.dishStock[d.id] || 0) > 0);
     $("storageDishes").innerHTML = ds.length ? ds.map(d => `<div class="card">${dishArt(d, "m")}
@@ -464,10 +494,11 @@
       return `<div class="ing ${n <= 0 ? "empty" : ""} ${i.kind}" draggable="${n > 0}" data-add="${i.id}">
         <span class="c">×${n}</span>${ingArt(i.id, "m")}<div class="n">${i.name}</div></div>`;
     };
-    const raw = owned.filter(i => i.kind === "raw"), proc = owned.filter(i => i.kind === "processed");
     $("bag").innerHTML = owned.length
-      ? `${raw.length ? `<div class="bag-label">原材料</div>${raw.map(bagItem).join("")}` : ""}
-         ${proc.length ? `<div class="bag-label">加工品</div>${proc.map(bagItem).join("")}` : ""}`
+      ? D.categories.map(c => {
+          const list = owned.filter(i => i.category === c.id);
+          return list.length ? `<div class="bag-label">${c.emoji} ${c.name}</div>${list.map(bagItem).join("")}` : "";
+        }).join("")
       : `<p class="sub">背包空空的，去地图上的集市进货，或者去农场收取吧。</p>`;
     $("potItems").innerHTML = pot.map((id, idx) =>
       `<div class="ing" data-remove="${idx}" title="点击拿出">${ingArt(id, "s")}<div class="n">${ING[id].name}</div></div>`).join("");

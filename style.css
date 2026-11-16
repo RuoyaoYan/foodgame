@@ -467,3 +467,15 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .plot .swap .row { margin-top: 6px; }
 .add-plot::before { background: transparent !important; border-style: dashed !important; }
 .farm-top { margin: -4px 0 6px; }
+
+/* v0.6：食材分类 / 开发中条目 / 开发者视图 */
+.cat-head { font-size: 19px !important; color: var(--ink) !important; margin-top: 14px !important; border-bottom: 2.5px solid rgba(91,58,40,.35) !important; }
+.sub-head { font-size: 14px !important; border-bottom: none !important; margin: 0 0 -4px !important; }
+.cat-tag { font-size: 12px; }
+.todo-badge {
+  font-family: var(--hand); font-size: 13px; color: #8a5a00; padding: 1px 10px;
+  background: #f6e3a8; border: 2px dashed #b98a2a; border-radius: 999px;
+}
+.card.todo::before { background: repeating-linear-gradient(-45deg, #fffdf7 0 12px, #fbf3dd 12px 24px) !important; }
+.pills small { color: var(--ink-soft); font-size: 12px; }
+.dev-note { background: #eef5e6; border: 2px dashed var(--accent-2); border-radius: 10px; padding: 6px 12px; display: inline-block; }

@@ -1,6 +1,8 @@
 // 《吃》游戏数据 —— 策划可直接修改这里的数值，无需改代码。
 // 等号后面是标准 JSON，将来迁移 Godot 时可原样复制为 game.json。
 // 城市的 lat/lon 为经纬度，决定世界地图上图钉的位置。
+// 食材 category：flour 面粉 / livestock 畜产 / crop 农作物 / fruit 生果 / other 其他（参考《洋果子店》）
+// "todo": true 表示开发中：只进图鉴，还不能买、种或做；补上 city+price（原材料）或 inputs+method+yield（加工品）并删掉 todo 即可启用。
 window.GAME_DATA = {
   "config": {
     "startGold": 120,
@@ -24,6 +26,14 @@ window.GAME_DATA = {
       "lat": 41.9, "lon": 12.5, "desc": "永恒之城，一碗面的艺术。" }
   ],
 
+  "categories": [
+    { "id": "flour",     "name": "面粉",   "emoji": "🌾" },
+    { "id": "livestock", "name": "畜产",   "emoji": "🐄" },
+    { "id": "crop",      "name": "农作物", "emoji": "🥬" },
+    { "id": "fruit",     "name": "生果",   "emoji": "🍓" },
+    { "id": "other",     "name": "其他",   "emoji": "🧂" }
+  ],
+
   "methods": [
     { "id": "grind",   "name": "磨",   "emoji": "🪨" },
     { "id": "ferment", "name": "发酵", "emoji": "🫙" },
@@ -34,49 +44,77 @@ window.GAME_DATA = {
   ],
 
   "ingredients": [
-    { "id": "soybean",        "kind": "raw", "name": "黄豆",   "emoji": "🫘", "city": "chengdu", "price": 3 },
-    { "id": "pork",           "kind": "raw", "name": "猪肉",   "emoji": "🥩", "city": "chengdu", "price": 10 },
-    { "id": "chili",          "kind": "raw", "name": "辣椒",   "emoji": "🌶️", "city": "chengdu", "price": 4 },
-    { "id": "sichuan_pepper", "kind": "raw", "name": "花椒",   "emoji": "🟤", "city": "chengdu", "price": 6 },
-    { "id": "broad_bean",     "kind": "raw", "name": "蚕豆",   "emoji": "🫛", "city": "chengdu", "price": 3 },
-    { "id": "garlic_sprout",  "kind": "raw", "name": "青蒜",   "emoji": "🌿", "city": "chengdu", "price": 4 },
+    { "id": "soybean",        "category": "crop", "kind": "raw", "name": "黄豆",   "emoji": "🫘", "city": "chengdu", "price": 3 },
+    { "id": "pork",           "category": "livestock", "kind": "raw", "name": "猪肉",   "emoji": "🥩", "city": "chengdu", "price": 10 },
+    { "id": "chili",          "category": "crop", "kind": "raw", "name": "辣椒",   "emoji": "🌶️", "city": "chengdu", "price": 4 },
+    { "id": "sichuan_pepper", "category": "crop", "kind": "raw", "name": "花椒",   "emoji": "🟤", "city": "chengdu", "price": 6 },
+    { "id": "broad_bean",     "category": "crop", "kind": "raw", "name": "蚕豆",   "emoji": "🫛", "city": "chengdu", "price": 3 },
+    { "id": "garlic_sprout",  "category": "crop", "kind": "raw", "name": "青蒜",   "emoji": "🌿", "city": "chengdu", "price": 4 },
 
-    { "id": "wheat",          "kind": "raw", "name": "小麦",   "emoji": "🌾", "city": "beijing", "price": 4 },
-    { "id": "cucumber",       "kind": "raw", "name": "黄瓜",   "emoji": "🥒", "city": "beijing", "price": 6 },
-    { "id": "scallion",       "kind": "raw", "name": "大葱",   "emoji": "🧅", "city": "beijing", "price": 6 },
+    { "id": "wheat",          "category": "crop", "kind": "raw", "name": "小麦",   "emoji": "🌾", "city": "beijing", "price": 4 },
+    { "id": "cucumber",       "category": "crop", "kind": "raw", "name": "黄瓜",   "emoji": "🥒", "city": "beijing", "price": 6 },
+    { "id": "scallion",       "category": "crop", "kind": "raw", "name": "大葱",   "emoji": "🧅", "city": "beijing", "price": 6 },
 
-    { "id": "egg",            "kind": "raw", "name": "鸡蛋",   "emoji": "🥚", "city": "rome", "price": 8 },
-    { "id": "sheep_milk",     "kind": "raw", "name": "羊奶",   "emoji": "🥛", "city": "rome", "price": 12 },
-    { "id": "black_pepper",   "kind": "raw", "name": "黑胡椒", "emoji": "⚫", "city": "rome", "price": 10 },
+    { "id": "egg",            "category": "livestock", "kind": "raw", "name": "鸡蛋",   "emoji": "🥚", "city": "rome", "price": 8 },
+    { "id": "sheep_milk",     "category": "livestock", "kind": "raw", "name": "羊奶",   "emoji": "🥛", "city": "rome", "price": 12 },
+    { "id": "black_pepper",   "category": "crop", "kind": "raw", "name": "黑胡椒", "emoji": "⚫", "city": "rome", "price": 10 },
 
-    { "id": "tofu",        "kind": "processed", "name": "豆腐",         "emoji": "⬜",
+    { "id": "tofu",        "category": "crop", "kind": "processed", "name": "豆腐",         "emoji": "⬜",
       "inputs": ["soybean"], "method": "grind", "yield": 2,
       "hint": "把一种豆子磨成浆，点卤凝成白白嫩嫩的方块。",
       "desc": "黄豆磨浆、煮沸、点卤而成。嫩豆腐、老豆腐、豆腐皮，都从这里开始。" },
-    { "id": "doubanjiang", "kind": "processed", "name": "郫县豆瓣酱",   "emoji": "🫙",
+    { "id": "doubanjiang", "category": "other", "kind": "processed", "name": "郫县豆瓣酱",   "emoji": "🫙",
       "inputs": ["broad_bean", "chili"], "method": "ferment", "yield": 2,
       "hint": "一种豆子配上红红的辣，交给时间慢慢酿。",
       "desc": "“川菜之魂”。蚕豆瓣与二荆条辣椒同缸发酵，晒足日头，红亮酱香。" },
-    { "id": "yellow_paste","kind": "processed", "name": "六必居黄酱",   "emoji": "🟫",
+    { "id": "yellow_paste","category": "other", "kind": "processed", "name": "六必居黄酱",   "emoji": "🟫",
       "inputs": ["soybean", "wheat"], "method": "ferment", "yield": 2,
       "hint": "豆子和麦子一起，在酱缸里发酵出浓浓的酱香。",
       "desc": "黄豆与面粉制曲发酵，北京老字号六必居的招牌，炸酱面离不开它。" },
-    { "id": "noodles",     "kind": "processed", "name": "面条",         "emoji": "🍜",
+    { "id": "noodles",     "category": "flour", "kind": "processed", "name": "面条",         "emoji": "🍜",
       "inputs": ["wheat"], "method": "roll", "yield": 2,
       "hint": "只要一种谷物，揉成面团，擀开切条。",
       "desc": "小麦面粉加水揉面，擀薄切条，筋道爽滑。" },
-    { "id": "spaghetti",   "kind": "processed", "name": "意大利面",     "emoji": "🍝",
+    { "id": "spaghetti",   "category": "flour", "kind": "processed", "name": "意大利面",     "emoji": "🍝",
       "inputs": ["wheat", "egg"], "method": "roll", "yield": 2,
       "hint": "谷物加上一样金黄的东西，擀出意大利风味的面。",
       "desc": "面粉与鸡蛋揉成金黄面团，擀压成条，是罗马面食的基础。" },
-    { "id": "pecorino",    "kind": "processed", "name": "佩科里诺奶酪", "emoji": "🧀",
+    { "id": "pecorino",    "category": "livestock", "kind": "processed", "name": "佩科里诺奶酪", "emoji": "🧀",
       "inputs": ["sheep_milk"], "method": "ferment", "yield": 1,
       "hint": "羊身上来的白色液体，发酵成咸香的硬块。",
       "desc": "Pecorino Romano，用羊奶制成的硬质奶酪，咸香浓郁，罗马人的心头好。" },
-    { "id": "guanciale",   "kind": "processed", "name": "风干猪颊肉",   "emoji": "🥓",
+    { "id": "guanciale",   "category": "livestock", "kind": "processed", "name": "风干猪颊肉",   "emoji": "🥓",
       "inputs": ["pork", "black_pepper"], "method": "cure", "yield": 2,
       "hint": "一块肉撒满黑色的香料，挂起来交给风。",
-      "desc": "Guanciale，猪颊肉以盐和黑胡椒腌制后风干，油脂丰润。" }
+      "desc": "Guanciale，猪颊肉以盐和黑胡椒腌制后风干，油脂丰润。" },
+    // ---------- 面粉类（开发中：来源、价格、配方待定，先进图鉴） ----------
+    { "id": "wheat_flour", "category": "flour", "kind": "raw", "todo": true, "name": "小麦粉", "emoji": "🥣", "desc": "基本粉" },
+    { "id": "gelatin", "category": "flour", "kind": "raw", "todo": true, "name": "鱼胶粉", "emoji": "🐟", "desc": "胶状的蛋白质" },
+    { "id": "shiratama_flour", "category": "flour", "kind": "raw", "todo": true, "name": "白玉粉", "emoji": "🍡", "desc": "有嚼劲的米粉" },
+    { "id": "starch", "category": "flour", "kind": "raw", "todo": true, "name": "葛粉（淀粉）", "emoji": "🥄", "desc": "植物根部提取的淀粉" },
+    { "id": "baking_powder", "category": "flour", "kind": "raw", "todo": true, "name": "发粉", "emoji": "🧂", "desc": "让面团膨胀的粉" },
+    { "id": "cinnamon", "category": "flour", "kind": "raw", "todo": true, "name": "肉桂", "emoji": "🪵", "desc": "微甜的香料" },
+    { "id": "butter_crust", "category": "flour", "kind": "raw", "todo": true, "name": "牛油饼皮", "emoji": "🧈", "desc": "脆脆的饼皮" },
+    { "id": "warabi_flour", "category": "flour", "kind": "raw", "todo": true, "name": "蕨粉", "emoji": "🍃", "desc": "珍贵的澄粉" },
+    { "id": "soy_flour", "category": "flour", "kind": "raw", "todo": true, "name": "黄豆粉", "emoji": "🟨", "desc": "大豆磨成的粉" },
+    { "id": "buckwheat_flour", "category": "flour", "kind": "raw", "todo": true, "name": "荞麦粉", "emoji": "🌰", "desc": "荞麦磨成的粉" },
+    { "id": "yeast", "category": "flour", "kind": "raw", "todo": true, "name": "酵母", "emoji": "🫧", "desc": "让面包发起来的种子" },
+    { "id": "curry_powder", "category": "flour", "kind": "raw", "todo": true, "name": "咖喱粉", "emoji": "🍛", "desc": "香料的粉" },
+    { "id": "tart_shell", "category": "flour", "kind": "processed", "todo": true, "name": "塔皮", "emoji": "🥧", "desc": "像器皿的饼皮", "ref": "洋果子店：做曲奇时有机会顺带得到（副产品）" },
+    { "id": "rice_flour", "category": "flour", "kind": "processed", "todo": true, "name": "米粉", "emoji": "🍚", "desc": "主食磨成的粉", "ref": "洋果子店：做仙贝、和果子时有机会顺带得到（副产品）" },
+    { "id": "french_bread", "category": "flour", "kind": "processed", "todo": true, "name": "法式面包", "emoji": "🫓", "desc": "很硬的面包", "ref": "洋果子店：硬面粉团 · 烤" },
+    { "id": "choux", "category": "flour", "kind": "processed", "todo": true, "name": "泡芙", "emoji": "🧁", "desc": "蓬松的圆形小面包", "ref": "洋果子店：做可丽饼时有机会顺带得到（副产品）" },
+    { "id": "dough", "category": "flour", "kind": "processed", "todo": true, "name": "生面团", "emoji": "⚪", "desc": "揉好的面团", "ref": "洋果子店：小麦粉 + 牛奶 + 酵母 · 发酵" },
+    { "id": "hard_dough", "category": "flour", "kind": "processed", "todo": true, "name": "硬面粉团", "emoji": "🟠", "desc": "硬实的面团", "ref": "洋果子店：小麦粉 + 黑麦 + 天然酵母 · 发酵" },
+    { "id": "monaka_shell", "category": "flour", "kind": "processed", "todo": true, "name": "最中的饼皮", "emoji": "🍘", "desc": "和果子“最中”的外壳", "ref": "洋果子店：糯米 + 水 · 烤" },
+    { "id": "pizza_base", "category": "flour", "kind": "processed", "todo": true, "name": "披萨饼底", "emoji": "🍕", "desc": "薄薄的饼底", "ref": "洋果子店：配方未查到" },
+    { "id": "baguette", "category": "flour", "kind": "processed", "todo": true, "name": "法式长棍面包", "emoji": "🥖", "desc": "长长的法棍", "ref": "洋果子店：配方未查到" },
+    { "id": "danish", "category": "flour", "kind": "processed", "todo": true, "name": "丹麦酥", "emoji": "🥨", "desc": "层层酥皮", "ref": "洋果子店：生面团 + 牛油饼皮" },
+    { "id": "croissant", "category": "flour", "kind": "processed", "todo": true, "name": "牛角面包", "emoji": "🥐", "desc": "弯弯的酥皮面包", "ref": "洋果子店：牛油 + 牛油 + 生面团 · 烤" },
+    { "id": "hotdog_bun", "category": "flour", "kind": "processed", "todo": true, "name": "热狗包", "emoji": "🌭", "desc": "夹热狗的面包", "ref": "洋果子店：牛奶 + 生面团 · 烤" },
+    { "id": "toast", "category": "flour", "kind": "processed", "todo": true, "name": "吐司", "emoji": "🍞", "desc": "方方的面包", "ref": "洋果子店：牛奶 + 牛油 + 生面团 · 烤" },
+    { "id": "bagel_dough", "category": "flour", "kind": "processed", "todo": true, "name": "贝果面团", "emoji": "🔘", "desc": "煮过再烤的面团", "ref": "洋果子店：配方未查到" },
+    { "id": "bagel", "category": "flour", "kind": "processed", "todo": true, "name": "贝果", "emoji": "🥯", "desc": "有嚼劲的圈圈面包", "ref": "洋果子店：配方未查到" }
   ],
 
   "dishes": [

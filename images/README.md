@@ -14,3 +14,5 @@
 | 北京原材料 | wheat, cucumber, scallion |
 | 罗马原材料 | egg, sheep_milk, black_pepper |
 | 加工品（放在 ingredients 文件夹） | tofu, doubanjiang, yellow_paste, noodles, spaghetti, pecorino, guanciale |
+| 面粉类·原本有的（开发中） | wheat_flour, gelatin, shiratama_flour, starch, baking_powder, cinnamon, butter_crust, warabi_flour, soy_flour, buckwheat_flour, yeast, curry_powder |
+| 面粉类·需要自己做的（开发中） | tart_shell, rice_flour, french_bread, choux, dough, hard_dough, monaka_shell, pizza_base, baguette, danish, croissant, hotdog_bun, toast, bagel_dough, bagel |
