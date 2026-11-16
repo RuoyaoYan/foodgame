@@ -22,13 +22,16 @@ body {
   margin: 0; min-height: 100vh; color: var(--ink);
   font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
   background-color: var(--paper);
-  background-image:
+}
+/* 纸张纹理放在固定定位的伪元素上：比 background-attachment: fixed 省得多，滚动不再重绘 */
+:root {
+  --paper-bg:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.36  0 0 0 0 0.25  0 0 0 0 0.16  0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>"),
     radial-gradient(circle at 15% 10%, rgba(244,195,166,.35), transparent 40%),
     radial-gradient(circle at 90% 85%, rgba(185,213,228,.35), transparent 45%),
     radial-gradient(circle at 80% 15%, rgba(200,220,174,.3), transparent 35%);
-  background-attachment: fixed;
 }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-image: var(--paper-bg); }
 h2, h3 { font-family: var(--hand); font-weight: normal; letter-spacing: 1px; }
 h2 { margin: 0 0 4px; font-size: 28px; }
 h3 { margin: 22px 0 10px; font-size: 21px; }
@@ -85,7 +88,6 @@ main { padding: 0 28px 28px; }
     var(--paper-light);
   border: 2.5px solid var(--line); border-radius: 4px 14px 12px 10px;
   box-shadow: 6px 8px 0 rgba(91,58,40,.14);
-  filter: url(#rough);
 }
 
 /* ---------- 卡片 = 贴在手帐上的纸片 ---------- */
@@ -99,7 +101,6 @@ main { padding: 0 28px 28px; }
   content: ""; position: absolute; inset: 0; z-index: -1;
   background: #fffdf7; border: 2.5px solid var(--line);
   border-radius: 6px 12px 8px 14px; box-shadow: 3px 5px 0 rgba(91,58,40,.18);
-  filter: url(#rough);
 }
 .cards .card:nth-child(3n+1) { transform: rotate(-.6deg); }
 .cards .card:nth-child(3n+2) { transform: rotate(.5deg); }
@@ -129,14 +130,11 @@ main { padding: 0 28px 28px; }
 .sticker::before {
   content: ""; position: absolute; inset: 4%; z-index: -1; border-radius: 46% 54% 42% 58% / 52% 44% 56% 48%;
   background: radial-gradient(circle at 40% 38%, rgba(255,255,255,.55), transparent 55%), var(--wash, #f4c3a6);
-  opacity: .85; filter: url(#watercolor);
+  opacity: .85;
 }
 .sticker .emo {
   font-size: calc(var(--size) * .58); line-height: 1;
-  filter:
-    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
-    drop-shadow(1.2px 0 0 var(--line)) drop-shadow(-1.2px 0 0 var(--line)) drop-shadow(0 1.2px 0 var(--line)) drop-shadow(0 -1.2px 0 var(--line))
-    drop-shadow(2px 3px 0 rgba(91,58,40,.25));
+  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(1px 1.5px 0 rgba(91,58,40,.45));
 }
 .sticker img { width: 92%; height: 92%; object-fit: contain; filter: drop-shadow(2px 3px 0 rgba(91,58,40,.2)); }
 .sticker.s { --size: 40px; }
@@ -171,7 +169,7 @@ button.link { background: none; border: none; color: var(--ink-soft); text-decor
   position: fixed; inset: 0; z-index: 50; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   background-color: var(--paper);
-  background-image: inherit;
+  background-image: var(--paper-bg);
   transition: opacity .6s ease, transform .6s ease;
 }
 .title-screen.leaving { opacity: 0; transform: scale(1.05); pointer-events: none; }
@@ -210,10 +208,8 @@ button.link { background: none; border: none; color: var(--ink-soft); text-decor
 .title-foot { position: absolute; bottom: 18px; font-family: var(--hand); font-size: 14px; color: var(--ink-soft); z-index: 2; }
 .floaters { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .floaters span {
-  position: absolute; opacity: .75; animation: drift linear infinite;
-  filter:
-    drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff)
-    drop-shadow(1px 0 0 var(--line)) drop-shadow(-1px 0 0 var(--line)) drop-shadow(0 1px 0 var(--line)) drop-shadow(0 -1px 0 var(--line));
+  position: absolute; opacity: .75; animation: drift linear infinite; will-change: transform;
+  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(1px 1.5px 0 rgba(91,58,40,.45));
 }
 @keyframes drift { from { transform: translateY(110vh) rotate(0deg); } to { transform: translateY(-20vh) rotate(240deg); } }
 
@@ -553,3 +549,30 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .worldmap .water { stroke-width: 1.6px; }
 .worldmap .grid line { vector-effect: non-scaling-stroke; stroke-width: 1px; }
 .map-zoom { right: auto; left: 12px; }
+
+/* ---------- 流畅度 ---------- */
+/* 长列表里的卡片不用逐个做 3D / 合成层提升；弹窗打开时背景不用实时模糊 */
+.modal { backdrop-filter: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+/* 标签页隐藏时暂停动画 */
+.panel:not(.active) * { animation-play-state: paused; }
+
+/* ---------- 多语言 ---------- */
+.lang-btns { display: inline-flex; gap: 8px; }
+.lang-btns button { padding: 4px 12px; }
+.title-lang { position: absolute; bottom: 48px; z-index: 2; display: flex; gap: 8px; }
+.title-lang button { font-size: 14px; padding: 3px 12px; }
+/* 日语：换成日文字体，避免回落到中文字形（“直”“骨”等字形不同） */
+html[lang="ja"] {
+  --hand: "Klee One", "Yu Kyokasho", "UD Digi Kyokasho N-R", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+}
+html[lang="ja"] body { font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", "Noto Sans JP", system-ui, sans-serif; }
+html[lang="ja"] h2, html[lang="ja"] h3 { letter-spacing: 0; }
+
+/* 日语等较长文字：导航、锅边按钮不换行 */
+.bottom-nav button { white-space: nowrap; }
+.pot-actions { flex-wrap: wrap; }
+.pot-actions button, .method { white-space: nowrap; }
+html[lang="ja"] .bottom-nav button { font-size: 11px; }

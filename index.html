@@ -6,7 +6,8 @@
 <title>吃</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap&text=%E5%90%83" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap&text=%E5%90%83" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap&text=%E5%90%83" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -44,6 +45,7 @@
       <button id="newGameBtn" class="link hidden">重新开始</button>
     </div>
   </div>
+  <div class="title-lang" id="titleLang"></div>
   <div class="title-foot">原型 v0.10 · 水彩手帐风</div>
 </div>
 
@@ -92,6 +94,7 @@
     <h2>设置</h2>
     <div id="settingsBox">
       <div class="settings">
+        <div class="setting-row"><span>🌐 Language / 语言 / 言語</span><span class="lang-btns" id="langBtns"></span></div>
         <div class="setting-row"><span>🎵 背景音乐</span><button class="toggle" data-setting="music"></button></div>
         <div class="setting-row"><span>🔔 音效</span><button class="toggle" data-setting="sfx"></button></div>
         <p class="sub">（音乐和音效素材还没加入，开关会先记住你的选择。）</p>
@@ -207,8 +210,15 @@
   </div>
 </div>
 
+<script src="i18n.js"></script>
 <script src="data/game.js"></script>
 <script src="worldmap.js"></script>
 <script src="game.js"></script>
+<script>
+  // 离线缓存：第二次打开几乎瞬间加载，断网也能玩（只在 https / localhost 下生效）
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+</script>
 </body>
 </html>

@@ -2,6 +2,8 @@
 // 循环：农场/集市拿食材 → 厨房猜配方研发、出餐 → 店铺货架自动卖菜赚金币 → 开通城市、买家具
 (() => {
   const D = window.GAME_DATA;
+  I18N.applyData(D);      // 非中文时，把食材 / 料理 / 城市等名称换成当前语言
+  I18N.applyDOM();        // 把 index.html 里的固定文字换成当前语言
   const SAVE_KEY = "xunwei_save_v1";
   const ING = Object.fromEntries(D.ingredients.map(i => [i.id, i]));
   const CITY = Object.fromEntries(D.cities.map(c => [c.id, c]));
@@ -121,12 +123,12 @@
   const masteryLv = id => { const xp = S.mastery[id] || 0; let lv = 1; MS.levels.forEach((need, i) => { if (xp >= need) lv = i + 1; }); return lv; };
   const nextNeed = id => MS.levels[masteryLv(id)];   // undefined = 满级
   const priceOf = d => Math.round(d.sellPrice * (1 + bonus("sellPrice")) * (1 + MS.priceBonusPerLevel * (masteryLv(d.id) - 1)));
-  const masteryText = id => { const lv = masteryLv(id), nx = nextNeed(id); return `熟练度 Lv.${lv}${nx !== undefined ? `（${S.mastery[id] || 0}/${nx}）` : "（满级）"}`; };
+  const masteryText = id => { const lv = masteryLv(id), nx = nextNeed(id); return nx !== undefined ? T("熟练度 Lv.{0}（{1}/{2}）", lv, S.mastery[id] || 0, nx) : T("熟练度 Lv.{0}（满级）", lv); };
   function gainMastery(id, n) {
     const before = masteryLv(id);
     S.mastery[id] = (S.mastery[id] || 0) + n; S.stats.cooked += n;
     const after = masteryLv(id);
-    if (after > before) setTimeout(() => toast(`⭐ ${DISH[id].name} 熟练度升到 Lv.${after}！售价 +${Math.round(MS.priceBonusPerLevel * (after - 1) * 100)}%`), 900);
+    if (after > before) setTimeout(() => toast(T("⭐ {0} 熟练度升到 Lv.{1}！售价 +{2}%", DISH[id].name, after, Math.round(MS.priceBonusPerLevel * (after - 1) * 100))), 900);
   }
   const sellIntervalMs = () => SH.sellIntervalSec * 1000 / (1 + bonus("sellSpeed"));
   // 农场：每块地持续产出，产出攒在地里（有上限），点一下收取
@@ -168,11 +170,27 @@
 
   // ---------- 工具 ----------
   const $ = id => document.getElementById(id);
-  const fmt = n => Math.floor(n).toLocaleString("zh-CN");
+  // 流畅度：这些容器每秒都会被刷新，但多数时候内容并没有变。给它们的 innerHTML 加一道“没变就不写”的闸，
+  // 避免整片 DOM 被销毁重建（食品街一次有上百张卡片）。
+  (function dedupeInnerHTML(ids) {
+    const desc = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+    ids.forEach(id => {
+      const el = document.getElementById(id); if (!el) return;
+      let last = null;
+      Object.defineProperty(el, "innerHTML", {
+        configurable: true,
+        get() { return desc.get.call(this); },
+        set(v) { if (v === last) return; last = v; desc.set.call(this, v); },
+      });
+    });
+  })(["room", "journal", "dexCats", "ingDex", "storageDishes", "storageIngs", "furnitureList", "achList",
+      "fields", "pens", "shopBonus", "shelves", "shelfExpand", "cityList", "foodStreet", "bookstore", "hardware",
+      "bag", "potItems", "methods", "quickCook", "bookViewerList", "saveInfo"]);
+  const fmt = n => Math.floor(n).toLocaleString(I18N.locale);
   function fmtTime(sec) {
     sec = Math.max(0, Math.ceil(sec));
     const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
-    return h ? `${h}小时${m}分` : m ? `${m}分${s}秒` : `${s}秒`;
+    return h ? T("{0}小时{1}分", h, m) : m ? T("{0}分{1}秒", m, s) : T("{0}秒", s);
   }
   const pct = v => Math.round(v * 100) + "%";
   let toastTimer;
@@ -193,7 +211,7 @@
   const G = () => DEV() ? Infinity : S.gold;
   function spend(n) {
     if (DEV()) return true;
-    if (G() < n) { toast("金币不够哦，先去店铺卖点菜吧"); return false; }
+    if (G() < n) { toast(T("金币不够哦，先去店铺卖点菜吧")); return false; }
     S.gold -= n; return true;
   }
   function addIng(id, n) {
@@ -212,12 +230,22 @@
   const artOK = {};
   function washOf(id) { let h = 0; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return WASH[h % WASH.length]; }
   const artSrc = (kind, id) => `images/${kind}/${id}.png`;
+  let artDirty = false;
   function preloadArt() {
-    [...D.ingredients.map(i => ["ingredients", i.id]), ...D.dishes.map(d => ["dishes", d.id])].forEach(([kind, id]) => {
-      const img = new Image();
-      img.onload = () => { artOK[kind + "/" + id] = true; renderAll(); };
-      img.src = artSrc(kind, id);
-    });
+    const jobs = [...D.ingredients.map(i => ["ingredients", i.id]), ...D.dishes.map(d => ["dishes", d.id])];
+    const idle = window.requestIdleCallback || (fn => setTimeout(fn, 60));
+    (function batch() {          // 每批 20 张，放在空闲时间里，不和首屏抢带宽 / 主线程
+      jobs.splice(0, 20).forEach(([kind, id]) => {
+        const img = new Image();
+        img.fetchPriority = "low";
+        img.onload = () => {
+          artOK[kind + "/" + id] = true;
+          if (!artDirty) { artDirty = true; requestAnimationFrame(() => { artDirty = false; renderAll(); }); }   // 多张图同时到达，只重绘一次
+        };
+        img.src = artSrc(kind, id);
+      });
+      if (jobs.length) idle(batch);
+    })();
   }
   function art(kind, id, emoji, size = "m", washOverride) {
     const has = kind && artOK[kind + "/" + id];
@@ -251,10 +279,10 @@
   }).join("");
   function renderTitle() {
     const started = S.dishes.length || S.processed.length || S.cities.length > 1 || S.seenIngs.length || S.recipes.length;
-    $("startBtn").textContent = started ? "继续旅程" : "开始旅程";
+    $("startBtn").textContent = started ? T("继续旅程") : T("开始旅程");
     $("newGameBtn").classList.toggle("hidden", !started);
     $("saveInfo").innerHTML = started
-      ? `图鉴 ${S.dishes.length}/${D.dishes.length} · 已到过 ${S.cities.map(c => CITY[c].name).join("、")} · 🪙 ${fmt(S.gold)}`
+      ? T("图鉴 {0}/{1} · 已到过 {2} · 🪙 {3}", S.dishes.length, D.dishes.length, S.cities.map(c => CITY[c].name).join("、"), fmt(S.gold))
       : "";
   }
   function enterGame() {
@@ -265,16 +293,16 @@
       const m = offlineMsg; offlineMsg = null;
       setTimeout(() => showModal(`
         <div class="big">🌙</div>
-        <h2>欢迎回来！</h2>
-        <p>你离开了 ${fmtTime(m.away / 1000)}。<br>
-        ${m.sold ? `小店卖出了 <b>${m.sold}</b> 份菜，赚了 <b>🪙 ${fmt(m.gold)}</b>。<br>` : ""}
-        ${m.ready ? `农场攒了 <b>${m.ready}</b> 份食材等你收取。` : ""}</p>
-        <button class="primary" data-close>好的</button>`), 450);
+        <h2>${T("欢迎回来！")}</h2>
+        <p>${T("你离开了 {0}。", fmtTime(m.away / 1000))}<br>
+        ${m.sold ? `${T("小店卖出了 <b>{0}</b> 份菜，赚了 <b>🪙 {1}</b>。", m.sold, fmt(m.gold))}<br>` : ""}
+        ${m.ready ? T("农场攒了 <b>{0}</b> 份食材等你收取。", m.ready) : ""}</p>
+        <button class="primary" data-close>${T("好的")}</button>`), 450);
     }
     switchTab(currentTab);
   }
   $("startBtn").addEventListener("click", enterGame);
-  $("newGameBtn").addEventListener("click", e => twoClick(e.target, "重新开始", "再点一次确认（会清空存档）", () => {
+  $("newGameBtn").addEventListener("click", e => twoClick(e.target, T("重新开始"), T("再点一次确认（会清空存档）"), () => {
     S = newState(); normalize(); pot = []; offlineMsg = null; currentTab = "home"; save(); enterGame();
   }));
   function toTitle() {
@@ -305,7 +333,7 @@
       return `<div class="room-item" style="left:${f.x}%;top:${f.y}%" title="${f.name}">${emoArt(f.emoji, "l", f.id)}</div>`;
     }).join("");
     $("room").innerHTML = `<div class="room-wall"><div class="room-window">🌤️</div></div><div class="room-floor"></div>
-      ${items}${S.furniture.length ? "" : `<div class="room-empty">房间空空的……去“家具”里挑几件吧</div>`}`;
+      ${items}${S.furniture.length ? "" : `<div class="room-empty">${T("房间空空的……去“家具”里挑几件吧")}</div>`}`;
   }
   let dishQuery = "";
   // 搜索：料理名、食材名、城市、食谱书名、做法
@@ -331,24 +359,25 @@
       if (!list.length) return "";
       const n = b.dishes.filter(id => S.dishes.includes(id)).length;
       const own = DEV() || S.books.includes(b.id);
-      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${n}/${b.dishes.length}${own ? "" : " · 🔒 去书店购买"}</small></div>` + list.map(card).join("");
+      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${n}/${b.dishes.length}${own ? "" : T(" · 🔒 去书店购买")}</small></div>` + list.map(card).join("");
     }).join("");
-    if (!body) body = `<p class="sub wide">没有找到和“${q}”有关的料理。</p>`;
-    $("journal").innerHTML = `<div class="dex-total wide">已解锁 <b>${done}</b> / ${total} 道料理</div>` + body;
+    if (!body) body = `<p class="sub wide">${T("没有找到和“{0}”有关的料理。", q)}</p>`;
+    $("journal").innerHTML = `<div class="dex-total wide">${T("已解锁 <b>{0}</b> / {1} 道料理", done, total)}</div>` + body;
     lastUnlocked = null;
   }
-  $("dishSearch").addEventListener("input", e => { dishQuery = e.target.value; renderJournal(); });
+  const debounce = (fn, ms = 120) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+  $("dishSearch").addEventListener("input", debounce(e => { dishQuery = e.target.value; renderJournal(); }));
   $("journal").addEventListener("click", e => {
     const el = e.target.closest("[data-dish]"); if (!el) return;
     const d = DISH[el.dataset.dish], got = S.dishes.includes(d.id), own = hasBook(d.id);
-    if (!own && !got) { toast(`去书店买《${bookOf(d.id).name}》后解锁`); return; }
+    if (!own && !got) { toast(T("去书店买《{0}》后解锁", bookOf(d.id).name)); return; }
     showModal(`${dishArt(d, "xl")}
       <h2>${d.name}</h2>
-      <p class="sub">${CITY[d.city].emoji} ${CITY[d.city].name} · 《${bookOf(d.id).name}》 · 售价 🪙${priceOf(d)}</p>
+      <p class="sub">${CITY[d.city].emoji} ${CITY[d.city].name} · 《${bookOf(d.id).name}》 · ${T("售价 🪙{0}", priceOf(d))}</p>
       <div class="recipe">${recipeText(d)}</div>
-      ${got ? `<p>${d.story}</p><p class="sub">${masteryText(d.id)} · 每升一级售价 +${Math.round(MS.priceBonusPerLevel * 100)}%</p>`
-            : `<p class="hint">💡 ${d.hint}</p><p class="sub">还没研发：按配方去厨房做一次吧。</p>`}
-      <p><button class="primary" data-close>合上</button></p>`);
+      ${got ? `<p>${d.story}</p><p class="sub">${masteryText(d.id)} ${T("· 每升一级售价 +{0}%", Math.round(MS.priceBonusPerLevel * 100))}</p>`
+            : `<p class="hint">💡 ${d.hint}</p><p class="sub">${T("还没研发：按配方去厨房做一次吧。")}</p>`}
+      <p><button class="primary" data-close>${T("合上")}</button></p>`);
   });
   function renderIngDex() {
     const dev = S.settings.devView;
@@ -360,21 +389,21 @@
       const uses = usesOf(i.id);
       let body;
       if (i.todo) {
-        body = `<div class="todo-badge">🚧 开发中</div>
-          <div class="meta">${i.kind === "raw" ? "原本有的（来源、价格待定）" : "需要自己做的（配方待定）"}</div>
+        body = `<div class="todo-badge">${T("🚧 开发中")}</div>
+          <div class="meta">${i.kind === "raw" ? T("原本有的（来源、价格待定）") : T("需要自己做的（配方待定）")}</div>
           ${show ? `<div class="story">${i.desc || ""}</div>${i.ref ? `<div class="recipe">${i.ref}</div>` : ""}` : ""}`;
       } else if (i.kind === "raw") {
-        body = `<div class="meta">${CITY[i.city].emoji} ${CITY[i.city].name}${show ? ` · 集市 🪙${i.price}` : ""}</div>
-          ${show ? `<div class="meta">用于：${uses.length ? uses.join("、") : "？"}</div>` : ""}`;
+        body = `<div class="meta">${CITY[i.city].emoji} ${CITY[i.city].name}${show ? ` ${T("· 集市 🪙{0}", i.price)}` : ""}</div>
+          ${show ? `<div class="meta">${T("用于：")}${uses.length ? uses.join("、") : "？"}</div>` : ""}`;
       } else {
         body = show ? `<div class="story">${i.desc}</div><div class="recipe">${recipeText({ ...i, ingredients: i.inputs })}</div>
-                 <div class="meta">用于：${uses.length ? uses.join("、") : "？"}</div>`
+                 <div class="meta">${T("用于：")}${uses.length ? uses.join("、") : "？"}</div>`
               : `<div class="hint">${i.hint}</div>`;
       }
       return `<div class="card ${unlocked ? "" : "locked"} ${i.todo ? "todo" : ""}">
         ${show ? ingArt(i.id, "l") : lockArt("l")}
         <div class="name">${show ? i.name : "？？？"}</div>
-        <div class="meta cat-tag">${CAT[i.category].emoji} ${CAT[i.category].name} · ${i.kind === "raw" ? "原材料" : "加工品"}</div>
+        <div class="meta cat-tag">${CAT[i.category].emoji} ${CAT[i.category].name} · ${i.kind === "raw" ? T("原材料") : T("加工品")}</div>
         ${body}
       </div>`;
     };
@@ -384,15 +413,15 @@
       const got = list.filter(i => i.kind === "raw" ? S.seenIngs.includes(i.id) : S.processed.includes(i.id)).length;
       return `${got}/${list.length}`;
     };
-    $("dexCats").innerHTML = `<button data-dexcat="all" class="${dexCat === "all" ? "active" : ""}">全部</button>` +
+    $("dexCats").innerHTML = `<button data-dexcat="all" class="${dexCat === "all" ? "active" : ""}">${T("全部")}</button>` +
       cats.map(c => `<button data-dexcat="${c.id}" class="${dexCat === c.id ? "active" : ""}">${c.emoji} ${c.name} <small>${count(c)}</small></button>`).join("");
     const shown = dexCat === "all" ? cats : cats.filter(c => c.id === dexCat);
     $("ingDex").innerHTML = shown.map(c => {
       const list = D.ingredients.filter(i => i.category === c.id);
       const raw = list.filter(i => i.kind === "raw"), proc = list.filter(i => i.kind === "processed");
       return `<div class="bag-label wide cat-head">${c.emoji} ${c.name}</div>
-        ${raw.length ? `<div class="bag-label wide sub-head">原本有的</div>${raw.map(card).join("")}` : ""}
-        ${proc.length ? `<div class="bag-label wide sub-head">需要自己做的</div>${proc.map(card).join("")}` : ""}`;
+        ${raw.length ? `<div class="bag-label wide sub-head">${T("原本有的")}</div>${raw.map(card).join("")}` : ""}
+        ${proc.length ? `<div class="bag-label wide sub-head">${T("需要自己做的")}</div>${proc.map(card).join("")}` : ""}`;
     }).join("");
     $("devNote").classList.toggle("hidden", !dev);
   }
@@ -403,21 +432,21 @@
   function renderStorage() {
     const ds = D.dishes.filter(d => (S.dishStock[d.id] || 0) > 0);
     $("storageDishes").innerHTML = ds.length ? ds.map(d => `<div class="card">${dishArt(d, "m")}
-      <div class="name">${d.name}</div><div class="meta">×${S.dishStock[d.id]} · 售价 🪙${priceOf(d)}</div></div>`).join("")
-      : `<p class="sub">还没有做好的菜。</p>`;
+      <div class="name">${d.name}</div><div class="meta">×${S.dishStock[d.id]} ${T("· 售价 🪙{0}", priceOf(d))}</div></div>`).join("")
+      : `<p class="sub">${T("还没有做好的菜。")}</p>`;
     const is = D.ingredients.filter(i => (S.inventory[i.id] || 0) > 0);
     $("storageIngs").innerHTML = is.length ? is.map(i => `<div class="card">${ingArt(i.id, "m")}
       <div class="name">${i.name}</div><div class="meta">×${S.inventory[i.id]}</div></div>`).join("")
-      : `<p class="sub">仓库里没有食材。</p>`;
+      : `<p class="sub">${T("仓库里没有食材。")}</p>`;
   }
-  const EFFECT_TEXT = { sellPrice: "卖价", sellSpeed: "顾客速度", farmSpeed: "农场生长" };
+  const EFFECT_TEXT = { sellPrice: T("卖价"), sellSpeed: T("顾客速度"), farmSpeed: T("农场生长") };
   function renderFurniture() {
     $("furnitureList").innerHTML = D.furniture.map(f => {
       const owned = S.furniture.includes(f.id);
       return `<div class="card">${emoArt(f.emoji, "l", f.id)}
         <div class="name">${f.name}</div>
         <div class="meta">${EFFECT_TEXT[f.effect]} +${pct(f.value)}</div>
-        <div class="row">${owned ? `<span class="meta">✔ 已摆放</span>`
+        <div class="row">${owned ? `<span class="meta">${T("✔ 已摆放")}</span>`
           : `<button data-furn="${f.id}" ${G() < f.price ? "disabled" : ""}>🪙 ${fmt(f.price)}</button>`}</div>
       </div>`;
     }).join("");
@@ -426,36 +455,45 @@
     const id = e.target.dataset.furn;
     if (id && spend(FURN[id].price)) {
       S.furniture.push(id); save();
-      toast(`${FURN[id].emoji} ${FURN[id].name} 摆进家里啦！${EFFECT_TEXT[FURN[id].effect]} +${pct(FURN[id].value)}`);
+      toast(T("{0} {1} 摆进家里啦！{2} +{3}", FURN[id].emoji, FURN[id].name, EFFECT_TEXT[FURN[id].effect], pct(FURN[id].value)));
       renderAll();
     }
   });
   function renderSettings() {
     document.querySelectorAll("[data-setting]").forEach(b => {
       const on = S.settings[b.dataset.setting];
-      b.textContent = on ? "开" : "关"; b.classList.toggle("on", on);
+      b.textContent = on ? T("开") : T("关"); b.classList.toggle("on", on);
     });
   }
   document.querySelectorAll("[data-setting]").forEach(b => b.addEventListener("click", () => {
     S.settings[b.dataset.setting] = !S.settings[b.dataset.setting]; save(); renderAll();
   }));
   $("toTitleBtn").addEventListener("click", toTitle);
-  $("resetBtn").addEventListener("click", e => twoClick(e.target, "重置", "再点一次确认", () => {
-    S = newState(); normalize(); pot = []; save(); renderAll(); renderTitle(); toast("存档已重置");
+  // 语言切换：存下选择后刷新页面（存档不受影响）
+  function renderLangButtons(box) {
+    box.innerHTML = I18N.langs.map(l => `<button class="${l.id === I18N.lang ? "picked" : "ghost"}" data-lang="${l.id}" lang="${l.id === "zh" ? "zh-CN" : l.id}">${l.name}</button>`).join("");
+    box.addEventListener("click", e => {
+      const b = e.target.closest("[data-lang]"); if (!b || b.dataset.lang === I18N.lang) return;
+      save(); I18N.setLang(b.dataset.lang);
+    });
+  }
+  renderLangButtons($("langBtns")); renderLangButtons($("titleLang"));
+  $("resetBtn").addEventListener("click", e => twoClick(e.target, T("重置"), T("再点一次确认"), () => {
+    S = newState(); normalize(); pot = []; save(); renderAll(); renderTitle(); toast(T("存档已重置"));
   }));
 
   // ---------- 农场（参考《洋果子店》：选一次，持续产出，可升级、扩建） ----------
   function renderPlots(kind) {
     const list = S[kind], type = kind === "fields" ? "crop" : "animal";
-    const label = type === "crop" ? "菜地" : "畜栏";
+    const label = type === "crop" ? T("菜地") : T("畜栏");
     const now = Date.now();
     const options = D.farm.items.filter(f => f.type === type);
     let html = list.map((p, idx) => {
       const lvl = `<span class="lv">Lv.${p.level}</span>`;
       const upCost = FM.upgradeCosts[p.level - 1];
       const upBtn = upCost !== undefined
-        ? `<button class="ghost" data-upgrade="${idx}" data-kind="${kind}" ${G() < upCost ? "disabled" : ""}>升级 🪙${fmt(upCost)}</button>`
-        : `<span class="meta">已满级</span>`;
+        ? `<button class="ghost" data-upgrade="${idx}" data-kind="${kind}" ${G() < upCost ? "disabled" : ""}>${T("升级 🪙{0}", fmt(upCost))}</button>`
+        : `<span class="meta">${T("已满级")}</span>`;
       const pick = options.map(f => {
         const open = S.cities.includes(f.city);
         return `<button class="${p.item === f.id ? "picked" : "ghost"}" data-assign="${f.id}" data-kind="${kind}" data-idx="${idx}"
@@ -463,8 +501,8 @@
       }).join("");
       if (!p.item) {
         return `<div class="card plot empty-plot">${lvl}${emoArt(type === "crop" ? "🟫" : "🛖", "l", kind + "e")}
-          <div class="name">空${label}</div>
-          <div class="meta">选一样来${type === "crop" ? "种" : "养"}，之后会一直产出</div>
+          <div class="name">${T("空{0}", label)}</div>
+          <div class="meta">${type === "crop" ? T("选一样来种，之后会一直产出") : T("选一样来养，之后会一直产出")}</div>
           <div class="row col">${pick}</div>
           <div class="row">${upBtn}</div></div>`;
       }
@@ -474,23 +512,23 @@
       return `<div class="card plot ${n ? "ready" : ""}">${lvl}
         ${emoArt(f.emoji, "l", f.id)}
         <div class="name">${f.name} → ${prod.emoji} ${prod.name}</div>
-        <div class="stash">${n ? `${prod.emoji}`.repeat(Math.min(n, 8)) + (n > 8 ? "…" : "") : "<span class='meta'>还没有产出</span>"}</div>
-        <div class="meta">已攒 <b>${n}</b> / ${cap} 份 · 每 ${fmtTime(iv / 1000)} 产 1 份</div>
+        <div class="stash">${n ? `${prod.emoji}`.repeat(Math.min(n, 8)) + (n > 8 ? "…" : "") : `<span class='meta'>${T("还没有产出")}</span>`}</div>
+        <div class="meta">${T("已攒 <b>{0}</b> / {1} 份 · 每 {2} 产 1 份", n, cap, fmtTime(iv / 1000))}</div>
         <div class="bar"><i style="width:${prog * 100}%"></i></div>
-        <div class="meta">${full ? "满了！快收取，不然不会再长" : `下一份 ${fmtTime((iv - (now - p.last) % iv) / 1000)}`}</div>
+        <div class="meta">${full ? T("满了！快收取，不然不会再长") : T("下一份 {0}", fmtTime((iv - (now - p.last) % iv) / 1000))}</div>
         <div class="row">
-          <button data-collect="${idx}" data-kind="${kind}" ${n ? "" : "disabled"}>收取${n ? " ×" + n : ""}</button>
+          <button data-collect="${idx}" data-kind="${kind}" ${n ? "" : "disabled"}>${T("收取")}${n ? " ×" + n : ""}</button>
           ${upBtn}
         </div>
-        <details class="swap" data-swap="${kind}${idx}" ${openSwaps.has(kind + idx) ? "open" : ""}><summary>换${type === "crop" ? "种" : "养"}别的</summary><div class="row col">${pick}</div></details>
+        <details class="swap" data-swap="${kind}${idx}" ${openSwaps.has(kind + idx) ? "open" : ""}><summary>${type === "crop" ? T("换种别的") : T("换养别的")}</summary><div class="row col">${pick}</div></details>
       </div>`;
     }).join("");
     const costs = kind === "fields" ? FM.fieldExpandCosts : FM.penExpandCosts;
     const extra = list.length - (kind === "fields" ? FM.fieldPlots : FM.pens);
     html += extra < costs.length
-      ? `<div class="card plot add-plot">${emoArt("➕", "l", kind + "add")}<div class="name">扩建${label}</div>
-          <div class="meta">去商店街的五金店扩建</div>
-          <div class="row"><button class="ghost" data-goshop="hardware">去五金店</button></div></div>`
+      ? `<div class="card plot add-plot">${emoArt("➕", "l", kind + "add")}<div class="name">${T("扩建{0}", label)}</div>
+          <div class="meta">${T("去商店街的五金店扩建")}</div>
+          <div class="row"><button class="ghost" data-goshop="hardware">${T("去五金店")}</button></div></div>`
       : "";
     $(kind).innerHTML = html;
   }
@@ -503,11 +541,11 @@
     renderPlots("fields"); renderPlots("pens");
     const total = [...S.fields, ...S.pens].reduce((s, p) => s + plotStored(p), 0);
     $("collectAll").disabled = !total;
-    $("collectAll").textContent = total ? `一键收取 ×${total}` : "一键收取";
+    $("collectAll").textContent = total ? T("一键收取 ×{0}", total) : T("一键收取");
   }
   $("collectAll").addEventListener("click", () => {
     let n = 0; [...S.fields, ...S.pens].forEach(p => n += collectPlot(p));
-    if (n) { save(); toast(`收取了 ${n} 份食材，已放进仓库`); renderAll(); }
+    if (n) { save(); toast(T("收取了 {0} 份食材，已放进仓库", n)); renderAll(); }
   });
   $("tab-farm").addEventListener("click", e => {
     const t = e.target.closest("button"); if (!t || t.disabled) return;
@@ -516,18 +554,18 @@
       const p = S[kind][+t.dataset.idx], f = FARM[t.dataset.assign];
       if (p.item) collectPlot(p);
       p.item = f.id; p.last = Date.now(); save();
-      toast(`${f.emoji} 开始${f.type === "crop" ? "种" : "养"}${f.name}，会一直产出${ING[f.produces].name}`); renderAll();
+      toast(`${f.emoji} ` + (f.type === "crop" ? T("开始种{0}，会一直产出{1}", f.name, ING[f.produces].name) : T("开始养{0}，会一直产出{1}", f.name, ING[f.produces].name))); renderAll();
     }
     if (t.dataset.collect !== undefined) {
       const p = S[kind][+t.dataset.collect], prod = ING[FARM[p.item].produces], n = collectPlot(p);
-      if (n) { save(); toast(`收取 ${prod.emoji} ${prod.name} ×${n}`); renderAll(); }
+      if (n) { save(); toast(`${T("收取")} ${prod.emoji} ${prod.name} ×${n}`); renderAll(); }
     }
     if (t.dataset.upgrade !== undefined) {
       const p = S[kind][+t.dataset.upgrade], cost = FM.upgradeCosts[p.level - 1];
       if (cost !== undefined && spend(cost)) {
         if (p.item) collectPlot(p);
         p.level++; if (p.item) p.last = Date.now(); save();
-        toast(`升到 Lv.${p.level}！产得更快、能攒更多`); renderAll();
+        toast(T("升到 Lv.{0}！产得更快、能攒更多", p.level)); renderAll();
       }
     }
   });
@@ -541,13 +579,13 @@
   function renderMethods() {
     $("methods").innerHTML = D.methods.map(m => {
       const ok = DEV() || S.methods.includes(m.id);
-      return `<button class="method ${method === m.id ? "on" : ""} ${ok ? "" : "locked"}" data-method="${m.id}" ${ok ? "" : `title="去商店街的五金店解锁"`}>
+      return `<button class="method ${method === m.id ? "on" : ""} ${ok ? "" : "locked"}" data-method="${m.id}" ${ok ? "" : `title="${T("去商店街的五金店解锁")}"`}>
         <span>${ok ? m.emoji : "🔒"}</span>${m.name}</button>`;
     }).join("");
   }
   $("methods").addEventListener("click", e => {
     const b = e.target.closest("[data-method]"); if (!b) return;
-    if (!DEV() && !S.methods.includes(b.dataset.method)) { toast(`“${METHOD[b.dataset.method].name}”还没解锁，去商店街的五金店看看吧`); return; }
+    if (!DEV() && !S.methods.includes(b.dataset.method)) { toast(T("“{0}”还没解锁，去商店街的五金店看看吧", METHOD[b.dataset.method].name)); return; }
     method = method === b.dataset.method ? null : b.dataset.method; renderMethods();
   });
   function renderKitchen() {
@@ -563,10 +601,10 @@
           const list = owned.filter(i => i.category === c.id);
           return list.length ? `<div class="bag-label">${c.emoji} ${c.name}</div>${list.map(bagItem).join("")}` : "";
         }).join("")
-      : `<p class="sub">背包空空的，去地图上的集市进货，或者去农场收取吧。</p>`;
+      : `<p class="sub">${T("背包空空的，去地图上的集市进货，或者去农场收取吧。")}</p>`;
     $("potItems").innerHTML = pot.map((id, idx) =>
-      `<div class="ing" data-remove="${idx}" title="点击拿出">${ingArt(id, "s")}<div class="n">${ING[id].name}</div></div>`).join("");
-    $("potMethod").textContent = method ? `做法：${methodText(method)}` : "还没选做法";
+      `<div class="ing" data-remove="${idx}" title="${T("点击拿出")}">${ingArt(id, "s")}<div class="n">${ING[id].name}</div></div>`).join("");
+    $("potMethod").textContent = method ? `${T("做法：")}${methodText(method)}` : T("还没选做法");
     renderQuickCook();
   }
   const canMake = r => Math.min(...r.ingredients.map(x => S.inventory[x] || 0));
@@ -574,21 +612,21 @@
     const list = RECIPES.filter(known);
     const card = r => {
       const n = canMake(r);
-      const out = r.isProc ? `得到 ${r.emoji}×${r.yield} · 仓库 ${S.inventory[r.id] || 0}` : `库存 ${S.dishStock[r.id] || 0} 份 · 🪙${priceOf(r)} · Lv.${masteryLv(r.id)}`;
+      const out = r.isProc ? T("得到 {0}×{1} · 仓库 {2}", r.emoji, r.yield, S.inventory[r.id] || 0) : T("库存 {0} 份 · 🪙{1} · Lv.{2}", S.dishStock[r.id] || 0, priceOf(r), masteryLv(r.id));
       return `<div class="card">${r.isProc ? ingArt(r.id, "m") : dishArt(r, "m")}
         <div class="name">${r.name}</div>
         <div class="meta">${r.ingredients.map(x => `<span class="${(S.inventory[x] || 0) ? "" : "missing"}">${ING[x].emoji}${S.inventory[x] || 0}</span>`).join(" ")} · ${methodText(r.method)}</div>
         <div class="meta">${out}</div>
         <div class="row">
-          <button data-make="${r.id}" data-n="1" ${n < 1 ? "disabled" : ""}>做 1 次</button>
-          <button class="ghost" data-make="${r.id}" data-n="${n}" ${n < 2 ? "disabled" : ""}>全做${n > 1 ? " ×" + n : ""}</button>
+          <button data-make="${r.id}" data-n="1" ${n < 1 ? "disabled" : ""}>${T("做 1 次")}</button>
+          <button class="ghost" data-make="${r.id}" data-n="${n}" ${n < 2 ? "disabled" : ""}>${T("全做")}${n > 1 ? " ×" + n : ""}</button>
         </div></div>`;
     };
     const procs = list.filter(r => r.isProc), dishes = list.filter(r => !r.isProc);
     $("quickCook").innerHTML = list.length
-      ? `${procs.length ? `<div class="bag-label wide">加工品</div>${procs.map(card).join("")}` : ""}
-         ${dishes.length ? `<div class="bag-label wide">料理</div>${dishes.map(card).join("")}` : ""}`
-      : `<p class="sub">还没有研发出任何东西。先在锅里试试看吧！</p>`;
+      ? `${procs.length ? `<div class="bag-label wide">${T("加工品")}</div>${procs.map(card).join("")}` : ""}
+         ${dishes.length ? `<div class="bag-label wide">${T("料理")}</div>${dishes.map(card).join("")}` : ""}`
+      : `<p class="sub">${T("还没有研发出任何东西。先在锅里试试看吧！")}</p>`;
   }
   // 做 n 次：加工品进背包（每次产 yield 份），料理进成菜库存
   function make(r, n) {
@@ -604,7 +642,7 @@
     const r = RECIPES.find(x => x.id === id), n = make(r, +e.target.dataset.n);
     if (n) {
       save();
-      toast(r.isProc ? `加工好了 ${r.emoji} ${r.name} ×${n * r.yield}` : `做好了 ${r.emoji} ${r.name} ×${n}，去店铺上架吧`);
+      toast(r.isProc ? T("加工好了 {0} {1} ×{2}", r.emoji, r.name, n * r.yield) : T("做好了 {0} {1} ×{2}，去店铺上架吧", r.emoji, r.name, n));
       renderAll();
     }
   });
@@ -629,49 +667,49 @@
   const key = arr => [...arr].sort().join("|");
   $("cookBtn").addEventListener("click", () => {
     const msg = $("cookMsg");
-    if (!pot.length) { msg.textContent = "锅里还是空的呢～"; return; }
-    if (!method) { msg.textContent = "先在锅边选一个做法吧"; return; }
+    if (!pot.length) { msg.textContent = T("锅里还是空的呢～"); return; }
+    if (!method) { msg.textContent = T("先在锅边选一个做法吧"); return; }
     const set = new Set(pot);
     const back = () => { pot = []; renderKitchen(); };
-    if (pot.length !== set.size) { msg.textContent = "同一种食材放一份就够啦。（食材已退回）"; return back(); }
+    if (pot.length !== set.size) { msg.textContent = T("同一种食材放一份就够啦。（食材已退回）"); return back(); }
     const sameIngs = RECIPES.filter(r => key(r.ingredients) === key(pot));
     const match = sameIngs.find(r => r.method === method && (r.isProc || hasBook(r.id)));
     const needBook = sameIngs.find(r => r.method === method && !r.isProc && !hasBook(r.id));
     if (needBook) {
-      msg.textContent = `这道菜好像记在《${bookOf(needBook.id).name}》里……去商店街的书店买下这本食谱书再来研发吧。（食材已退回）`;
+      msg.textContent = T("这道菜好像记在《{0}》里……去商店街的书店买下这本食谱书再来研发吧。（食材已退回）", bookOf(needBook.id).name);
       return back();
     }
     if (!match) {   // 零惩罚：食材原样退回，只给温馨提示
-      let tip = "这个组合好像不太对劲……食材已经退回背包，换个搭配试试吧。";
+      let tip = T("这个组合好像不太对劲……食材已经退回背包，换个搭配试试吧。");
       const close = RECIPES.find(r => r.ingredients.every(x => set.has(x)) || [...set].every(x => r.ingredients.includes(x)));
-      if (sameIngs.length) tip = `食材对了！但“${METHOD[method].name}”好像不是正确的做法……（食材已退回）`;
-      else if (close && [...set].every(x => close.ingredients.includes(x))) tip = "闻起来有点意思！好像还少了点什么。（食材已退回）";
-      else if (close) tip = "味道有点杂，也许有的食材是多余的？（食材已退回）";
+      if (sameIngs.length) tip = T("食材对了！但“{0}”好像不是正确的做法……（食材已退回）", METHOD[method].name);
+      else if (close && [...set].every(x => close.ingredients.includes(x))) tip = T("闻起来有点意思！好像还少了点什么。（食材已退回）");
+      else if (close) tip = T("味道有点杂，也许有的食材是多余的？（食材已退回）");
       msg.textContent = tip; return back();
     }
     pot = [];
     make(match, 1);
     if (known(match)) {
       save();
-      msg.textContent = match.isProc ? `加工好了 ${match.name} ×${match.yield}，已放进背包。` : `做好了一份「${match.name}」，去店铺上架吧！`;
+      msg.textContent = match.isProc ? T("加工好了 {0} ×{1}，已放进背包。", match.name, match.yield) : T("做好了一份「{0}」，去店铺上架吧！", match.name);
       renderAll(); return;
     }
     msg.textContent = "";
     if (match.isProc) {
       S.processed.push(match.id); save();
       showModal(`${ingArt(match.id, "xl")}
-        <h2>新加工品：${match.name}！</h2>
+        <h2>${T("新加工品：{0}！", match.name)}</h2>
         <p>${match.desc}</p>
-        <p>得到 ${match.emoji} ${match.name} ×${match.yield}，已放进背包。<br>配方：${recipeText(match)}</p>
-        <button class="primary" data-close>收入食材图鉴</button>`);
+        <p>${T("得到 {0} {1} ×{2}，已放进背包。", match.emoji, match.name, match.yield)}<br>${T("配方：{0}", recipeText(match))}</p>
+        <button class="primary" data-close>${T("收入食材图鉴")}</button>`);
     } else {
       S.dishes.push(match.id); save();
       lastUnlocked = match.id;
       showModal(`${dishArt(match, "xl")}
-        <h2>研发成功：${match.name}！</h2>
+        <h2>${T("研发成功：{0}！", match.name)}</h2>
         <p>${match.story}</p>
-        <p>已做好 1 份，可以拿去店铺卖 <b style="color:var(--accent-2)">🪙${priceOf(match)}</b> / 份。<br>以后在厨房“已会做的”里可以一键出餐。</p>
-        <button class="primary" data-close>收入图鉴</button>`);
+        <p>${T("已做好 1 份，可以拿去店铺卖 <b style=\"color:var(--accent-2)\">🪙{0}</b> / 份。", priceOf(match))}<br>${T("以后在厨房“已会做的”里可以一键出餐。")}</p>
+        <button class="primary" data-close>${T("收入图鉴")}</button>`);
     }
     renderAll();
   });
@@ -680,31 +718,31 @@
   function renderShop() {
     const iv = sellIntervalMs(), now = Date.now();
     const bp = bonus("sellPrice"), bs = bonus("sellSpeed");
-    $("shopBonus").innerHTML = `每个货架约 ${(iv / 1000).toFixed(1)} 秒卖出一份${bp ? ` · 卖价 +${pct(bp)}` : ""}${bs ? ` · 顾客速度 +${pct(bs)}` : ""} · 累计卖出 ${S.sold} 份`;
+    $("shopBonus").innerHTML = T("每个货架约 {0} 秒卖出一份", (iv / 1000).toFixed(1)) + (bp ? " " + T("· 卖价 +{0}", pct(bp)) : "") + (bs ? " " + T("· 顾客速度 +{0}", pct(bs)) : "") + " " + T("· 累计卖出 {0} 份", S.sold);
     const stocked = D.dishes.filter(d => (S.dishStock[d.id] || 0) > 0);
     $("shelves").innerHTML = S.shelves.map((sh, idx) => {
       if (!sh.dish) {
         return `<div class="card shelf empty-shelf">${emoArt("🧺", "l", "shelf" + idx)}
-          <div class="name">空货架 ${idx + 1}</div>
+          <div class="name">${T("空货架 {0}", idx + 1)}</div>
           <div class="row col">${stocked.length ? stocked.map(d =>
-            `<button data-stock="${d.id}" data-idx="${idx}">摆上 ${d.emoji}${d.name}（${S.dishStock[d.id]}）</button>`).join("")
-            : `<span class="meta">没有成菜可以上架，先去厨房做菜吧</span>`}</div></div>`;
+            `<button data-stock="${d.id}" data-idx="${idx}">${T("摆上 {0}{1}（{2}）", d.emoji, d.name, S.dishStock[d.id])}</button>`).join("")
+            : `<span class="meta">${T("没有成菜可以上架，先去厨房做菜吧")}</span>`}</div></div>`;
       }
       const d = DISH[sh.dish], stock = S.dishStock[d.id] || 0;
       const prog = sh.count > 0 ? Math.min(1, (now - sh.last) / iv) : 0;
       return `<div class="card shelf ${sh.count ? "" : "sold-out"}">${dishArt(d, "l")}
         <div class="name">${d.name}</div>
-        <div class="meta">${sh.count ? `在售 ${sh.count}/${SH.shelfCapacity} 份 · 🪙${priceOf(d)}/份` : "已售罄！"}</div>
+        <div class="meta">${sh.count ? T("在售 {0}/{1} 份 · 🪙{2}/份", sh.count, SH.shelfCapacity, priceOf(d)) : T("已售罄！")}</div>
         <div class="bar"><i style="width:${prog * 100}%"></i></div>
-        <div class="meta">${sh.count ? `下一位顾客 ${fmtTime((iv - (now - sh.last)) / 1000)}` : `库存还有 ${stock} 份`}</div>
+        <div class="meta">${sh.count ? T("下一位顾客 {0}", fmtTime((iv - (now - sh.last)) / 1000)) : T("库存还有 {0} 份", stock)}</div>
         <div class="row">
-          <button data-restock="${idx}" ${!stock || sh.count >= SH.shelfCapacity ? "disabled" : ""}>补货</button>
-          <button class="ghost" data-unstock="${idx}">撤下</button>
+          <button data-restock="${idx}" ${!stock || sh.count >= SH.shelfCapacity ? "disabled" : ""}>${T("补货")}</button>
+          <button class="ghost" data-unstock="${idx}">${T("撤下")}</button>
         </div></div>`;
     }).join("");
     $("shelfExpand").innerHTML = S.shelfCount - SH.startShelves < SH.expandCosts.length
-      ? `<button class="ghost" data-goshop="hardware">🔨 想要更多货架？去商店街的五金店扩建</button>`
-      : `<span class="sub">货架已经扩建到最大啦</span>`;
+      ? `<button class="ghost" data-goshop="hardware">${T("🔨 想要更多货架？去商店街的五金店扩建")}</button>`
+      : `<span class="sub">${T("货架已经扩建到最大啦")}</span>`;
   }
   function stockShelf(sh, dishId) {
     const room = SH.shelfCapacity - (sh.dish === dishId ? sh.count : 0), n = Math.min(room, S.dishStock[dishId] || 0);
@@ -717,11 +755,11 @@
     const t = e.target.closest("button"); if (!t) return;
     if (t.dataset.stock) {
       const n = stockShelf(S.shelves[+t.dataset.idx], t.dataset.stock);
-      if (n) { save(); toast(`上架了 ${DISH[t.dataset.stock].name} ×${n}`); renderAll(); }
+      if (n) { save(); toast(T("上架了 {0} ×{1}", DISH[t.dataset.stock].name, n)); renderAll(); }
     }
     if (t.dataset.restock !== undefined) {
       const sh = S.shelves[+t.dataset.restock], n = stockShelf(sh, sh.dish);
-      if (n) { save(); toast(`补货 ×${n}`); renderAll(); }
+      if (n) { save(); toast(T("补货 ×{0}", n)); renderAll(); }
     }
     if (t.dataset.unstock !== undefined) {
       const sh = S.shelves[+t.dataset.unstock];
@@ -810,7 +848,7 @@
   function cityProgress(id) {
     const total = D.dishes.filter(d => d.city === id).length;
     const done = D.dishes.filter(d => d.city === id && S.dishes.includes(d.id)).length;
-    return `图鉴 ${done}/${total}`;
+    return T("图鉴 {0}/{1}", done, total);
   }
   function openPopup(id, evt) {
     const c = CITY[id], open = S.cities.includes(id);
@@ -820,9 +858,9 @@
     pop.style.top = (pin.top - wrap.top + 8) + "px";
     pop.innerHTML = `<button class="x" data-closepop>×</button>
       <div class="name">${open ? c.emoji : "🔒"} ${c.name}</div>
-      <div class="meta">${c.desc}<br>${open ? cityProgress(id) : `开通需要 🪙 ${fmt(c.unlockCost)}`}</div>
-      ${open ? `<button data-go="${id}">逛商店街</button>`
-             : `<button data-unlock="${id}" ${G() < c.unlockCost ? "disabled" : ""}>开通航线</button>`}`;
+      <div class="meta">${c.desc}<br>${open ? cityProgress(id) : T("开通需要 🪙 {0}", fmt(c.unlockCost))}</div>
+      ${open ? `<button data-go="${id}">${T("逛商店街")}</button>`
+             : `<button data-unlock="${id}" ${G() < c.unlockCost ? "disabled" : ""}>${T("开通航线")}</button>`}`;
     pop.classList.remove("hidden");
   }
   $("worldMap").addEventListener("click", e => {
@@ -840,9 +878,9 @@
         ${open ? emoArt(c.emoji, "xl", c.id) : lockArt("xl")}
         <div class="name">${c.name}</div>
         <div class="meta">${c.desc}</div>
-        <div class="meta">${open ? cityProgress(c.id) : `开通需要 🪙 ${fmt(c.unlockCost)}`}</div>
-        <div class="row">${open ? `<button data-go="${c.id}">逛商店街</button>`
-          : `<button data-unlock="${c.id}" ${G() < c.unlockCost ? "disabled" : ""}>开通航线</button>`}</div>
+        <div class="meta">${open ? cityProgress(c.id) : T("开通需要 🪙 {0}", fmt(c.unlockCost))}</div>
+        <div class="row">${open ? `<button data-go="${c.id}">${T("逛商店街")}</button>`
+          : `<button data-unlock="${c.id}" ${G() < c.unlockCost ? "disabled" : ""}>${T("开通航线")}</button>`}</div>
       </div>`;
     }).join("");
   }
@@ -853,9 +891,9 @@
     if (un && spend(CITY[un].unlockCost)) {
       S.cities.push(un); save();
       const farmNew = D.farm.items.filter(f => f.city === un).map(f => f.emoji + f.name).join("、");
-      showModal(`<div class="big">✈️</div><h2>${CITY[un].name}航线已开通！</h2>
-        <p>${CITY[un].desc}<br>去当地集市看看有什么新食材吧。${farmNew ? `<br>农场也可以养/种 ${farmNew} 啦。` : ""}</p>
-        <button class="primary" data-close>出发</button>`);
+      showModal(`<div class="big">✈️</div><h2>${T("{0}航线已开通！", CITY[un].name)}</h2>
+        <p>${CITY[un].desc}<br>${T("去当地集市看看有什么新食材吧。")}${farmNew ? `<br>${T("农场也可以养/种 {0} 啦。", farmNew)}` : ""}</p>
+        <button class="primary" data-close>${T("出发")}</button>`);
       streetTab = "food"; switchTab("market");
     }
   }
@@ -880,14 +918,14 @@
         const pr = priceOfIng(i);
         return `<div class="card ${i.todo ? "todo" : ""}">${ingArt(i.id, "l")}
           <div class="name">${i.name}</div>
-          <div class="meta">${i.city ? `${CITY[i.city].emoji} ${CITY[i.city].name} · ` : ""}🪙 ${pr} / 份${i.todo ? "（临时价）" : ""}</div>
-          <div class="meta">仓库 ${S.inventory[i.id] || 0}</div>
+          <div class="meta">${i.city ? `${CITY[i.city].emoji} ${CITY[i.city].name} · ` : ""}🪙 ${pr} ${T("/ 份")}${i.todo ? T("（临时价）") : ""}</div>
+          <div class="meta">${T("仓库")} ${S.inventory[i.id] || 0}</div>
           <div class="row">
-            <button data-buy="${i.id}" data-n="1" ${G() < pr ? "disabled" : ""}>买 1</button>
-            <button class="ghost" data-buy="${i.id}" data-n="10" ${G() < pr * 10 ? "disabled" : ""}>买 10</button>
+            <button data-buy="${i.id}" data-n="1" ${G() < pr ? "disabled" : ""}>${T("买 1")}</button>
+            <button class="ghost" data-buy="${i.id}" data-n="10" ${G() < pr * 10 ? "disabled" : ""}>${T("买 10")}</button>
           </div></div>`;
       }).join("");
-    }).join("") || `<p class="sub">还没有可买的食材。</p>`;
+    }).join("") || `<p class="sub">${T("还没有可买的食材。")}</p>`;
   }
   function renderBookstore() {
     $("bookstore").innerHTML = D.books.map(b => {
@@ -896,9 +934,9 @@
       const cover = `<div class="card book-cover ${own ? "" : "locked"}">${emoArt(b.emoji, "xl", "book-" + b.id)}
         <div class="name">《${b.name}》</div>
         <div class="meta">${b.desc}</div>
-        <div class="meta">共 ${b.dishes.length} 道菜 · 已研发 ${done}</div>
-        <div class="row">${own ? `<span class="meta">✔ 已拥有</span>`
-          : `<button data-book="${b.id}" ${G() < b.price ? "disabled" : ""}>购买 🪙${fmt(b.price)}</button>`}</div></div>`;
+        <div class="meta">${T("共 {0} 道菜 · 已研发 {1}", b.dishes.length, done)}</div>
+        <div class="row">${own ? `<span class="meta">${T("✔ 已拥有")}</span>`
+          : `<button data-book="${b.id}" ${G() < b.price ? "disabled" : ""}>${T("购买 🪙{0}", fmt(b.price))}</button>`}</div></div>`;
       const pages = b.dishes.map(id => {
         const d = DISH[id];
         return `<div class="card dish-mini ${S.dishes.includes(id) ? "" : "locked"}">${(own || DEV()) ? dishArt(d, "m") : lockArt("m")}<div class="name">${(own || DEV()) ? d.name : "？？？"}</div></div>`;
@@ -910,28 +948,28 @@
     const methods = D.methods.filter(m => m.unlockCost).map(m => {
       const own = S.methods.includes(m.id);
       return `<div class="card">${emoArt(m.emoji, "l", "m-" + m.id)}
-        <div class="name">${m.name}</div><div class="meta">新的食材制作方式</div>
-        <div class="row">${own ? `<span class="meta">✔ 已解锁</span>`
+        <div class="name">${m.name}</div><div class="meta">${T("新的食材制作方式")}</div>
+        <div class="row">${own ? `<span class="meta">${T("✔ 已解锁")}</span>`
           : `<button data-method-buy="${m.id}" ${G() < m.unlockCost ? "disabled" : ""}>🪙 ${fmt(m.unlockCost)}</button>`}</div></div>`;
     }).join("");
     const plotCard = (k, label, emoji) => {
       const costs = k === "fields" ? FM.fieldExpandCosts : FM.penExpandCosts;
       const extra = S[k].length - (k === "fields" ? FM.fieldPlots : FM.pens);
       return `<div class="card">${emoArt(emoji, "l", "hw-" + k)}
-        <div class="name">新${label}</div><div class="meta">现有 ${S[k].length} 块</div>
+        <div class="name">${T("新{0}", label)}</div><div class="meta">${T("现有 {0} 块", S[k].length)}</div>
         <div class="row">${extra < costs.length
           ? `<button data-expand="${k}" ${G() < costs[extra] ? "disabled" : ""}>🪙 ${fmt(costs[extra])}</button>`
-          : `<span class="meta">已到上限</span>`}</div></div>`;
+          : `<span class="meta">${T("已到上限")}</span>`}</div></div>`;
     };
     const extraShelf = S.shelfCount - SH.startShelves;
     const shelf = `<div class="card">${emoArt("🧺", "l", "hw-shelf")}
-      <div class="name">新货架</div><div class="meta">现有 ${S.shelfCount} 个</div>
+      <div class="name">${T("新货架")}</div><div class="meta">${T("现有 {0} 个", S.shelfCount)}</div>
       <div class="row">${extraShelf < SH.expandCosts.length
         ? `<button data-shelf-buy="1" ${G() < SH.expandCosts[extraShelf] ? "disabled" : ""}>🪙 ${fmt(SH.expandCosts[extraShelf])}</button>`
-        : `<span class="meta">已到上限</span>`}</div></div>`;
-    $("hardware").innerHTML = `<div class="bag-label wide cat-head">🍳 新食材制作方式</div>${methods}
-      <div class="bag-label wide cat-head">🌾 新农场</div>${plotCard("fields", "菜地", "🟫")}${plotCard("pens", "畜栏", "🛖")}
-      <div class="bag-label wide cat-head">🏪 新店（货架）</div>${shelf}`;
+        : `<span class="meta">${T("已到上限")}</span>`}</div></div>`;
+    $("hardware").innerHTML = `<div class="bag-label wide cat-head">${T("🍳 新食材制作方式")}</div>${methods}
+      <div class="bag-label wide cat-head">${T("🌾 新农场")}</div>${plotCard("fields", T("菜地"), "🟫")}${plotCard("pens", T("畜栏"), "🛖")}
+      <div class="bag-label wide cat-head">${T("🏪 新店（货架）")}</div>${shelf}`;
   }
   $("streetTabs").addEventListener("click", e => {
     const b = e.target.closest("[data-street]"); if (!b) return;
@@ -942,33 +980,33 @@
     const extra = S[k].length - (k === "fields" ? FM.fieldPlots : FM.pens);
     if (extra >= costs.length || !spend(costs[extra])) return;
     if (k === "fields") S.fieldCount++; else S.penCount++;
-    normalize(); save(); toast(`农场多了一块${k === "fields" ? "菜地" : "畜栏"}！`); renderAll();
+    normalize(); save(); toast(T("农场多了一块{0}！", k === "fields" ? T("菜地") : T("畜栏"))); renderAll();
   }
   $("tab-market").addEventListener("click", e => {
     const t = e.target.closest("button"); if (!t || t.disabled) return;
     const id = t.dataset.buy;
     if (id) {
       const n = +t.dataset.n, i = ING[id];
-      if (spend(priceOfIng(i) * n)) { addIng(id, n); S.stats.bought += n; save(); toast(`买到了 ${i.emoji} ${i.name} ×${n}`); renderAll(); }
+      if (spend(priceOfIng(i) * n)) { addIng(id, n); S.stats.bought += n; save(); toast(`${T("买到了")} ${i.emoji} ${i.name} ×${n}`); renderAll(); }
     }
     if (t.dataset.book) {
       const b = BOOK[t.dataset.book];
       if (spend(b.price)) {
         S.books.push(b.id); save();
-        showModal(`<div class="big">${b.emoji}</div><h2>买下了《${b.name}》！</h2>
-          <p>${b.desc}<br>书里的 ${b.dishes.length} 道菜已经记进“我的家 → 料理图鉴”，看着提示去厨房研发吧。</p>
-          <button class="primary" data-close>翻开看看</button>`);
+        showModal(`<div class="big">${b.emoji}</div><h2>${T("买下了《{0}》！", b.name)}</h2>
+          <p>${b.desc}<br>${T("书里的 {0} 道菜已经记进“我的家 → 料理图鉴”，看着提示去厨房研发吧。", b.dishes.length)}</p>
+          <button class="primary" data-close>${T("翻开看看")}</button>`);
         renderAll();
       }
     }
     if (t.dataset.methodBuy) {
       const m = METHOD[t.dataset.methodBuy];
-      if (spend(m.unlockCost)) { S.methods.push(m.id); save(); toast(`解锁了新做法：${m.emoji} ${m.name}`); renderAll(); }
+      if (spend(m.unlockCost)) { S.methods.push(m.id); save(); toast(`${T("解锁了新做法：")}${m.emoji} ${m.name}`); renderAll(); }
     }
     if (t.dataset.expand) expandPlot(t.dataset.expand);
     if (t.dataset.shelfBuy) {
       const cost = SH.expandCosts[S.shelfCount - SH.startShelves];
-      if (cost !== undefined && spend(cost)) { S.shelfCount++; normalize(); save(); toast("小店多了一个货架！"); renderAll(); }
+      if (cost !== undefined && spend(cost)) { S.shelfCount++; normalize(); save(); toast(T("小店多了一个货架！")); renderAll(); }
     }
   });
   // 农场 / 店铺里的“去五金店”按钮
@@ -995,13 +1033,13 @@
     D.achievements.forEach(a => {
       if (S.achievements.includes(a.id) || achProgress(a) < a.target) return;
       S.achievements.push(a.id); S.gold += a.reward; got++;
-      setTimeout(() => toast(`🏆 达成成就「${a.name}」！奖励 🪙${a.reward}`), 300 + got * 1900);
+      setTimeout(() => toast(T("🏆 达成成就「{0}」！奖励 🪙{1}", a.name, a.reward)), 300 + got * 1900);
     });
     if (got) { save(); renderTop(); }
   }
   function renderAchievements() {
     const done = S.achievements.length, total = D.achievements.length;
-    $("achList").innerHTML = `<div class="dex-total wide">已达成 <b>${done}</b> / ${total} 个成就</div>` + ACAT.map(c => {
+    $("achList").innerHTML = `<div class="dex-total wide">${T("已达成 <b>{0}</b> / {1} 个成就", done, total)}</div>` + ACAT.map(c => {
       const list = D.achievements.filter(a => a.cat === c.id);
       const n = list.filter(a => S.achievements.includes(a.id)).length;
       return `<div class="bag-label wide cat-head">${c.emoji} ${c.name} <small>${n}/${list.length}</small></div>` + list.map(a => {
@@ -1011,7 +1049,7 @@
           <div class="name">${a.name}</div>
           <div class="meta">${a.desc}</div>
           <div class="bar"><i style="width:${v / a.target * 100}%"></i></div>
-          <div class="meta">${ok ? "✔ 已达成" : `${v} / ${a.target}`} · 🪙${a.reward}</div>
+          <div class="meta">${ok ? T("✔ 已达成") : `${v} / ${a.target}`} · 🪙${a.reward}</div>
         </div>`;
       }).join("");
     }).join("");
@@ -1031,18 +1069,18 @@
         const ings = d.ingredients.map(x => `<span class="${(S.inventory[x] || 0) ? "" : "missing"}">${ING[x].emoji}${ING[x].name}</span>`).join(" + ");
         return `<div class="bv-row">
           ${dishArt(d, "s")}
-          <div class="bv-main"><b>${d.name}</b> ${got ? `<small>✔ Lv.${masteryLv(d.id)}</small>` : `<small>未研发</small>`}<br>
+          <div class="bv-main"><b>${d.name}</b> ${got ? `<small>✔ Lv.${masteryLv(d.id)}</small>` : `<small>${T("未研发")}</small>`}<br>
             <span class="bv-ings">${ings} · ${METHOD[d.method].emoji}${METHOD[d.method].name}${mOk ? "" : " 🔒"}</span></div>
-          <button class="ghost" data-fill="${d.id}">放进锅里</button>
+          <button class="ghost" data-fill="${d.id}">${T("放进锅里")}</button>
         </div>`;
       }).join("");
     }).join("");
-    if (!books.length) html = `<p class="sub">还没有食谱书，去商店街的书店看看吧。</p>`;
-    else if (!html) html = `<p class="sub">没有找到和“${bookQuery}”有关的食谱。</p>`;
+    if (!books.length) html = `<p class="sub">${T("还没有食谱书，去商店街的书店看看吧。")}</p>`;
+    else if (!html) html = `<p class="sub">${T("没有找到和“{0}”有关的食谱。", bookQuery)}</p>`;
     $("bookViewerList").innerHTML = html;
   }
   $("openBooks").addEventListener("click", openBookViewer);
-  $("bookSearch").addEventListener("input", e => { bookQuery = e.target.value; renderBookViewer(); });
+  $("bookSearch").addEventListener("input", debounce(e => { bookQuery = e.target.value; renderBookViewer(); }));
   $("bookViewer").addEventListener("click", e => {
     if (e.target.id === "bookViewer" || e.target.hasAttribute("data-closebv")) { $("bookViewer").classList.add("hidden"); return; }
     const b = e.target.closest("[data-fill]"); if (!b) return;
@@ -1052,7 +1090,7 @@
     if (DEV() || S.methods.includes(d.method)) method = d.method;
     $("bookViewer").classList.add("hidden");
     renderKitchen();
-    $("cookMsg").textContent = missing.length ? `还缺：${missing.join("、")}。先去商店街或农场弄来吧。` : `「${d.name}」的食材已经放好，点“下锅！”吧。`;
+    $("cookMsg").textContent = missing.length ? T("还缺：{0}。先去商店街或农场弄来吧。", missing.join("、")) : T("「{0}」的食材已经放好，点“下锅！”吧。", d.name);
   });
 
   // ---------- 渲染与主循环 ----------
@@ -1092,27 +1130,30 @@
       if (currentTab === "home" && homeSub === "furniture") renderFurniture();
     }
     if (saveAcc > 5) { saveAcc = 0; save(); }
-    requestAnimationFrame(tick);
   }
   window.addEventListener("beforeunload", save);
-  document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { save(); return; }
+    last = performance.now(); shopAcc = 1; uiAcc = 2;     // 切回来：马上结算店铺、刷新界面
+    tick(last); renderAll();
+  });
 
   // 测试用：网址后加 ?debug，在“设置”里出现调试按钮
   if (location.search.includes("debug")) {
-    $("debugRow").innerHTML = `<div class="setting-row"><span>🧪 调试</span><span>
-      <button class="ghost" id="dbgGold">+5000 金币</button>
-      <button class="ghost" id="dbgTime">时间快进 5 分钟</button></span></div>`;
+    $("debugRow").innerHTML = `<div class="setting-row"><span>${T("🧪 调试")}</span><span>
+      <button class="ghost" id="dbgGold">${T("+5000 金币")}</button>
+      <button class="ghost" id="dbgTime">${T("时间快进 5 分钟")}</button></span></div>`;
     $("dbgGold").onclick = () => { S.gold += 5000; renderAll(); };
     $("dbgTime").onclick = () => {
       const ms = 5 * 60 * 1000;
       S.shelves.forEach(sh => sh.last -= ms);
       [...S.fields, ...S.pens].forEach(p => { p.last -= ms; });
-      processShop(Date.now()); save(); renderAll(); toast("时间快进了 5 分钟");
+      processShop(Date.now()); save(); renderAll(); toast(T("时间快进了 5 分钟"));
     };
   }
 
   renderTitle();
   switchTab("home");
   preloadArt();
-  requestAnimationFrame(tick);
+  setInterval(() => { if (!document.hidden) tick(performance.now()); }, 250);   // 页面不可见时不跑；店铺 / 农场按时间戳结算，不依赖帧率
 })();
