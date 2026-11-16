@@ -18,3 +18,5 @@
 | 面粉类·需要自己做的（开发中） | tart_shell, rice_flour, french_bread, choux, dough, hard_dough, monaka_shell, pizza_base, baguette, danish, croissant, hotdog_bun, toast, bagel_dough, bagel |
 | 畜产类·原本有的（开发中） | cream, custard, milk, cream_cheese, butter, caramel, sausage, bacon, chicken, roast_beef, condensed_milk |
 | 畜产类·需要自己做的（开发中） | cheese, yogurt |
+| 农作物类·原本有的（开发中） | red_bean, rice, glutinous_rice, matcha, black_tea, coffee_bean, pumpkin, sweet_potato, mugwort, potato, ginger, corn, black_sesame, lettuce, spinach, tomato, carrot, onion, rye, mushroom, hojicha, mint, edible_rose, oats, white_kidney_bean, spicy_spice, garlic |
+| 农作物类·需要自己做的（开发中） | soy_milk |
