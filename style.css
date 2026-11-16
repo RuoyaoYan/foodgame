@@ -536,3 +536,20 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 .bv-row button { white-space: nowrap; }
 .bottom-nav button[data-tab="settings"].active { background: #e3dccf; }
 @media (max-width: 720px) { .bottom-nav button { min-width: 44px; font-size: 11px; padding: 4px 3px; } .bottom-nav .ni { font-size: 20px; } }
+
+/* 地图缩放 / 拖动 */
+#worldMap { touch-action: none; cursor: grab; overflow: hidden; border-radius: 12px; }
+#worldMap.dragging { cursor: grabbing; }
+#worldMap.dragging .pin { pointer-events: none; }
+.map-zoom {
+  position: absolute; right: 12px; top: 12px; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: rgba(255,250,240,.92); border: 2px solid var(--line); border-radius: 12px; padding: 4px; box-shadow: 2px 3px 0 rgba(91,58,40,.2);
+}
+.map-zoom button { width: 32px; height: 30px; font-size: 18px; line-height: 1; cursor: pointer; border: 2px solid var(--line); border-radius: 8px; background: #fffdf7; color: var(--ink); }
+.map-zoom button:hover { background: #fbe2c8; }
+#mapZoomLabel { font-size: 11px; color: var(--ink-soft); font-family: var(--hand); }
+/* 缩放时海岸线粗细不变；缩放按钮放左上角 */
+.worldmap .land-line, .worldmap .water, .map-frame { vector-effect: non-scaling-stroke; stroke-width: 2.2px; }
+.worldmap .water { stroke-width: 1.6px; }
+.worldmap .grid line { vector-effect: non-scaling-stroke; stroke-width: 1px; }
+.map-zoom { right: auto; left: 12px; }

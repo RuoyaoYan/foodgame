@@ -731,9 +731,81 @@
   });
 
   // ---------- 地图 ----------
+  // ---------- 世界地图：缩放 + 拖动 ----------
+  const MAP_FULL = { x: 6, y: 0, w: 356, h: 132 };
+  let mapView = { ...MAP_FULL };
+  const MIN_W = 40;
+  function clampView(v) {
+    v.w = Math.max(MIN_W, Math.min(MAP_FULL.w, v.w)); v.h = v.w * MAP_FULL.h / MAP_FULL.w;
+    v.x = Math.max(MAP_FULL.x, Math.min(MAP_FULL.x + MAP_FULL.w - v.w, v.x));
+    v.y = Math.max(MAP_FULL.y, Math.min(MAP_FULL.y + MAP_FULL.h - v.h, v.y));
+    return v;
+  }
+  function applyView() {
+    const svg = $("worldMap").querySelector("svg"); if (!svg) return;
+    svg.setAttribute("viewBox", `${mapView.x} ${mapView.y} ${mapView.w} ${mapView.h}`);
+    const k = Math.max(0.35, mapView.w / MAP_FULL.w);   // 放大时图钉和城市名保持差不多大小
+    svg.querySelectorAll(".pin").forEach(g => g.setAttribute("transform", `translate(${g.dataset.x},${g.dataset.y}) scale(${k})`));
+    svg.querySelectorAll(".route").forEach(r => r.style.strokeWidth = 0.9 * k);
+    $("mapZoomLabel").textContent = Math.round(MAP_FULL.w / mapView.w * 100) + "%";
+    $("mapPopup").classList.add("hidden");
+  }
+  // 以地图上某点（0–1 的相对位置）为中心缩放
+  function zoomAt(factor, fx = 0.5, fy = 0.5) {
+    const nw = Math.max(MIN_W, Math.min(MAP_FULL.w, mapView.w / factor));
+    const px = mapView.x + mapView.w * fx, py = mapView.y + mapView.h * fy;
+    const nh = nw * MAP_FULL.h / MAP_FULL.w;
+    mapView = clampView({ x: px - nw * fx, y: py - nh * fy, w: nw, h: nh });
+    applyView();
+  }
+  (function setupMapControls() {
+    const box = $("worldMap");
+    const rel = (cx, cy) => { const r = box.getBoundingClientRect(); return [(cx - r.left) / r.width, (cy - r.top) / r.height]; };
+    box.addEventListener("wheel", e => {
+      e.preventDefault();
+      const [fx, fy] = rel(e.clientX, e.clientY);
+      zoomAt(e.deltaY < 0 ? 1.25 : 0.8, fx, fy);
+    }, { passive: false });
+    let drag = null, moved = false;
+    const pointers = new Map();
+    let pinch = null;
+    box.addEventListener("pointerdown", e => {
+      pointers.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), w: mapView.w };
+        drag = null; return;
+      }
+      drag = { x: e.clientX, y: e.clientY, vx: mapView.x, vy: mapView.y }; moved = false;
+    });
+    window.addEventListener("pointermove", e => {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pinch && pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        const [fx, fy] = rel((a[0] + b[0]) / 2, (a[1] + b[1]) / 2);
+        zoomAt((mapView.w / pinch.w) * (d / pinch.d), fx, fy); moved = true; return;
+      }
+      if (!drag) return;
+      const r = box.getBoundingClientRect();
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) { moved = true; box.classList.add("dragging"); }
+      mapView = clampView({ ...mapView, x: drag.vx - dx / r.width * mapView.w, y: drag.vy - dy / r.height * mapView.h });
+      applyView();
+    });
+    const end = e => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; if (!pointers.size) { drag = null; box.classList.remove("dragging"); } };
+    window.addEventListener("pointerup", end); window.addEventListener("pointercancel", end);
+    // 拖动后松手不算点击
+    box.addEventListener("click", e => { if (moved) { e.stopPropagation(); moved = false; } }, true);
+    $("mapZoomIn").addEventListener("click", () => zoomAt(1.5));
+    $("mapZoomOut").addEventListener("click", () => zoomAt(1 / 1.5));
+    $("mapZoomReset").addEventListener("click", () => { mapView = { ...MAP_FULL }; applyView(); });
+  })();
   function renderWorld() {
     $("worldMap").innerHTML = WorldMap.render(
       D.cities.map(c => ({ ...c, open: S.cities.includes(c.id) })), D.config.startCity);
+    applyView();
   }
   function cityProgress(id) {
     const total = D.dishes.filter(d => d.city === id).length;

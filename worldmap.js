@@ -67,7 +67,7 @@ window.WorldMap = (() => {
       const [x, y] = proj([c.lon, c.lat]);
       // 标签位置：data 里 city.label = t / b / l / r（上 / 下 / 左 / 右），默认在上方
       const L = { t: [0, -5.6, "middle"], b: [0, 8.6, "middle"], l: [-5.2, 1.6, "end"], r: [5.2, 1.6, "start"] }[c.label || "t"];
-      return `<g class="pin ${c.open ? "open" : "locked"}" data-city="${c.id}" transform="translate(${x},${y})">
+      return `<g class="pin ${c.open ? "open" : "locked"}" data-city="${c.id}" data-x="${x}" data-y="${y}" transform="translate(${x},${y})">
         <circle r="3.8" class="pin-bg"/>
         <text class="pin-emoji" y="1.5" text-anchor="middle">${c.open ? c.emoji : "🔒"}</text>
         <text class="pin-label" x="${L[0]}" y="${L[1]}" text-anchor="${L[2]}">${c.name}</text>

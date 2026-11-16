@@ -155,9 +155,15 @@
   <!-- 地图 -->
   <section id="tab-map" class="panel">
     <h2>世界地图</h2>
-    <p class="sub">点击城市：未开通的花金币开通航线，开通后当地食材会出现在商店街的食品街里。</p>
+    <p class="sub">滚轮或＋－缩放，按住拖动地图。点击城市：未开通的花金币开通航线，开通后当地食材会出现在商店街的食品街里。</p>
     <div class="map-wrap">
       <div id="worldMap"></div>
+      <div class="map-zoom">
+        <button id="mapZoomIn" title="放大">＋</button>
+        <span id="mapZoomLabel">100%</span>
+        <button id="mapZoomOut" title="缩小">－</button>
+        <button id="mapZoomReset" title="看全图">⤢</button>
+      </div>
       <div id="mapPopup" class="map-popup hidden"></div>
     </div>
     <div id="cityList" class="cards"></div>

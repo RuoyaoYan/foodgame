@@ -205,7 +205,7 @@
 | 北京 | 豆汁儿 | 绿豆 | 发酵（需五金店解锁） | 60 |
 
 #### 🌍 《世界风味（暂定）》 · 书店 🪙1500
-罗马、广州、东京、伦敦各两道名菜。暂定分组，之后会拆成各地的菜谱书。
+罗马、广州、东京、伦敦各两道名菜。暂定分组，之后会拆成各地的食谱书。
 
 | 城市 | 料理 | 配方 | 做法 | 售价 |
 |---|---|---|---|---|
@@ -225,6 +225,7 @@
 - **金币只来自店铺卖菜**。回到游戏时会弹窗告诉你离开期间卖了多少、农场攒了多少。
 
 ### 5. 🗺️ 地图与关卡
+- 地图可以**缩放和拖动**：鼠标滚轮或左上角 ＋／－ 缩放（最大约 9 倍），⤢ 回到全图；按住拖动平移；手机上双指缩放、单指拖动。放大时图钉和城市名保持大小不变，海岸线粗细也不变。
 - 手绘水彩世界地图。城市就是关卡，按顺序开通：**成都是新手关**——只用“直接加工”和“烤焗煎煮”两种不需要解锁的做法，所需食材全部在成都食品街就能买到。
 - 每座城市的菜只会用到它自己和之前城市的食材，不会出现“前面关卡买不到”的情况。
 - 点击城市：未开通的花金币“开通航线”（当地食材会出现在食品街，对应的农场项目也会解锁）；已开通的可以“逛商店街”。
@@ -467,7 +468,8 @@
 | 成就 | 料理发现、市场采购、烹饪方式、料理熟练四类，自动发金币 |
 | 设置 | 移到底部导航单独一项 |
 | 搜索 | 料理图鉴可搜索；厨房“查看食谱书”可搜索并一键放进锅里 |
-| 用词 | 菜品统一改称“料理”，菜谱书改称“食谱书” |
+| 用词 | 料理统一改称“料理”，食谱书改称“食谱书” |
+| 世界地图 | 可缩放、拖动 |
 | 料理图鉴 | 显示已解锁 / 总料理；小卡片，一行至少 10 个，点开看详情 |
 | 面条 | 改为由小麦粉制作（小麦粉在成都食品街），甜水面在成都就能做 |
 | 做法 | 7 种：直接加工、烤焗煎煮、发酵、蒸焖、油炸、做成饮料、冷冻；开局只有直接加工、烤焗煎煮，其余在五金店解锁 |
@@ -522,18 +524,18 @@
 
 **3. 手帐图鉴记录**
 - 研发成功后，伴随平滑的 3D 翻书动画，解锁精美的 AI 水彩手绘风插画。
-- 图鉴中包含菜品的历史渊源、文化科普，并永久增加全局的金币秒收益。
+- 图鉴中包含料理的历史渊源、文化科普，并永久增加全局的金币秒收益。
 
 ### 四、美术生成 Prompt
 
-**菜品生成 Prompt（原版）**
+**料理生成 Prompt（原版）**
 ```
 A 2D game UI asset of a SMALLER, deep plate/bowl of Chinese Mapo Tofu. Pure solid white background. Camera & Perspective: 45-degree angle view (3/4 perspective). You must clearly see both the delicious food inside AND the thick, curved outer wall/body of the deep plate. Proportions & Content: Make the overall size of the plate/bowl noticeably smaller. Reduce the portion size by using FEWER tofu cubes (around 10 to 12 cubes in total). The food fills this smaller deep plate naturally without overflowing, looking slightly less crowded. Show the physical thickness and outer body of the plate. Do NOT make a huge empty rim. Art Style & Outlines: Studio Ghibli food animation style. CRITICAL: The entire object (plate and food) MUST have heavy, thick, organic watercolor-style outlines in dark warm brown. The outlines should feel painterly, weighty, and hand-drawn, NOT sharp vector lines. Soft, hand-painted watercolor textures for the food, making it look glowing, juicy, and appetizing. UI Element: Add a distinct drop shadow directly underneath the plate to make it look like a pop-up 3D UI sticker. ONLY the plate of food. NO table, NO chopsticks, NO background details. Pure solid white background only.
 ```
 
-**菜品生成 Prompt（锁定版）**
+**料理生成 Prompt（锁定版）**
 ```
-A 2D game UI asset of a SMALLER, deep plate/bowl of 【填入菜品英文名，例如：Sweet and Sour Pork】. Pure solid white background.
+A 2D game UI asset of a SMALLER, deep plate/bowl of 【填入料理英文名，例如：Sweet and Sour Pork】. Pure solid white background.
 
 CRITICAL CONTAINER LOCK: The food MUST be served in the EXACT SAME container as before: a thick-walled, rustic ceramic shallow bowl (deep plate). The exterior is a warm, earthy light beige/tan with a slightly mottled watercolor texture, a thick rounded upper rim, and a subtle dark painted band around the lower base.
 
