@@ -488,3 +488,8 @@ main { padding: 22px 28px 120px; max-width: 1240px; margin: 0 auto; }
 /* v0.9：菜谱书 */
 .book-cover::before { background: linear-gradient(135deg, #fff3dc, #fbe1c4) !important; }
 .book-cover .name { font-size: 22px; }
+
+/* 地图图钉缩小，避免中国城市重叠 */
+.worldmap .pin-emoji { font-size: 4.4px; }
+.worldmap .pin-label { font-size: 4.2px; }
+.worldmap .pin:hover .pin-bg { r: 4.8; }
