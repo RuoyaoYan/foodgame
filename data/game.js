@@ -213,7 +213,26 @@ window.GAME_DATA = {
     { "id": "matcha_macaron", "category": "other", "kind": "processed", "todo": true, "name": "抹茶马卡龙", "emoji": "🍏", "desc": "绿色的马卡龙", "ref": "洋果子店：杏仁 + 砂糖 + 抹茶 · 烤焗" },
     { "id": "marshmallow", "category": "other", "kind": "processed", "todo": true, "name": "棉花软糖", "emoji": "☁️", "desc": "软软的棉花糖", "ref": "洋果子店：配方未查到" },
     { "id": "cotton_candy", "category": "other", "kind": "processed", "todo": true, "name": "棉花糖", "emoji": "🍭", "desc": "蓬松的糖丝", "ref": "洋果子店：砂糖 + 砂糖 · 直接制作" },
-    { "id": "mayonnaise", "category": "other", "kind": "processed", "todo": true, "name": "美乃滋", "emoji": "🧴", "desc": "蛋黄酱", "ref": "洋果子店：配方未查到" }
+    { "id": "mayonnaise", "category": "other", "kind": "processed", "todo": true, "name": "美乃滋", "emoji": "🧴", "desc": "蛋黄酱", "ref": "洋果子店：配方未查到" },
+    // ---------- 补充食材（开发中：来源、价格待定） ----------
+    { "id": "beef", "category": "livestock", "kind": "raw", "todo": true, "name": "牛肉", "emoji": "🦬", "desc": "生的牛肉" },
+    { "id": "lamb", "category": "livestock", "kind": "raw", "todo": true, "name": "羊肉", "emoji": "🐑", "desc": "生的羊肉" },
+    { "id": "duck", "category": "livestock", "kind": "raw", "todo": true, "name": "鸭肉", "emoji": "🦆", "desc": "鸭子的肉" },
+    { "id": "bok_choy", "category": "crop", "kind": "raw", "todo": true, "name": "青菜", "emoji": "🥗", "desc": "绿油油的小青菜" },
+    { "id": "green_pepper", "category": "crop", "kind": "raw", "todo": true, "name": "青椒", "emoji": "🫑", "desc": "不辣的青色辣椒" },
+    { "id": "pea", "category": "crop", "kind": "raw", "todo": true, "name": "豌豆", "emoji": "⚾", "desc": "圆滚滚的绿豆子" },
+    { "id": "celery", "category": "crop", "kind": "raw", "todo": true, "name": "芹菜", "emoji": "🪴", "desc": "清香的长茎蔬菜" },
+    { "id": "eggplant", "category": "crop", "kind": "raw", "todo": true, "name": "茄子", "emoji": "🍆", "desc": "紫色的蔬菜" },
+    { "id": "mung_bean", "category": "crop", "kind": "raw", "todo": true, "name": "绿豆", "emoji": "❇️", "desc": "小小的绿色豆子" },
+    { "id": "napa_cabbage", "category": "crop", "kind": "raw", "todo": true, "name": "白菜", "emoji": "🌳", "desc": "大大的一棵白菜" },
+    { "id": "daikon", "category": "crop", "kind": "raw", "todo": true, "name": "白萝卜", "emoji": "🦴", "desc": "白白的大萝卜" },
+    { "id": "peanut", "category": "crop", "kind": "raw", "todo": true, "name": "花生", "emoji": "🪨", "desc": "土里长出来的果仁" },
+    { "id": "chive", "category": "crop", "kind": "raw", "todo": true, "name": "韭菜", "emoji": "🧵", "desc": "细长的绿色叶子" },
+    { "id": "winter_melon", "category": "crop", "kind": "raw", "todo": true, "name": "冬瓜", "emoji": "🛢️", "desc": "很大的绿皮瓜" },
+    { "id": "lotus_root", "category": "crop", "kind": "raw", "todo": true, "name": "莲藕", "emoji": "🪷", "desc": "有很多孔的根" },
+    { "id": "green_bean", "category": "crop", "kind": "raw", "todo": true, "name": "豆角", "emoji": "🪈", "desc": "长长的豆荚" },
+    { "id": "bamboo_shoot", "category": "crop", "kind": "raw", "todo": true, "name": "竹笋", "emoji": "🗻", "desc": "竹子的嫩芽" },
+    { "id": "kelp", "category": "other", "kind": "raw", "todo": true, "name": "海带", "emoji": "🌊", "desc": "海里的宽叶海藻" }
   ],
 
   "dishes": [
