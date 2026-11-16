@@ -18,23 +18,46 @@ window.GAME_DATA = {
     "expandCosts": [600, 1500, 4000]
   },
 
+  // 城市按关卡顺序排列：成都是新手关（第 1 关），之后依次解锁。
   "cities": [
     { "id": "chengdu", "label": "l", "name": "成都", "emoji": "🐼", "unlockCost": 0,
-      "lat": 30.7, "lon": 104.1, "desc": "天府之国，麻辣鲜香。" },
-    { "id": "beijing", "label": "r", "name": "北京", "emoji": "🏯", "unlockCost": 2000,
-      "lat": 39.9, "lon": 116.4, "desc": "皇城根下，酱香浓郁。" },
-    { "id": "rome", "label": "r", "name": "罗马", "emoji": "🏛️", "unlockCost": 8000,
-      "lat": 41.9, "lon": 12.5, "desc": "永恒之城，一碗面的艺术。" },
-    { "id": "guangzhou", "label": "b", "name": "广州", "emoji": "🏮", "unlockCost": 4000,
-      "lat": 23.1, "lon": 113.3, "desc": "食在广州，一盅两件叹早茶。" },
-    { "id": "tokyo", "label": "r", "name": "东京", "emoji": "🗼", "unlockCost": 12000,
-      "lat": 35.7, "lon": 139.7, "desc": "职人精神，一汤一炸见真章。" },
-    { "id": "london", "label": "t", "name": "伦敦", "emoji": "💂", "unlockCost": 20000,
-      "lat": 51.5, "lon": -0.1, "desc": "雾都的下午茶与街角炸鱼店。" },
-    { "id": "xian", "label": "l", "name": "西安", "emoji": "🏺", "unlockCost": 3000,
+      "lat": 30.7, "lon": 104.1, "desc": "天府之国，麻辣鲜香。新手第一站。" },
+    { "id": "xian", "label": "t", "name": "西安", "emoji": "🏺", "unlockCost": 1500,
       "lat": 34.3, "lon": 108.9, "desc": "十三朝古都，一碗面一个馍。" },
-    { "id": "harbin", "label": "t", "name": "哈尔滨", "emoji": "⛄", "unlockCost": 6000,
-      "lat": 45.8, "lon": 126.6, "desc": "冰城的锅包肉与大列巴。" }
+    { "id": "beijing", "label": "b", "name": "北京", "emoji": "🏯", "unlockCost": 3000,
+      "lat": 39.9, "lon": 116.4, "desc": "皇城根下，酱香浓郁。" },
+    { "id": "guangzhou", "label": "r", "name": "广州", "emoji": "🏮", "unlockCost": 5000,
+      "lat": 23.1, "lon": 113.3, "desc": "食在广州，一盅两件叹早茶。" },
+    { "id": "tokyo", "label": "b", "name": "东京", "emoji": "🗼", "unlockCost": 8000,
+      "lat": 35.7, "lon": 139.7, "desc": "职人精神，一汤一炸见真章。" },
+    { "id": "hokkaido", "label": "r", "name": "北海道", "emoji": "🦀", "unlockCost": 12000,
+      "lat": 43.06, "lon": 141.35, "desc": "北国的海鲜、牛奶与拉面。" },
+    { "id": "seoul", "label": "b", "name": "首尔", "emoji": "🎵", "unlockCost": 16000,
+      "lat": 37.57, "lon": 126.98, "desc": "泡菜、烤肉和热腾腾的部队锅。" },
+    { "id": "bangkok", "label": "b", "name": "曼谷", "emoji": "🛺", "unlockCost": 20000,
+      "lat": 13.75, "lon": 100.5, "desc": "酸辣甜咸，街头小吃的天堂。" },
+    { "id": "hanoi", "label": "l", "name": "河内", "emoji": "🛵", "unlockCost": 25000,
+      "lat": 21.03, "lon": 105.85, "desc": "一碗河粉，一杯滴漏咖啡。" },
+    { "id": "paris", "label": "l", "name": "巴黎", "emoji": "🥐", "unlockCost": 30000,
+      "lat": 48.86, "lon": 2.35, "desc": "可颂、甜点与小酒馆。" },
+    { "id": "wellington", "label": "l", "name": "惠灵顿", "emoji": "🥝", "unlockCost": 36000,
+      "lat": -41.29, "lon": 174.78, "desc": "世界最南端的首都，咖啡与羊排。" },
+    { "id": "sydney", "label": "l", "name": "悉尼", "emoji": "🦘", "unlockCost": 42000,
+      "lat": -33.87, "lon": 151.21, "desc": "海港边的烧烤与早午餐。" },
+    { "id": "cairo", "label": "r", "name": "开罗", "emoji": "🐪", "unlockCost": 50000,
+      "lat": 30.04, "lon": 31.24, "desc": "尼罗河畔的豆子与香料。" },
+    { "id": "newyork", "label": "r", "name": "纽约", "emoji": "🗽", "unlockCost": 60000,
+      "lat": 40.71, "lon": -74.0, "desc": "贝果、热狗和披萨，一座吃不完的城。" },
+    { "id": "newmexico", "label": "l", "name": "新墨西哥", "emoji": "🌵", "unlockCost": 70000,
+      "lat": 35.69, "lon": -105.94, "desc": "辣椒之乡，红与绿的选择。" },
+    { "id": "buenosaires", "label": "r", "name": "布宜诺斯艾利斯", "emoji": "💃", "unlockCost": 80000,
+      "lat": -34.6, "lon": -58.38, "desc": "烤肉、探戈与马黛茶。" },
+    { "id": "rome", "label": "r", "name": "罗马", "emoji": "🏛️", "unlockCost": 90000,
+      "lat": 41.9, "lon": 12.5, "desc": "永恒之城，一碗面的艺术。（待定）" },
+    { "id": "london", "label": "t", "name": "伦敦", "emoji": "💂", "unlockCost": 100000,
+      "lat": 51.5, "lon": -0.1, "desc": "雾都的下午茶与街角炸鱼店。（待定）" },
+    { "id": "harbin", "label": "t", "name": "哈尔滨", "emoji": "⛄", "unlockCost": 110000,
+      "lat": 45.8, "lon": 126.6, "desc": "冰城的锅包肉与大列巴。（待定）" }
   ],
 
   "categories": [
@@ -48,11 +71,11 @@ window.GAME_DATA = {
   "methods": [
     { "id": "direct",  "name": "直接加工", "emoji": "🔪", "unlockCost": 0 },
     { "id": "cook",    "name": "烤焗煎煮", "emoji": "🔥", "unlockCost": 0 },
-    { "id": "ferment", "name": "发酵",     "emoji": "🫙", "unlockCost": 0 },
-    { "id": "drink",   "name": "做成饮料", "emoji": "🥤", "unlockCost": 500 },
+    { "id": "ferment", "name": "发酵",     "emoji": "🫙", "unlockCost": 300 },
+    { "id": "steam",   "name": "蒸焖",     "emoji": "♨️", "unlockCost": 500 },
     { "id": "fry",     "name": "油炸",     "emoji": "🍤", "unlockCost": 800 },
-    { "id": "freeze",  "name": "冷冻",     "emoji": "❄️", "unlockCost": 1200 },
-    { "id": "steam",   "name": "蒸焖",     "emoji": "♨️", "unlockCost": 1500 }
+    { "id": "drink",   "name": "做成饮料", "emoji": "🥤", "unlockCost": 1200 },
+    { "id": "freeze",  "name": "冷冻",     "emoji": "❄️", "unlockCost": 1500 }
   ],
 
   "ingredients": [
@@ -61,9 +84,9 @@ window.GAME_DATA = {
     { "id": "broad_bean",     "category": "crop", "kind": "raw", "name": "蚕豆",   "emoji": "🫛", "city": "chengdu", "price": 3 },
 
     { "id": "wheat",          "category": "crop", "kind": "raw", "name": "小麦",   "emoji": "🌾", "city": "beijing", "price": 4 },
-    { "id": "cucumber",       "category": "crop", "kind": "raw", "name": "黄瓜",   "emoji": "🥒", "city": "beijing", "price": 6 },
+    { "id": "cucumber",       "category": "crop", "kind": "raw", "name": "黄瓜",   "emoji": "🥒", "city": "xian", "price": 6 },
 
-    { "id": "egg",            "category": "livestock", "kind": "raw", "name": "鸡蛋",   "emoji": "🥚", "city": "rome", "price": 8 },
+    { "id": "egg",            "category": "livestock", "kind": "raw", "name": "鸡蛋",   "emoji": "🥚", "city": "beijing", "price": 8 },
     { "id": "sheep_milk",     "category": "livestock", "kind": "raw", "name": "羊奶",   "emoji": "🥛", "city": "rome", "price": 12 },
     { "id": "black_pepper",   "category": "crop", "kind": "raw", "name": "黑胡椒", "emoji": "⚫", "city": "rome", "price": 10 },
 
@@ -119,9 +142,9 @@ window.GAME_DATA = {
     { "id": "condensed_milk", "category": "livestock", "kind": "raw", "todo": true, "name": "炼奶", "emoji": "🥫", "desc": "黏黏的甜牛奶" },
     { "id": "yogurt", "category": "livestock", "kind": "processed", "todo": true, "name": "优格", "emoji": "🍶", "desc": "酸酸的奶", "ref": "洋果子店：牛奶 + 天然酵母" },
     // ---------- 农作物类（开发中：来源、价格、配方待定，先进图鉴；黄豆、蚕豆已可用，见上方） ----------
-    { "id": "red_bean", "category": "crop", "kind": "raw", "city": "beijing", "price": 3, "name": "红豆", "emoji": "🔴", "desc": "小小的红色豆子" },
+    { "id": "red_bean", "category": "crop", "kind": "raw", "city": "xian", "price": 3, "name": "红豆", "emoji": "🔴", "desc": "小小的红色豆子" },
     { "id": "rice", "category": "crop", "kind": "raw", "city": "xian", "price": 3, "name": "米", "emoji": "🍚", "desc": "主食" },
-    { "id": "glutinous_rice", "category": "crop", "kind": "raw", "city": "beijing", "price": 4, "name": "糯米", "emoji": "🤍", "desc": "黏黏的谷物" },
+    { "id": "glutinous_rice", "category": "crop", "kind": "raw", "city": "xian", "price": 4, "name": "糯米", "emoji": "🤍", "desc": "黏黏的谷物" },
     { "id": "matcha", "category": "crop", "kind": "raw", "todo": true, "name": "抹茶", "emoji": "🍵", "desc": "磨成粉的绿茶" },
     { "id": "black_tea", "category": "crop", "kind": "raw", "todo": true, "name": "红茶", "emoji": "🫖", "desc": "红色的茶叶" },
     { "id": "coffee_bean", "category": "crop", "kind": "raw", "todo": true, "name": "咖啡豆", "emoji": "☕", "desc": "苦味的豆子" },
@@ -136,7 +159,7 @@ window.GAME_DATA = {
     { "id": "spinach", "category": "crop", "kind": "raw", "todo": true, "name": "菠菜", "emoji": "🍀", "desc": "富含铁质的蔬菜" },
     { "id": "tomato", "category": "crop", "kind": "raw", "todo": true, "name": "番茄", "emoji": "🍅", "desc": "通体鲜红的蔬果" },
     { "id": "carrot", "category": "crop", "kind": "raw", "city": "chengdu", "price": 3, "name": "胡萝卜", "emoji": "🥕", "desc": "橙色的根茎类蔬菜" },
-    { "id": "onion", "category": "crop", "kind": "raw", "city": "beijing", "price": 6, "name": "洋葱", "emoji": "🟣", "desc": "让人流泪的蔬菜" },
+    { "id": "onion", "category": "crop", "kind": "raw", "city": "xian", "price": 6, "name": "洋葱", "emoji": "🟣", "desc": "让人流泪的蔬菜" },
     { "id": "rye", "category": "crop", "kind": "raw", "todo": true, "name": "黑麦", "emoji": "🎋", "desc": "裸麦" },
     { "id": "mushroom", "category": "crop", "kind": "raw", "city": "chengdu", "price": 6, "name": "杂菌", "emoji": "🍄", "desc": "森林里的各种菌类" },
     { "id": "hojicha", "category": "crop", "kind": "raw", "todo": true, "name": "焙茶", "emoji": "🍂", "desc": "烘焙过的茶叶" },
@@ -207,7 +230,7 @@ window.GAME_DATA = {
     { "id": "tapioca", "category": "other", "kind": "raw", "todo": true, "name": "珍珠", "emoji": "🧋", "desc": "Q弹的小球" },
     { "id": "salmon", "category": "other", "kind": "raw", "todo": true, "name": "鲑鱼", "emoji": "🍣", "desc": "橙红色的鱼" },
     { "id": "shellfish", "category": "other", "kind": "raw", "todo": true, "name": "贝盛合", "emoji": "🐚", "desc": "各种贝类" },
-    { "id": "vinegar", "category": "other", "kind": "raw", "city": "beijing", "price": 3, "name": "醋", "emoji": "🏺", "desc": "酸酸的调味料" },
+    { "id": "vinegar", "category": "other", "kind": "raw", "city": "xian", "price": 3, "name": "醋", "emoji": "🏺", "desc": "酸酸的调味料" },
     { "id": "raw_chocolate", "category": "other", "kind": "processed", "todo": true, "name": "生巧克力", "emoji": "🎁", "desc": "入口即化的巧克力", "ref": "洋果子店：做含巧克力的食物时有机会顺带得到（副产品）" },
     { "id": "miso", "category": "other", "kind": "processed", "name": "味噌", "emoji": "🥡", "inputs": ["soybean", "salt"], "method": "ferment", "yield": 2, "hint": "豆子加上咸咸的白色晶体，交给时间慢慢发酵。", "desc": "黄豆加盐与麴发酵而成的日本豆酱，咸香醇厚，是味噌汤的灵魂。" },
     { "id": "vanilla_icecream", "category": "other", "kind": "processed", "todo": true, "name": "香草冰淇淋", "emoji": "🍨", "desc": "香草味的冰淇淋", "ref": "洋果子店：配方未查到" },
@@ -219,7 +242,7 @@ window.GAME_DATA = {
     { "id": "mayonnaise", "category": "other", "kind": "processed", "todo": true, "name": "美乃滋", "emoji": "🧴", "desc": "蛋黄酱", "ref": "洋果子店：配方未查到" },
     // ---------- 补充食材（开发中：来源、价格待定） ----------
     { "id": "beef", "category": "livestock", "kind": "raw", "city": "chengdu", "price": 14, "name": "牛肉", "emoji": "🦬", "desc": "生的牛肉" },
-    { "id": "lamb", "category": "livestock", "kind": "raw", "city": "beijing", "price": 14, "name": "羊肉", "emoji": "🐑", "desc": "生的羊肉" },
+    { "id": "lamb", "category": "livestock", "kind": "raw", "city": "xian", "price": 14, "name": "羊肉", "emoji": "🐑", "desc": "生的羊肉" },
     { "id": "duck", "category": "livestock", "kind": "raw", "city": "beijing", "price": 12, "name": "鸭肉", "emoji": "🦆", "desc": "鸭子的肉" },
     { "id": "green_pepper", "category": "crop", "kind": "raw", "todo": true, "name": "三色彩椒", "emoji": "🫑", "desc": "红、黄、绿三色的甜椒" },
     { "id": "pea", "category": "crop", "kind": "raw", "city": "beijing", "price": 3, "name": "豌豆", "emoji": "⚾", "desc": "圆滚滚的绿豆子" },
@@ -240,8 +263,8 @@ window.GAME_DATA = {
   // 菜谱书：每本 10 道菜。买了书，书里的菜才会进图鉴、可以研发。price 为 0 表示开局赠送。
   "books": [
     {"id": "spicy", "name": "无辣不欢-成都", "emoji": "🌶️", "price": 0, "desc": "十道四川成都的麻辣名菜。开局赠送。", "dishes": ["shuizhu_beef", "laziji", "twice_cooked_pork", "yuxiang_pork", "dry_fried_beans", "sweet_water_noodles", "garlic_pork", "fuqi_feipian", "mapo_tofu", "red_oil_wontons"]},
-    {"id": "beijing", "name": "皇城根儿-北京", "emoji": "🏯", "price": 500, "desc": "十道老北京的名菜与小吃，从烤鸭、涮肉到豆汁儿。", "dishes": ["peking_duck", "zhajiangmian", "jingjiang_rousi", "shuan_yangrou", "congbao_yangrou", "mending_roubing", "culiu_baicai", "lvdagun", "wandouhuang", "douzhir"]},
-    {"id": "xian", "name": "长安味道-西安", "emoji": "🏺", "price": 800, "desc": "十道西安的名吃，从肉夹馍、泡馍到甑糕。", "dishes": ["roujiamo", "yangrou_paomo", "liangpi", "youpo_mian", "saozi_mian", "hulatang", "zenggao", "tangbao", "la_niurou", "fenzhengrou"]},
+    {"id": "xian", "name": "长安味道-西安", "emoji": "🏺", "price": 500, "desc": "十道西安的名吃，从肉夹馍、泡馍到甑糕。", "dishes": ["roujiamo", "yangrou_paomo", "liangpi", "youpo_mian", "saozi_mian", "hulatang", "zenggao", "tangbao", "la_niurou", "fenzhengrou"]},
+    {"id": "beijing", "name": "皇城根儿-北京", "emoji": "🏯", "price": 800, "desc": "十道老北京的名菜与小吃，从烤鸭、涮肉到豆汁儿。", "dishes": ["peking_duck", "zhajiangmian", "jingjiang_rousi", "shuan_yangrou", "congbao_yangrou", "mending_roubing", "culiu_baicai", "lvdagun", "wandouhuang", "douzhir"]},
     {"id": "world", "name": "世界风味（暂定）", "emoji": "🌍", "price": 1500, "desc": "罗马、广州、东京、伦敦各两道名菜。暂定分组，之后会拆成各地的菜谱书。", "dishes": ["carbonara", "cacio_e_pepe", "char_siu", "har_gow", "miso_soup", "tempura", "fish_and_chips", "scone"]}
   ],
 
@@ -337,8 +360,8 @@ window.GAME_DATA = {
       "recipePrice": 300, "sellPrice": 60,
       "story": "老北京人的“灵魂饮品”，绿豆做粉丝剩下的浆发酵而成，配焦圈和咸菜丝，爱的人离不开，怕的人一口都喝不下。" },
     { "id": "roujiamo", "name": "肉夹馍", "emoji": "🥙", "city": "xian",
-      "ingredients": ["wheat_flour", "pork", "cinnamon"], "method": "cook",
-      "hint": "烤得酥脆的白吉馍，夹上用香料慢炖的腊汁肉。",
+      "ingredients": ["wheat_flour", "pork"], "method": "cook",
+      "hint": "烤得酥脆的白吉馍，夹上炖得软烂的腊汁肉。",
       "recipePrice": 300, "sellPrice": 120,
       "story": "西安人说“肉夹于馍”。腊汁肉用十几种香料老汤慢炖，白吉馍外酥里软，号称“中式汉堡”。" },
     { "id": "yangrou_paomo", "name": "羊肉泡馍", "emoji": "🍲", "city": "xian",
@@ -347,8 +370,8 @@ window.GAME_DATA = {
       "recipePrice": 300, "sellPrice": 150,
       "story": "西安最有名的吃食之一。客人自己掰馍，掰得越碎越入味，老师傅按馍的大小决定煮法。" },
     { "id": "liangpi", "name": "凉皮", "emoji": "🫓", "city": "xian",
-      "ingredients": ["wheat_flour", "cucumber", "spicy_spice", "vinegar"], "method": "steam",
-      "hint": "面浆蒸成薄薄的皮，切条拌上黄瓜丝、醋和红油。",
+      "ingredients": ["wheat_flour", "cucumber", "spicy_spice", "vinegar"], "method": "direct",
+      "hint": "薄薄的面皮切成条，直接拌上黄瓜丝、醋和红油。",
       "recipePrice": 300, "sellPrice": 80,
       "story": "陕西夏天的标配。面皮蒸得筋道透亮，酸辣爽口，配一个肉夹馍、一瓶冰峰汽水就是“三秦套餐”。" },
     { "id": "youpo_mian", "name": "油泼面", "emoji": "🍜", "city": "xian",
@@ -371,7 +394,7 @@ window.GAME_DATA = {
       "hint": "黏黏的米和红豆一层层铺进大锅，慢慢蒸得软糯香甜。",
       "recipePrice": 300, "sellPrice": 80,
       "story": "关中传统早点，用古老的炊具“甑”蒸制而得名，有“甑糕之香，三里可闻”之说。" },
-    { "id": "tangbao", "name": "贾三灌汤包", "emoji": "🥟", "city": "xian",
+    { "id": "tangbao", "name": "灌汤包", "emoji": "🥟", "city": "xian",
       "ingredients": ["wheat_flour", "beef", "onion"], "method": "steam",
       "hint": "薄皮包着牛肉馅和满满的汤汁，蒸好后先开窗再喝汤。",
       "recipePrice": 300, "sellPrice": 130,
@@ -454,8 +477,8 @@ window.GAME_DATA = {
     "capPerLevel": 5,
     "items": [
       { "id": "farm_pork",     "type": "animal", "name": "猪",   "emoji": "🐖", "produces": "pork",     "city": "chengdu", "produceSec": 40 },
-      { "id": "farm_cucumber", "type": "crop",   "name": "黄瓜", "emoji": "🌱", "produces": "cucumber", "city": "beijing", "produceSec": 20 },
-      { "id": "farm_egg",      "type": "animal", "name": "鸡",   "emoji": "🐔", "produces": "egg",      "city": "rome",    "produceSec": 30 }
+      { "id": "farm_cucumber", "type": "crop",   "name": "黄瓜", "emoji": "🌱", "produces": "cucumber", "city": "xian", "produceSec": 20 },
+      { "id": "farm_egg",      "type": "animal", "name": "鸡",   "emoji": "🐔", "produces": "egg",      "city": "beijing",    "produceSec": 30 }
     ]
   },
 
