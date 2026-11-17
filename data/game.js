@@ -267,7 +267,7 @@ window.GAME_DATA = {
     {"id":"uktea","name":"英国的传统烘焙与茶点","emoji":"🧁","price":3000,"desc":"下午茶的桌上，总有这几样。","dishes":["egg_tart","pancakes","french_toast","scone","waffle","choc_waffle","pistachio_waffle"]},
     {"id":"kstreet","name":"韩国街头小吃","emoji":"🌭","price":3000,"desc":"热乎乎的街头零食。","dishes":["corn_dog"]},
     {"id":"pies","name":"美式派","emoji":"🥧","price":3200,"desc":"酥皮包着满满的水果。","dishes":["apple_pie","chocolate_pie","lemon_pie","raisin_pie","cherry_pie","raspberry_pie","peach_pie"]},
-    {"id":"frcakes","name":"法式蛋糕","emoji":"🥐","price":3400,"desc":"巴黎甜点店橱窗里的名角。","dishes":["mont_blanc","autumn_mont_blanc","millefeuille","madeleine","cream_puff"]},
+    {"id":"frcakes","name":"法式蛋糕","emoji":"🥐","price":3400,"desc":"巴黎甜点店橱窗里的名角。","dishes":["buche_de_noel","mont_blanc","autumn_mont_blanc","millefeuille","madeleine","cream_puff"]},
     {"id":"macarons","name":"五颜六色的马卡龙","emoji":"🌈","price":3600,"desc":"小小圆饼，五种颜色。","dishes":["choc_macaron","coffee_macaron","matcha_macaron","strawberry_macaron","pistachio_macaron"]},
     {"id":"itsweets","name":"意式甜点","emoji":"☕","price":3800,"desc":"意大利人的甜蜜时间。","dishes":["tiramisu","panna_cotta","biscotti"]},
     {"id":"newzealand","name":"新西兰食谱","emoji":"🥝","price":2000,"desc":"来自世界最南端的国度。","dishes":["pavlova"]},
@@ -275,7 +275,7 @@ window.GAME_DATA = {
     {"id":"cookies","name":"曲奇饼干","emoji":"🍪","price":2400,"desc":"香香脆脆的小饼干。","dishes":["cookie","chip_cookie","cheese_cookie","sesame_cookie","tea_cookie","soy_cookie","pumpkin_cookie"]},
     {"id":"wagashi","name":"和菓子铺","emoji":"🍡","price":2800,"desc":"茶席上的小小甜蜜。","dishes":["yokan","mizu_yokan","uiro","kinsuba","dorayaki","ohagi","yomogi_mochi","anokoromochi","daifuku"]},
     {"id":"crepes","name":"可丽饼","emoji":"🥞","price":2400,"desc":"薄薄一张，卷起甜蜜。","dishes":["strawberry_crepe","banana_crepe","choc_crepe","milk_crepe"]},
-    {"id":"xmasmarket","name":"德国圣诞市场的甜点","emoji":"🎄","price":2000,"desc":"圣诞夜的香料与甜蜜。","dishes":["gingerbread","buche_de_noel"]},
+    {"id":"xmasmarket","name":"德国圣诞市场的甜点","emoji":"🎄","price":2000,"desc":"圣诞夜的香料与甜蜜。","dishes":["gingerbread"]},
     {"id":"world","name":"世界风味（暂存）","emoji":"🌍","price":1500,"desc":"暂时没有归属的外国名菜。","dishes":["carbonara","cacio_e_pepe","miso_soup","tempura","fish_and_chips"]}
   ],
 
