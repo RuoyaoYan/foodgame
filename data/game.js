@@ -278,7 +278,7 @@ window.GAME_DATA = {
     {"id":"senbei","name":"仙贝","emoji":"🍘","price":2400,"desc":"香香脆脆的米饼。","dishes":["shoyu_senbei","shio_senbei","ebi_senbei"]},
     {"id":"omiyage","name":"日本的伴手礼","emoji":"🎁","price":3000,"desc":"带回家分给大家的小点心。","dishes":["castella","yatsuhashi","nama_yatsuhashi","umeboshi","kuri_kanro"]},
     {"id":"matsuri","name":"夏日祭典的小摊","emoji":"🎆","price":2600,"desc":"夜市灯火下的甜蜜。","dishes":["cotton_candy","candy_apple","choco_banana"]},
-    {"id":"jelly","name":"果冻与巴伐利亚奶油","emoji":"🍊","price":2800,"desc":"颤颤巍巍，清凉透亮。","dishes":["orange_jelly","strawberry_jelly","plum_jelly","coffee_jelly","tea_jelly","bavarois"]},
+    {"id":"jelly","name":"果冻","emoji":"🍊","price":2800,"desc":"颤颤巍巍，清凉透亮。","dishes":["orange_jelly","strawberry_jelly","plum_jelly","coffee_jelly","tea_jelly","bavarois"]},
     {"id":"uskids","name":"美国小孩的小食","emoji":"🍿","price":3000,"desc":"电影院、球场与露营时的零食。","dishes":["corn_dog","salt_popcorn","choco_popcorn","caramel_popcorn","marshmallow","strawberry_marshmallow","choc_marshmallow","salt_chips","consomme_chips","nori_chips"]},
     {"id":"donuts","name":"甜甜圈","emoji":"🍩","price":3200,"desc":"中间有个洞的快乐。","dishes":["milk_donut","strawberry_donut","choco_donut","cream_cheese_donut","azuki_donut","rice_donut","kinako_donut"]},
     {"id":"world","name":"世界风味（暂存）","emoji":"🌍","price":1500,"desc":"暂时没有归属的外国名菜。","dishes":["carbonara","cacio_e_pepe","miso_soup","tempura","fish_and_chips"]}
