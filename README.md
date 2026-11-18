@@ -546,24 +546,36 @@
 
 ### 四、美术生成 Prompt
 
-**料理生成 Prompt（原版）**
-```
-A 2D game UI asset of a SMALLER, deep plate/bowl of Chinese Mapo Tofu. Fully transparent background (PNG with alpha channel). Camera & Perspective: 45-degree angle view (3/4 perspective). You must clearly see both the delicious food inside AND the thick, curved outer wall/body of the deep plate. Proportions & Content: Make the overall size of the plate/bowl noticeably smaller. Reduce the portion size by using FEWER tofu cubes (around 10 to 12 cubes in total). The food fills this smaller deep plate naturally without overflowing, looking slightly less crowded. Show the physical thickness and outer body of the plate. Do NOT make a huge empty rim. Art Style & Outlines: Studio Ghibli food animation style. CRITICAL: The entire object (plate and food) MUST have heavy, thick, organic watercolor-style outlines in dark warm brown. The outlines should feel painterly, weighty, and hand-drawn, NOT sharp vector lines. Soft, hand-painted watercolor textures for the food, making it look glowing, juicy, and appetizing. UI Element: Add a distinct drop shadow directly underneath the plate to make it look like a pop-up 3D UI sticker. ONLY the plate of food. NO table, NO chopsticks, NO background details. Fully transparent background (PNG with alpha channel). NO white or colored background, NO checkerboard pattern.
-```
+**料理美术统一标准（当前使用）**
 
-**料理生成 Prompt（锁定版）**
-```
-A 2D game UI asset of a SMALLER, deep plate/bowl of 【填入料理英文名，例如：Sweet and Sour Pork】. Fully transparent background (PNG with alpha channel).
+以确认的咕咾肉参考图为视觉标准：宽浅的米 beige／浅棕色陶瓷碗、厚圆碗沿、底部深棕色环带，45° 三分之四视角；暖色水彩纹理与清晰的深棕手绘轮廓。后续批次只更换料理内容，固定碗型、位置、画面占比和光照。
 
-CRITICAL CONTAINER LOCK: The food MUST be served in the EXACT SAME container as before: a thick-walled, rustic ceramic shallow bowl (deep plate). The exterior is a warm, earthy light beige/tan with a slightly mottled watercolor texture, a thick rounded upper rim, and a subtle dark painted band around the lower base.
+- **画幅与大小**：统一使用约 1.23:1 横幅（参考图为 676×550）；碗的外轮廓约占画布宽度 96%、高度 86%，大致位于 x=2%–98%、y=6%–92%。完整保留碗沿、碗底与投影，不裁切。不要用“把碗做得更小”改变每张图的缩放。
+- **造型与构图**：宽浅陶碗，不画成高深汤碗；既看清料理，也看清厚实的前侧碗壁。食物自然装满，不溢出，不留巨大空碗沿。
+- **画风**：暖色手绘水彩、自然纸感与色块晕染；外轮廓清晰且略有粗细变化，内部线条更轻，食物块形在小图标尺寸下仍能辨认。
+- **高光**：参考图的酱汁光泽可保留，但集中在少数主要食物表面，用连贯、成片的亮面表达；避免在所有食材和酱汁上铺满细碎白点、闪光或塑料反光。按食物材质控制强度，抄手等面皮应更柔和。
+- **背景与投影**：参考图的白底仅用于展示；实际游戏素材统一输出真实透明背景 PNG（alpha 通道）。碗下保留紧凑柔和的半透明投影，不生成白底、棋盘格或环绕整碗的光晕。
+- **批量一致性**：生成时附上同一张已确认的参考图；每张独立输出，同一批保持画布尺寸、碗的边界框与视觉大小一致。如需正方形图标，统一等比缩放并补透明边距，不拉伸碗型。
 
-Camera & Perspective: 45-degree angle view (3/4 perspective). You must clearly see both the delicious food inside AND the thick, curved outer wall/body of this specific beige deep plate.
+**料理生成 Prompt（参考图锁定版，替代此前原版与锁定版）**
+```text
+Create ONE standalone 2D game inventory icon of 【DISH NAME IN ENGLISH】. Use the attached approved sweet-and-sour pork reference image as the visual source of truth for the bowl silhouette, framing, scale, perspective, outlines, and watercolor style. Replace only the food.
 
-Proportions & Content: Make the overall size of the plate/bowl noticeably smaller. The food fills this smaller deep plate naturally without overflowing, looking slightly less crowded. 【简单描述一下菜的样子，例如：around 10 to 12 pieces of glossy fried pork with a few pineapple chunks】. Show the physical thickness and outer body of the plate. Do NOT make a huge empty rim.
+CONTAINER LOCK: Use the exact same wide, shallow, rustic ceramic bowl as the reference, NOT a tall or deep soup bowl. Warm light beige/tan ceramic with mottled watercolor texture, a thick rounded rim, a clearly visible curved front wall, and a narrow dark warm-brown band around the base. Preserve the reference bowl's proportions and shape.
 
-Art Style & Outlines: Studio Ghibli food animation style. CRITICAL: The entire object (plate and food) MUST have heavy, thick, organic watercolor-style outlines in dark warm brown. The outlines should feel painterly, weighty, and hand-drawn, NOT sharp vector lines. Soft, hand-painted watercolor textures for the food, making it look glowing, juicy, and appetizing.
+FRAMING AND SCALE LOCK: Use the same approximately 1.23:1 landscape canvas for every dish (reference: 676 x 550). The outer bowl silhouette occupies approximately 96% of canvas width and 86% of canvas height, with bounds near x=2%-98%, y=6%-92%. Keep the bowl centered horizontally, completely visible, and at exactly the same apparent scale across the series. Leave room for the soft shadow. No cropping, no zoom variation, no oversized empty margins. Do not shrink the bowl for individual dishes.
 
-UI Element: Add a distinct drop shadow directly underneath the plate to make it look like a pop-up 3D UI sticker. ONLY the plate of food. NO table, NO chopsticks, NO background details. Fully transparent background (PNG with alpha channel). NO white or colored background, NO checkerboard pattern.
+CAMERA: Match the reference's 45-degree three-quarter view. Clearly show the food surface and the thick curved front wall. Keep the same camera elevation and orientation for every dish.
+
+FOOD: 【DESCRIBE THE DISH'S DISTINCTIVE SHAPES, INGREDIENTS, COLORS, AND ARRANGEMENT】. A modest, readable number of distinct pieces fills the bowl naturally without overflowing. Keep the food below or close to the back rim, with no towering heap. No huge empty rim. Do not copy the reference's pork, pineapple, or peppers unless they belong in this dish.
+
+ART STYLE: Warm hand-painted watercolor food illustration with a charming animated-film aesthetic. Visible natural pigment variation, soft watercolor washes, and clear dark warm-brown hand-drawn contours. The outer silhouette is strong and slightly irregular; interior details are lighter. Preserve chunky, readable food shapes suitable for a small game icon. No photorealism, no vector-flat rendering, no plastic 3D finish.
+
+LIGHT AND HIGHLIGHTS: Match the reference's soft upper-left lighting. Use selective, coherent highlights on a few main food surfaces to convey the correct material. Glossy sauces may have a few grouped irregular light patches; wonton wrappers and other soft ingredients should remain softly shaded. Do NOT distribute dense tiny white speckles, sparkles, or hard specular flecks across every ingredient or the sauce. Avoid excessive wet shine and visual clutter.
+
+BACKGROUND AND SHADOW: Export as PNG with a real transparent alpha background. The reference's white background is NOT part of the requested asset. Keep only a compact, soft, semi-transparent contact shadow beneath the bowl. No white or colored background, no checkerboard pattern, no broad halo or vignette.
+
+ONLY one bowl of food. No text, labels, table, utensils, chopsticks, props, or background details. Output one separate image, not a collage.
 ```
 
 **食材 Prompt**
