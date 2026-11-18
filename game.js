@@ -260,7 +260,7 @@
   }
   function art(kind, id, emoji, size = "m", washOverride) {
     const has = kind && artOK[kind + "/" + id];
-    return `<span class="sticker ${size}" style="--wash:${washOverride || washOf(id)}">${has
+    return `<span class="sticker ${size}${has ? " has-img" : ""}" style="--wash:${washOverride || washOf(id)}">${has
       ? `<img src="${artSrc(kind, id)}" alt="">` : `<span class="emo">${emoji}</span>`}</span>`;
   }
   const ingArt = (id, size) => art("ingredients", id, ING[id].emoji, size);

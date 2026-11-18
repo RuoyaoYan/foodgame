@@ -141,6 +141,8 @@ main { padding: 0 28px 28px; }
 .sticker.m { --size: 56px; }
 .sticker.l { --size: 74px; }
 .sticker.xl { --size: 96px; }
+/* 有料理 / 食材图时只留贴图，不再垫水彩椭圆底（没有图的 emoji 仍保留水彩底） */
+.sticker.has-img::before { display: none; }
 .card.locked .sticker .emo { filter: grayscale(1) opacity(.45); }
 .card.locked .sticker::before { opacity: .5; }
 
