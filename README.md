@@ -567,8 +567,9 @@
 | 视角 | 45° 三分之四视角，所有料理的机位与朝向一致 |
 | 画幅与大小 | 盘子本身与参考图一致优先：锁定碗沿椭圆、壁高、底部环带、比例和朝向；透明留白多少不作硬性限制，不为适配画幅拉伸或重画盘子，完整保留盘子与投影 |
 | 食物 | 自然装满碗、不溢出，不堆成小山，也不留巨大空碗沿；块形在小图标尺寸下仍能辨认 |
-| 画风 | 暖色手绘水彩，自然纸感与色块晕染；盘子外缘最粗最深；每块食材也必须有清晰、连续的深棕手绘外轮廓，靠线条分开相邻食材；切面、折叠与转折用较细褐线，只有内部纹理线可以更轻。先画清晰线稿，再在线稿内水彩上色 |
-| 高光 | 酱汁光泽集中在少数主要食物表面，用成片的亮面表达；不要满铺细碎白点、闪光或塑料反光；抄手等面皮要更柔和 |
+| 画风与描边 | 暖色水彩与深棕手绘轮廓；遮挡、底部与接触处线更深，受光边缘更细柔；每块食材有可辨外缘，但不要套等粗黑框，描边服从体积 |
+| 堆叠与体积 | 食材自然搭靠、倾斜、局部堆叠并相互遮挡，高低错落；部分食材被遮住，不平铺、不均匀排布。接触处和褶皱深处有暖色暗影，表现厚度、重量与支撑 | 
+| 高光 | 统一左上柔光，高光跟随形体和材质：豆腐柔和湿润、抄手顺褶皱呈柔润亮面、红油少量反射；保留大面积中间色，禁止随机白斑、密集白点及塑料反光 |
 | 背景与投影 | 输出真实透明背景 PNG（alpha 通道）；碗下只留紧凑柔和的半透明投影；不要白底、棋盘格或环绕整碗的光晕 |
 | 批量一致性 | 同一批附上同一张参考图；画布尺寸、碗的边界框与视觉大小保持一致；需要正方形图标时等比缩放并补透明边距，不拉伸碗型 |
 
@@ -584,9 +585,11 @@ CAMERA: Match the reference's 45-degree three-quarter view. Clearly show the foo
 
 FOOD: 【DESCRIBE THE DISH'S DISTINCTIVE SHAPES, INGREDIENTS, COLORS, AND ARRANGEMENT】. A modest, readable number of distinct pieces fills the bowl naturally without overflowing. Keep the food below or close to the back rim, with no towering heap. No huge empty rim. Do not copy the reference's pork, pineapple, or peppers unless they belong in this dish.
 
-ART STYLE: Warm hand-painted watercolor food illustration with a charming animated-film aesthetic. Visible natural pigment variation, soft watercolor washes, and clear dark warm-brown hand-drawn contours. MANDATORY INGREDIENT OUTLINES: Clear dark linework first, watercolor fills inside it. The bowl silhouette has the heaviest near-black warm-brown contour. EVERY individual ingredient piece MUST ALSO have a clearly visible, continuous, substantial DARK WARM-BROWN outer contour, including every pale tofu cube, wonton wrapper and scallion. Outline overlapping ingredient boundaries explicitly; color differences and shading alone are insufficient. Use thinner brown lines for cut-face edges, folds and structural creases. ONLY interior texture lines may be lighter. Do not soften or omit ingredient outlines; no lineless painted food. Preserve chunky, readable food shapes suitable for a small game icon. No photorealism, no vector-flat rendering, no plastic 3D finish.
+ART STYLE AND CONTOURS: Match the reference's warm hand-painted watercolor food illustration, natural pigment variation and dark warm-brown hand-drawn ingredient contours. Contours describe volume, not sticker borders: retain clearly legible dark outlines around visible ingredient edges, stronger at occlusions, undersides and contact points, thinner and softer on lit edges. Never draw a uniformly thick black closed frame around every piece. Use fine brown structural lines for folds and cut faces; do not outline decorative texture. No flat vector shapes, no plastic 3D finish.
 
-LIGHT AND HIGHLIGHTS: Match the reference's soft upper-left lighting. Use selective, coherent highlights on a few main food surfaces to convey the correct material. Glossy sauces may have a few grouped irregular light patches; wonton wrappers and other soft ingredients should remain softly shaded. Do NOT distribute dense tiny white speckles, sparkles, or hard specular flecks across every ingredient or the sauce. Avoid excessive wet shine and visual clutter.
+STACKING AND VOLUME: Arrange food as real three-dimensional pieces resting against and partly on top of one another, with a modest low mound, varied tilt and height, and irregular natural spacing. Use foreground, middle and back layers with partial occlusion: some pieces must be partly hidden, never all completely exposed or evenly tiled on the sauce. Show plausible support, gravity and weight, not floating or precariously balanced food. Keep the reference bowl unchanged. Build form with coherent top/side/underside values; dark warm contact shadows at overlaps, between folds and where food meets sauce. Let sauce gather naturally in gaps and around the bases. Visible contours must stop at occluding surfaces rather than showing through them. Depth and believable structure take priority over decorative linework.
+
+LIGHT AND HIGHLIGHTS: One consistent soft upper-left light. Make highlights follow the curvature, plane orientation and material of the food; never paint arbitrary white patches. Tofu has broad soft moist highlights on light-facing planes, darker side faces and subtle rounded edges. Wonton wrappers have soft satin highlights following curved folds, warm translucent thin edges and darker recessed creases. Chili oil has only a few small coherent reflected light shapes on exposed liquid surfaces. Leave most surfaces as colored midtones; reserve the brightest accents for a few justified locations. No dense white dots, glitter, random white streaks, uniform shine or plastic gloss.
 
 BACKGROUND AND SHADOW: Export as PNG with a real transparent alpha background. The reference's white background is NOT part of the requested asset. Keep only a compact, soft, semi-transparent contact shadow beneath the bowl. No white or colored background, no checkerboard pattern, no broad halo or vignette.
 
