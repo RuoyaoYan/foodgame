@@ -548,12 +548,12 @@
 
 **料理生成 Prompt（原版）**
 ```
-A 2D game UI asset of a SMALLER, deep plate/bowl of Chinese Mapo Tofu. Pure solid white background. Camera & Perspective: 45-degree angle view (3/4 perspective). You must clearly see both the delicious food inside AND the thick, curved outer wall/body of the deep plate. Proportions & Content: Make the overall size of the plate/bowl noticeably smaller. Reduce the portion size by using FEWER tofu cubes (around 10 to 12 cubes in total). The food fills this smaller deep plate naturally without overflowing, looking slightly less crowded. Show the physical thickness and outer body of the plate. Do NOT make a huge empty rim. Art Style & Outlines: Studio Ghibli food animation style. CRITICAL: The entire object (plate and food) MUST have heavy, thick, organic watercolor-style outlines in dark warm brown. The outlines should feel painterly, weighty, and hand-drawn, NOT sharp vector lines. Soft, hand-painted watercolor textures for the food, making it look glowing, juicy, and appetizing. UI Element: Add a distinct drop shadow directly underneath the plate to make it look like a pop-up 3D UI sticker. ONLY the plate of food. NO table, NO chopsticks, NO background details. Pure solid white background only.
+A 2D game UI asset of a SMALLER, deep plate/bowl of Chinese Mapo Tofu. Fully transparent background (PNG with alpha channel). Camera & Perspective: 45-degree angle view (3/4 perspective). You must clearly see both the delicious food inside AND the thick, curved outer wall/body of the deep plate. Proportions & Content: Make the overall size of the plate/bowl noticeably smaller. Reduce the portion size by using FEWER tofu cubes (around 10 to 12 cubes in total). The food fills this smaller deep plate naturally without overflowing, looking slightly less crowded. Show the physical thickness and outer body of the plate. Do NOT make a huge empty rim. Art Style & Outlines: Studio Ghibli food animation style. CRITICAL: The entire object (plate and food) MUST have heavy, thick, organic watercolor-style outlines in dark warm brown. The outlines should feel painterly, weighty, and hand-drawn, NOT sharp vector lines. Soft, hand-painted watercolor textures for the food, making it look glowing, juicy, and appetizing. UI Element: Add a distinct drop shadow directly underneath the plate to make it look like a pop-up 3D UI sticker. ONLY the plate of food. NO table, NO chopsticks, NO background details. Fully transparent background (PNG with alpha channel). NO white or colored background, NO checkerboard pattern.
 ```
 
 **料理生成 Prompt（锁定版）**
 ```
-A 2D game UI asset of a SMALLER, deep plate/bowl of 【填入料理英文名，例如：Sweet and Sour Pork】. Pure solid white background.
+A 2D game UI asset of a SMALLER, deep plate/bowl of 【填入料理英文名，例如：Sweet and Sour Pork】. Fully transparent background (PNG with alpha channel).
 
 CRITICAL CONTAINER LOCK: The food MUST be served in the EXACT SAME container as before: a thick-walled, rustic ceramic shallow bowl (deep plate). The exterior is a warm, earthy light beige/tan with a slightly mottled watercolor texture, a thick rounded upper rim, and a subtle dark painted band around the lower base.
 
@@ -563,12 +563,12 @@ Proportions & Content: Make the overall size of the plate/bowl noticeably smalle
 
 Art Style & Outlines: Studio Ghibli food animation style. CRITICAL: The entire object (plate and food) MUST have heavy, thick, organic watercolor-style outlines in dark warm brown. The outlines should feel painterly, weighty, and hand-drawn, NOT sharp vector lines. Soft, hand-painted watercolor textures for the food, making it look glowing, juicy, and appetizing.
 
-UI Element: Add a distinct drop shadow directly underneath the plate to make it look like a pop-up 3D UI sticker. ONLY the plate of food. NO table, NO chopsticks, NO background details. Pure solid white background only.
+UI Element: Add a distinct drop shadow directly underneath the plate to make it look like a pop-up 3D UI sticker. ONLY the plate of food. NO table, NO chopsticks, NO background details. Fully transparent background (PNG with alpha channel). NO white or colored background, NO checkerboard pattern.
 ```
 
 **食材 Prompt**
 ```
-A 2D game UI asset icon of 【a single chunky piece of raw pork】. Pure solid white background. Camera & Composition: 45-degree angle view (3/4 perspective) or slightly top-down. The ingredient should be a single, distinct object. Make the shape slightly deformed, chunky, round, and cute (Cartoonish proportions). Art Style & Outlines: Studio Ghibli 1990s anime food style. Soft, hand-painted watercolor textures. CRITICAL: The entire object MUST have a heavy, thick, organic watercolor-style outline in dark warm brown (exactly matching the art style of a Ghibli food illustration). The outlines should feel painterly and weighty. UI Element: Add a distinct, tight drop shadow directly underneath the ingredient to make it look like a pop-up 3D UI sticker. NO table, NO background details. Pure solid white background only.
+A 2D game UI asset icon of 【a single chunky piece of raw pork】. Fully transparent background (PNG with alpha channel). Camera & Composition: 45-degree angle view (3/4 perspective) or slightly top-down. The ingredient should be a single, distinct object. Make the shape slightly deformed, chunky, round, and cute (Cartoonish proportions). Art Style & Outlines: Studio Ghibli 1990s anime food style. Soft, hand-painted watercolor textures. CRITICAL: The entire object MUST have a heavy, thick, organic watercolor-style outline in dark warm brown (exactly matching the art style of a Ghibli food illustration). The outlines should feel painterly and weighty. UI Element: Add a distinct, tight drop shadow directly underneath the ingredient to make it look like a pop-up 3D UI sticker. NO table, NO background details. Fully transparent background (PNG with alpha channel). NO white or colored background, NO checkerboard pattern.
 ```
 
 ---
