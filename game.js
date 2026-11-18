@@ -634,7 +634,7 @@
     $("potMethod").textContent = method ? `${T("做法：")}${methodText(method)}` : T("还没选做法");
     renderQuickCook();
   }
-  const canMake = r => Math.min(...r.ingredients.map(x => S.inventory[x] || 0));
+  const canMake = r => { const need = {}; r.ingredients.forEach(x => { need[x] = (need[x] || 0) + 1; }); return Math.min(...Object.entries(need).map(([x, c]) => Math.floor((S.inventory[x] || 0) / c))); };
   function renderQuickCook() {
     const list = RECIPES.filter(known);
     const card = r => {
@@ -698,7 +698,6 @@
     if (!method) { msg.textContent = T("先在锅边选一个做法吧"); return; }
     const set = new Set(pot);
     const back = () => { pot = []; renderKitchen(); };
-    if (pot.length !== set.size) { msg.textContent = T("同一种食材放一份就够啦。（食材已退回）"); return back(); }
     const sameIngs = RECIPES.filter(r => key(r.ingredients) === key(pot));
     const match = sameIngs.find(r => r.method === method && (r.isProc || hasBook(r.id)));
     const needBook = sameIngs.find(r => r.method === method && !r.isProc && !hasBook(r.id));
@@ -1108,7 +1107,7 @@
     const b = e.target.closest("[data-fill]"); if (!b) return;
     const d = DISH[b.dataset.fill];
     pot = []; const missing = [];
-    d.ingredients.forEach(x => { if ((S.inventory[x] || 0) > 0) pot.push(x); else missing.push(ING[x].name); });
+    d.ingredients.forEach(x => { if (available(x) > 0) pot.push(x); else if (!missing.includes(ING[x].name)) missing.push(ING[x].name); });
     if (DEV() || S.methods.includes(d.method)) method = d.method;
     $("bookViewer").classList.add("hidden");
     renderKitchen();
