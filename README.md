@@ -546,16 +546,31 @@
 
 ### 四、美术生成 Prompt
 
-**料理美术统一标准（当前使用）**
+**使用流程**
+1. 把下方「参考图」连同「料理 Prompt」一起交给 AI；每道菜单独生成一张，不做拼图。
+2. 只替换 `【DISH NAME IN ENGLISH】` 和 `【DESCRIBE THE DISH'S …】` 两处，其余锁定段落一字不改。
+3. 生成后去底成透明 PNG，按 id 命名放入 `images/dishes/`（食材图放 `images/ingredients/`，id 见 [`images/README.md`](images/README.md)）。
 
-以确认的咕咾肉参考图为视觉标准：宽浅的米色／浅棕色陶瓷碗、厚圆碗沿、底部深棕色环带，45° 三分之四视角；暖色水彩纹理与清晰的深棕手绘轮廓。后续批次只更换料理内容，固定碗型、位置、画面占比和光照。
+**参考图（范例）：咕咾肉**
 
-- **画幅与大小**：统一使用约 1.23:1 横幅（参考图为 676×550）；碗的外轮廓约占画布宽度 96%、高度 86%，大致位于 x=2%–98%、y=6%–92%。完整保留碗沿、碗底与投影，不裁切。不要用“把碗做得更小”改变每张图的缩放。
-- **造型与构图**：宽浅陶碗，不画成高深汤碗；既看清料理，也看清厚实的前侧碗壁。食物自然装满，不溢出，不留巨大空碗沿。
-- **画风**：暖色手绘水彩、自然纸感与色块晕染；外轮廓清晰且略有粗细变化，内部线条更轻，食物块形在小图标尺寸下仍能辨认。
-- **高光**：参考图的酱汁光泽可保留，但集中在少数主要食物表面，用连贯、成片的亮面表达；避免在所有食材和酱汁上铺满细碎白点、闪光或塑料反光。按食物材质控制强度，抄手等面皮应更柔和。
-- **背景与投影**：参考图的白底仅用于展示；实际游戏素材统一输出真实透明背景 PNG（alpha 通道）。碗下保留紧凑柔和的半透明投影，不生成白底、棋盘格或环绕整碗的光晕。
-- **批量一致性**：生成时附上同一张已确认的参考图；每张独立输出，同一批保持画布尺寸、碗的边界框与视觉大小一致。如需正方形图标，统一等比缩放并补透明边距，不拉伸碗型。
+<p align="center">
+  <img src="images/reference/sweet_and_sour_pork.png" alt="咕咾肉参考图" width="420">
+</p>
+
+确认的视觉标准，文件在 `images/reference/sweet_and_sour_pork.png`。此图的白底只用于展示，不是素材要求。碗型、视角、描边、水彩质感和光照都以它为准，后续批次只换碗里的料理。
+
+**料理美术统一标准**
+
+| 项目 | 规则 |
+|---|---|
+| 碗型 | 宽浅的米色／浅棕色陶瓷碗，厚圆碗沿，底部有深棕色环带；不画成高深汤碗，要看清厚实的前侧碗壁 |
+| 视角 | 45° 三分之四视角，所有料理的机位与朝向一致 |
+| 画幅与大小 | 约 1.23:1 横幅（参考图为 676×550）；碗的外轮廓约占画布宽 96%、高 86%，大致位于 x=2%–98%、y=6%–92%；完整保留碗沿、碗底与投影，不裁切，不靠缩小碗来改变缩放 |
+| 食物 | 自然装满碗、不溢出，不堆成小山，也不留巨大空碗沿；块形在小图标尺寸下仍能辨认 |
+| 画风 | 暖色手绘水彩，自然纸感与色块晕染；外轮廓清晰且略有粗细变化，内部线条更轻 |
+| 高光 | 酱汁光泽集中在少数主要食物表面，用成片的亮面表达；不要满铺细碎白点、闪光或塑料反光；抄手等面皮要更柔和 |
+| 背景与投影 | 输出真实透明背景 PNG（alpha 通道）；碗下只留紧凑柔和的半透明投影；不要白底、棋盘格或环绕整碗的光晕 |
+| 批量一致性 | 同一批附上同一张参考图；画布尺寸、碗的边界框与视觉大小保持一致；需要正方形图标时等比缩放并补透明边距，不拉伸碗型 |
 
 **料理生成 Prompt（参考图锁定版，替代此前原版与锁定版）**
 ```text
@@ -576,6 +591,15 @@ LIGHT AND HIGHLIGHTS: Match the reference's soft upper-left lighting. Use select
 BACKGROUND AND SHADOW: Export as PNG with a real transparent alpha background. The reference's white background is NOT part of the requested asset. Keep only a compact, soft, semi-transparent contact shadow beneath the bowl. No white or colored background, no checkerboard pattern, no broad halo or vignette.
 
 ONLY one bowl of food. No text, labels, table, utensils, chopsticks, props, or background details. Output one separate image, not a collage.
+```
+
+**填写示例（咕咾肉，对应上方参考图）**
+
+只写这两处，其余照模板：
+- `【DISH NAME IN ENGLISH】` → `sweet-and-sour pork`
+- `FOOD:` 段落 → 
+```text
+FOOD: Bite-sized golden-brown crispy battered pork pieces with a bumpy, puffy texture, glazed in glossy orange-red sweet-and-sour sauce, mixed with chunky yellow pineapple cubes, red and orange bell pepper pieces, green bell pepper pieces, and a few onion slices. A modest, readable number of distinct pieces fills the bowl naturally without overflowing. Keep the food below or close to the back rim, with no towering heap. No huge empty rim. Do not copy the reference's pork, pineapple, or peppers unless they belong in this dish.
 ```
 
 **食材 Prompt**
