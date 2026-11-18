@@ -565,9 +565,9 @@
 |---|---|
 | 碗型 | 宽浅的米色／浅棕色陶瓷碗，厚圆碗沿，底部有深棕色环带；不画成高深汤碗，要看清厚实的前侧碗壁 |
 | 视角 | 45° 三分之四视角，所有料理的机位与朝向一致 |
-| 画幅与大小 | 约 1.23:1 横幅（参考图为 676×550）；碗的外轮廓约占画布宽 96%、高 86%，大致位于 x=2%–98%、y=6%–92%；完整保留碗沿、碗底与投影，不裁切，不靠缩小碗来改变缩放 |
+| 画幅与大小 | 盘子本身与参考图一致优先：锁定碗沿椭圆、壁高、底部环带、比例和朝向；透明留白多少不作硬性限制，不为适配画幅拉伸或重画盘子，完整保留盘子与投影 |
 | 食物 | 自然装满碗、不溢出，不堆成小山，也不留巨大空碗沿；块形在小图标尺寸下仍能辨认 |
-| 画风 | 暖色手绘水彩，自然纸感与色块晕染；外轮廓清晰且略有粗细变化，内部线条更轻 |
+| 画风 | 暖色手绘水彩，自然纸感与色块晕染；盘子外缘最粗最深；每块食材也必须有清晰、连续的深棕手绘外轮廓，靠线条分开相邻食材；切面、折叠与转折用较细褐线，只有内部纹理线可以更轻。先画清晰线稿，再在线稿内水彩上色 |
 | 高光 | 酱汁光泽集中在少数主要食物表面，用成片的亮面表达；不要满铺细碎白点、闪光或塑料反光；抄手等面皮要更柔和 |
 | 背景与投影 | 输出真实透明背景 PNG（alpha 通道）；碗下只留紧凑柔和的半透明投影；不要白底、棋盘格或环绕整碗的光晕 |
 | 批量一致性 | 同一批附上同一张参考图；画布尺寸、碗的边界框与视觉大小保持一致；需要正方形图标时等比缩放并补透明边距，不拉伸碗型 |
@@ -578,13 +578,13 @@ Create ONE standalone 2D game inventory icon of 【DISH NAME IN ENGLISH】. Use 
 
 CONTAINER LOCK: Use the exact same wide, shallow, rustic ceramic bowl as the reference, NOT a tall or deep soup bowl. Warm light beige/tan ceramic with mottled watercolor texture, a thick rounded rim, a clearly visible curved front wall, and a narrow dark warm-brown band around the base. Preserve the reference bowl's proportions and shape.
 
-FRAMING AND SCALE LOCK: Use the same approximately 1.23:1 landscape canvas for every dish (reference: 676 x 550). The outer bowl silhouette occupies approximately 96% of canvas width and 86% of canvas height, with bounds near x=2%-98%, y=6%-92%. Keep the bowl centered horizontally, completely visible, and at exactly the same apparent scale across the series. Leave room for the soft shadow. No cropping, no zoom variation, no oversized empty margins. Do not shrink the bowl for individual dishes.
+FRAMING AND SCALE LOCK: Preserve the reference bowl's exact silhouette, oval rim geometry, wall height, foot bands, proportions and orientation. Vessel identity is more important than canvas aspect ratio or margin size. Keep the same apparent bowl scale across the series; transparent padding may vary. Never stretch or redesign the bowl to fit a canvas. Keep the entire bowl and its compact shadow visible without cropping.
 
 CAMERA: Match the reference's 45-degree three-quarter view. Clearly show the food surface and the thick curved front wall. Keep the same camera elevation and orientation for every dish.
 
 FOOD: 【DESCRIBE THE DISH'S DISTINCTIVE SHAPES, INGREDIENTS, COLORS, AND ARRANGEMENT】. A modest, readable number of distinct pieces fills the bowl naturally without overflowing. Keep the food below or close to the back rim, with no towering heap. No huge empty rim. Do not copy the reference's pork, pineapple, or peppers unless they belong in this dish.
 
-ART STYLE: Warm hand-painted watercolor food illustration with a charming animated-film aesthetic. Visible natural pigment variation, soft watercolor washes, and clear dark warm-brown hand-drawn contours. The outer silhouette is strong and slightly irregular; interior details are lighter. Preserve chunky, readable food shapes suitable for a small game icon. No photorealism, no vector-flat rendering, no plastic 3D finish.
+ART STYLE: Warm hand-painted watercolor food illustration with a charming animated-film aesthetic. Visible natural pigment variation, soft watercolor washes, and clear dark warm-brown hand-drawn contours. MANDATORY INGREDIENT OUTLINES: Clear dark linework first, watercolor fills inside it. The bowl silhouette has the heaviest near-black warm-brown contour. EVERY individual ingredient piece MUST ALSO have a clearly visible, continuous, substantial DARK WARM-BROWN outer contour, including every pale tofu cube, wonton wrapper and scallion. Outline overlapping ingredient boundaries explicitly; color differences and shading alone are insufficient. Use thinner brown lines for cut-face edges, folds and structural creases. ONLY interior texture lines may be lighter. Do not soften or omit ingredient outlines; no lineless painted food. Preserve chunky, readable food shapes suitable for a small game icon. No photorealism, no vector-flat rendering, no plastic 3D finish.
 
 LIGHT AND HIGHLIGHTS: Match the reference's soft upper-left lighting. Use selective, coherent highlights on a few main food surfaces to convey the correct material. Glossy sauces may have a few grouped irregular light patches; wonton wrappers and other soft ingredients should remain softly shaded. Do NOT distribute dense tiny white speckles, sparkles, or hard specular flecks across every ingredient or the sauce. Avoid excessive wet shine and visual clutter.
 
