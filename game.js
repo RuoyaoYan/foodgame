@@ -194,7 +194,7 @@
         set(v) { if (v === last) return; last = v; desc.set.call(this, v); },
       });
     });
-  })(["room", "journal", "unlockedList", "dexCats", "ingDex", "storageDishes", "storageIngs", "furnitureList", "achList",
+  })(["room", "codexGrid", "unlockedList", "dexCats", "ingDex", "storageDishes", "storageIngs", "furnitureList", "achList",
       "fields", "pens", "shopBonus", "shelves", "shelfExpand", "cityList", "foodStreet", "bookstore", "hardware",
       "bag", "potItems", "methods", "quickCook", "bookViewerList", "saveInfo"]);
   const fmt = n => Math.floor(n).toLocaleString(I18N.locale);
@@ -332,7 +332,8 @@
     document.querySelectorAll("#homeTabs button").forEach(b => b.classList.toggle("active", b.dataset.home === homeSub));
     document.querySelectorAll(".home-sub").forEach(el => el.classList.toggle("hidden", el.id !== "home-" + homeSub));
     renderRoom();
-    if (homeSub === "dishes") renderJournal();
+    if (homeSub === "dishes") renderCodexEntry();
+    renderCodex();
     if (homeSub === "unlocked") renderUnlocked();
     if (homeSub === "ingredients") renderIngDex();
     if (homeSub === "storage") renderStorage();
@@ -347,36 +348,76 @@
     $("room").innerHTML = `<div class="room-wall"><div class="room-window">🌤️</div></div><div class="room-floor"></div>
       ${items}${S.furniture.length ? "" : `<div class="room-empty">${T("房间空空的……去“家具”里挑几件吧")}</div>`}`;
   }
-  let dishQuery = "";
-  // 搜索：料理名、食材名、城市、食谱书名、做法
-  function dishMatches(d, q) {
+  // ---------- 料理图鉴（全屏页）：按序号排、一页固定不滚动、翻页；未解锁只显示“？” ----------
+  let codexQuery = "", codexPage = 0, codexPer = 32;
+  const codexList = () => D.dishes.slice().sort((a, b) => a.no - b.no);
+  const codexGot = d => S.dishes.includes(d.id) || DEV();   // 开发者模式：全部可见
+  // 搜索：国家、食谱书名对所有料理有效；料理名 / 食材 / 做法只对已解锁的有效（避免剧透）
+  function codexMatch(d, q) {
     if (!q) return true;
-    const own = hasBook(d.id) || S.dishes.includes(d.id);
-    const hay = [placeOf(d).name, bookOf(d.id).name, ...(own ? [d.name, METHOD[d.method].name, ...d.ingredients.map(x => ING[x].name)] : [])].join(" ");
+    const hay = [placeOf(d).name, bookOf(d.id).name, ...(codexGot(d) ? [d.name, METHOD[d.method].name, ...d.ingredients.map(x => ING[x].name)] : [])].join(" ");
     return hay.toLowerCase().includes(q.toLowerCase());
   }
-  function renderJournal() {
-    const card = d => {
-      const got = S.dishes.includes(d.id), own = hasBook(d.id);
-      return `<div class="card dish-mini ${got ? "" : "locked"} ${d.id === lastUnlocked ? "flip" : ""}" data-dish="${d.id}" title="${own || got ? d.name : "？？？"}">
-        ${own || got ? dishArt(d, "m") : lockArt("m")}
-        <div class="name">${own || got ? d.name : "？？？"}</div>
-        ${got ? `<div class="meta">Lv.${masteryLv(d.id)}</div>` : ""}
-      </div>`;
-    };
-    const total = D.dishes.length, done = S.dishes.filter(id => DISH[id]).length;
-    const q = dishQuery.trim();
-    let body = D.books.map(b => {
-      const list = b.dishes.map(id => DISH[id]).filter(d => dishMatches(d, q));
-      if (!list.length) return "";
-      const n = b.dishes.filter(id => S.dishes.includes(id)).length;
-      const own = DEV() || S.books.includes(b.id);
-      return `<div class="bag-label wide cat-head">${b.emoji} 《${b.name}》 <small>${n}/${b.dishes.length}${own ? "" : T(" · 🔒 去书店购买")}</small></div>` + list.map(card).join("");
+  function renderCodexEntry() {
+    $("codexEntryTotal").innerHTML = T("已解锁 <b>{0}</b> / {1} 道料理", D.dishes.filter(codexGot).length, D.dishes.length);
+  }
+  function codexLayout() {
+    const g = $("codexGrid"), W = g.clientWidth, H = g.clientHeight;
+    const cols = Math.max(7, Math.min(12, Math.floor(W / 118)));       // 每行至少 7 个
+    const cw = (W - (cols - 1) * 7) / cols, ch = cw * 1.22;             // 卡片宽高比约 1:1.22
+    const rows = Math.max(2, Math.floor((H + 8) / (ch + 8)));
+    g.style.setProperty("--cols", cols); g.style.setProperty("--rows", rows);
+    codexPer = cols * rows;
+  }
+  function renderCodex() {
+    if ($("codex").classList.contains("hidden")) return;
+    codexLayout();
+    const q = codexQuery.trim();
+    const list = codexList().filter(d => codexMatch(d, q));
+    const pages = Math.max(1, Math.ceil(list.length / codexPer));
+    codexPage = Math.max(0, Math.min(pages - 1, codexPage));
+    const cur = list.slice(codexPage * codexPer, (codexPage + 1) * codexPer);
+    let html = cur.map(d => {
+      if (!codexGot(d)) return `<div class="cx-card locked"><div class="cx-pic"><span class="cx-q">?</span></div><div class="cx-bar"></div></div>`;
+      return `<div class="cx-card ${d.id === lastUnlocked ? "flip" : ""}" data-dish="${d.id}" title="${d.name}">
+        <div class="cx-pic">${codexPic(d)}</div>
+        <div class="cx-bar"><span class="cx-no">${String(d.no).padStart(3, "0")}</span><span class="cx-nm">${d.name}</span></div></div>`;
     }).join("");
-    if (!body) body = `<p class="sub wide">${T("没有找到和“{0}”有关的料理。", q)}</p>`;
-    $("journal").innerHTML = `<div class="dex-total wide">${T("已解锁 <b>{0}</b> / {1} 道料理", done, total)}</div>` + body;
+    if (!list.length) html = `<p class="sub cx-none">${T("没有找到和“{0}”有关的料理。", q)}</p>`;
+    else for (let i = cur.length; i < codexPer; i++) html += `<div class="cx-card cx-empty"></div>`;
+    $("codexGrid").innerHTML = html;
+    $("codexTotal").innerHTML = T("已解锁 <b>{0}</b> / {1} 道料理", D.dishes.filter(codexGot).length, D.dishes.length);
+    $("codexPgN").textContent = pages; $("codexPgIn").value = codexPage + 1; $("codexPgIn").max = pages;
+    $("codexPrev").disabled = codexPage === 0; $("codexNext").disabled = codexPage >= pages - 1;
+    $("codexDots").innerHTML = pages > 1 && pages <= 24 ? Array.from({ length: pages }, (_, i) => `<button class="cx-dot ${i === codexPage ? "on" : ""}" data-p="${i}"></button>`).join("") : "";
     lastUnlocked = null;
   }
+  // 图鉴里的料理图：有图用图，没图用 emoji（尺寸跟着卡片走）
+  const codexPic = d => artOK["dishes/" + d.id] ? `<img src="${artSrc("dishes", d.id)}" alt="">` : `<span class="cx-emo">${d.emoji}</span>`;
+  const codexGo = p => { codexPage = p; renderCodex(); };
+  function openCodex() { $("codex").classList.remove("hidden"); document.body.style.overflow = "hidden"; renderCodex(); }
+  function closeCodex() { $("codex").classList.add("hidden"); document.body.style.overflow = ""; }
+  $("openCodex").addEventListener("click", openCodex);
+  $("codexClose").addEventListener("click", closeCodex);
+  $("codexPrev").addEventListener("click", () => codexGo(codexPage - 1));
+  $("codexNext").addEventListener("click", () => codexGo(codexPage + 1));
+  $("codexPgIn").addEventListener("change", e => codexGo((+e.target.value || 1) - 1));
+  $("codexDots").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (b) codexGo(+b.dataset.p); });
+  $("codexGrid").addEventListener("click", openDishCard);
+  let cxSwipe = null;
+  $("codexGrid").addEventListener("pointerdown", e => { cxSwipe = e.clientX; });
+  $("codexGrid").addEventListener("pointerup", e => { if (cxSwipe !== null && Math.abs(e.clientX - cxSwipe) > 60) codexGo(codexPage + (e.clientX < cxSwipe ? 1 : -1)); cxSwipe = null; });
+  document.addEventListener("keydown", e => {
+    if ($("codex").classList.contains("hidden") || !$("modal").classList.contains("hidden")) return;
+    if (e.target.tagName === "INPUT") return;
+    if (e.key === "ArrowLeft") codexGo(codexPage - 1);
+    if (e.key === "ArrowRight") codexGo(codexPage + 1);
+    if (e.key === "Escape") closeCodex();
+  });
+  window.addEventListener("resize", () => {
+    if ($("codex").classList.contains("hidden")) return;
+    const first = codexPage * codexPer; codexLayout(); codexPage = Math.floor(first / codexPer); renderCodex();
+  });
   // 我的家 → 已解锁料理：按已拥有的食谱书分组，只显示已经研发出来的料理
   function renderUnlocked() {
     const books = D.books.filter(b => DEV() || S.books.includes(b.id));
@@ -391,8 +432,7 @@
     $("unlockedList").innerHTML = html;
   }
   const debounce = (fn, ms = 120) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-  $("dishSearch").addEventListener("input", debounce(e => { dishQuery = e.target.value; renderJournal(); }));
-  $("journal").addEventListener("click", openDishCard);
+  $("codexSearch").addEventListener("input", debounce(e => { codexQuery = e.target.value; codexPage = 0; renderCodex(); }));
   $("unlockedList").addEventListener("click", openDishCard);
   function openDishCard(e) {
     const el = e.target.closest("[data-dish]"); if (!el) return;

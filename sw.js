@@ -3,7 +3,7 @@
 //   - 第二次打开几乎瞬间加载，断网也能玩（游戏本身是纯前端，存档在浏览器里）；
 //   - 更新了游戏文件后，用户会在下一次打开时拿到新版（同一次加载里的文件互相一致）。
 // 想强制所有人立刻换新：改一下下面的 VERSION。
-const VERSION = "v0.13";
+const VERSION = "v0.14";
 const CACHE = "chi-" + VERSION;
 const CORE = ["./", "index.html", "style.css", "i18n.js", "data/game.js", "data/ja.js", "worldmap.js", "game.js"];
 

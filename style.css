@@ -589,3 +589,57 @@ html[lang="ja"] .bottom-nav button { font-size: 11px; }
 .book-mini .row button { padding: 4px 10px; font-size: 13px; }
 .book-mini .sticker.m { --size: 44px; }
 @media (max-width: 700px) { .cards.bookstore { grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); } }
+
+/* ---------- v0.14：料理图鉴全屏页（按序号、固定一页、翻页） ---------- */
+.codex-entry { padding: 8px 4px; }
+.codex-entry .primary { margin-top: 6px; }
+.codex {
+  position: fixed; inset: 0; z-index: 18; display: flex; flex-direction: column; gap: 6px; padding: 10px 16px 8px;
+  background: radial-gradient(circle at 15% 10%, rgba(244,195,166,.35), transparent 40%), radial-gradient(circle at 90% 90%, rgba(159,195,214,.3), transparent 40%), var(--paper);
+  overflow: hidden;
+}
+.codex-top { flex: none; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.codex-top h2 { margin: 0; font-size: 22px; }
+.codex-top .dex-total { grid-column: auto; font-size: 18px; }
+.codex-top .dex-total b { font-size: 24px; }
+.codex-top .search { flex: 1; min-width: 160px; max-width: 420px; margin: 0 0 0 auto; padding: 5px 12px; }
+.codex-stage { flex: 1; min-height: 0; display: flex; align-items: stretch; gap: 8px; }
+.codex-arrow {
+  flex: none; width: 44px; align-self: center; height: 90px; border: 2.5px solid var(--line); border-radius: var(--wobble);
+  background: #fffdf7; font-size: 26px; color: var(--ink); cursor: pointer; box-shadow: 2px 3px 0 rgba(91,58,40,.2);
+}
+.codex-arrow:disabled { opacity: .3; cursor: default; }
+.codex-arrow:not(:disabled):hover { background: #fbe9d8; }
+.codex-grid {
+  flex: 1; min-width: 0; display: grid; gap: 8px 7px;
+  grid-template-columns: repeat(var(--cols, 8), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows, 4), minmax(0, 1fr));
+}
+/* 微缩卡：上方图案区约 84%，下方条约 16%；所有卡片统一米色底 */
+.cx-card {
+  position: relative; display: grid; grid-template-rows: 84fr 16fr; min-height: 0; min-width: 0; overflow: hidden;
+  border: 2px solid var(--line); border-radius: 10px 12px 9px 13px; background: #fffdf7; cursor: pointer; box-shadow: 1.5px 2px 0 rgba(91,58,40,.2);
+}
+.cx-card:not(.locked):hover { transform: translateY(-2px); }
+.cx-pic { position: relative; min-height: 0; display: grid; place-items: center; container-type: size; background: #f6ecd8; }
+.cx-pic::before { content: ""; position: absolute; inset: 6%; border-radius: 46% 54% 42% 58% / 52% 44% 56% 48%; background: radial-gradient(circle at 40% 38%, rgba(255,255,255,.7), transparent 65%); opacity: .8; }
+.cx-pic img { position: relative; width: 96%; height: 96%; object-fit: contain; filter: drop-shadow(1.5px 2px 0 rgba(91,58,40,.2)); }
+.cx-emo { position: relative; font-size: min(72cqw, 72cqh); line-height: 1; filter: drop-shadow(0 0 1.5px #fff) drop-shadow(1px 1.5px 0 rgba(91,58,40,.4)); }
+.cx-bar {
+  display: flex; align-items: center; gap: 4px; padding: 0 4px; border-top: 2px solid var(--line); background: #efe2c8;
+  font-size: clamp(9px, 1.05vw, 12px); line-height: 1; white-space: nowrap; min-width: 0;
+}
+.cx-no { flex: none; color: var(--ink-soft); opacity: .65; font-variant-numeric: tabular-nums; font-size: .8em; }
+.cx-nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-family: var(--hand); font-weight: 700; }
+/* 未解锁：只有一个问号 */
+.cx-card.locked { cursor: default; background: #ece4d4; }
+.cx-card.locked .cx-pic { background: #e4dccd; }
+.cx-card.locked .cx-pic::before { display: none; }
+.cx-q { font: 700 min(52cqw, 52cqh) var(--hand); color: #b9ad99; }
+.cx-card.locked .cx-bar { background: #e4dccd; border-top-color: #c9bda8; }
+.cx-card.cx-empty { visibility: hidden; }
+.cx-none { grid-column: 1 / -1; align-self: start; font-size: 16px; }
+.codex-foot { flex: none; display: flex; justify-content: center; align-items: center; gap: 6px; height: 26px; }
+.cx-dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--line); background: transparent; cursor: pointer; padding: 0; }
+.cx-dot.on { background: var(--accent); }
+.codex-pg { font: 16px var(--hand); margin: 0 10px; text-align: center; }
+.codex-pg input { width: 46px; font: inherit; text-align: center; border: 1.5px solid var(--line); border-radius: 6px; background: #fffdf7; color: var(--ink); }

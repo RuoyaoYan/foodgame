@@ -71,8 +71,11 @@
       <button data-home="achievements">🏆 成就</button>
     </div>
     <div id="home-dishes" class="home-sub">
-      <input id="dishSearch" class="search" type="search" placeholder="🔍 搜索料理：名字、食材、国家、食谱书、做法……">
-      <div id="journal" class="cards journal"></div>
+      <div class="codex-entry">
+        <div id="codexEntryTotal" class="dex-total"></div>
+        <p class="sub">按序号排列，一页一页翻；还没研发出来的料理只显示“？”。</p>
+        <button id="openCodex" class="primary">📖 打开料理图鉴</button>
+      </div>
     </div>
     <div id="home-unlocked" class="home-sub hidden">
       <p class="sub">按食谱书分类，只显示你已经研发出来的料理。</p>
@@ -202,6 +205,20 @@
   <button data-tab="settings"><span class="ni">⚙️</span>设置</button>
 </nav>
 
+<div id="codex" class="codex hidden">
+  <div class="codex-top">
+    <button id="codexClose" class="ghost">← 返回</button>
+    <h2>📖 料理图鉴</h2>
+    <div id="codexTotal" class="dex-total"></div>
+    <input id="codexSearch" class="search" type="search" placeholder="🔍 搜索料理：名字、食材、国家、食谱书、做法……">
+  </div>
+  <div class="codex-stage">
+    <button id="codexPrev" class="codex-arrow" aria-label="上一页">‹</button>
+    <div id="codexGrid" class="codex-grid"></div>
+    <button id="codexNext" class="codex-arrow" aria-label="下一页">›</button>
+  </div>
+  <div class="codex-foot"><span id="codexDots"></span><span class="codex-pg">第 <input id="codexPgIn" type="number" min="1"> / <span id="codexPgN"></span> 页</span></div>
+</div>
 <div id="modal" class="modal hidden">
   <div class="modal-card" id="modalCard"></div>
 </div>
