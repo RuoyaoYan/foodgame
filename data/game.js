@@ -157,7 +157,7 @@ window.GAME_DATA = {
     {"id":"kuromitsu","category":"other","kind":"raw","name":"黑蜜","emoji":"🖤","desc":"黑色的蜜","city":"japan","price":8},
     {"id":"soy_sauce","category":"other","kind":"raw","city":"china","price":5,"name":"酱油","emoji":"🍾","desc":"大豆做的调味料"},
     {"id":"salt","category":"other","kind":"raw","city":"china","price":2,"name":"盐","emoji":"🏔️","desc":"咸咸的调味料"},
-    {"id":"nori","category":"other","kind":"raw","city":"japan","price":6,"name":"海苔","emoji":"🟩","desc":"薄薄的海藻片"},
+    {"id":"seaweed","category":"other","kind":"raw","city":"japan","price":6,"name":"海苔","emoji":"🟩","desc":"薄薄的海藻片"},
     {"id":"consomme","category":"other","kind":"raw","name":"法式清汤","emoji":"🫕","desc":"清澈的高汤","city":"japan","price":8},
     {"id":"water","category":"other","kind":"raw","name":"水","emoji":"💧","desc":"干净的水","city":"china","price":1},
     {"id":"sparkling_water","category":"other","kind":"raw","name":"气泡水","emoji":"🫧","desc":"冒着小气泡的水。","city":"japan","price":8},
@@ -200,7 +200,7 @@ window.GAME_DATA = {
     {"id":"lotus_root","category":"crop","kind":"raw","name":"莲藕","emoji":"🪷","desc":"有很多孔的根","city":"china","price":6},
     {"id":"green_bean","category":"crop","kind":"raw","city":"china","price":4,"name":"豆角","emoji":"🪈","desc":"长长的豆荚"},
     {"id":"bamboo_shoot","category":"crop","kind":"raw","name":"竹笋","emoji":"🗻","desc":"竹子的嫩芽","city":"china","price":8},
-    {"id":"kelp","category":"other","kind":"raw","todo":true,"name":"海带","emoji":"🌊","desc":"海里的宽叶海藻"}
+    {"id":"kelp","category":"other","kind":"raw","city":"japan","price":6,"name":"海带","emoji":"🌊","desc":"海里的宽叶海藻"}
   ],
 
   // 料理熟练度：每做出 1 份料理 +1 点；达到 levels 里的点数即升级；每升一级售价 +priceBonusPerLevel
@@ -372,7 +372,7 @@ window.GAME_DATA = {
     {"id":"cacio_e_pepe","no":31,"name":"黑胡椒奶酪面","emoji":"🧀","city":"italy","ingredients":["noodles","cheese","black_pepper"],"method":"cook","hint":"极简的三样：煮好的面、奶酪、胡椒。少即是多。","recipePrice":800,"sellPrice":260,"story":"原名 Cacio e pepe（意大利语）。Cacio e Pepe 源自罗马牧羊人，干粮只需奶酪与胡椒便于携带，是罗马最古老的面食之一。"},
     {"id":"char_siu","no":32,"name":"蜜汁叉烧","emoji":"🍖","city":"china","ingredients":["pork","honey","soy_sauce"],"method":"cook","hint":"一条肉刷上甜甜的蜜和咸香的酱色，挂进炉里烤到油亮。","recipePrice":400,"sellPrice":150,"story":"原名 叉燒 Chāsīu（粤语 Cha1 siu1）（粤语）。“叉烧”得名于用长叉叉着肉在火上烧烤。广式烧腊的招牌，蜜汁边缘微焦，肥瘦相间。"},
     {"id":"har_gow","no":33,"name":"水晶虾饺","emoji":"🥟","city":"china","ingredients":["shrimp","wheat_flour","starch"],"method":"steam","hint":"透明的薄皮裹着弹牙的海鲜，放进蒸笼里。","recipePrice":400,"sellPrice":170,"story":"原名 蝦餃 Hā gáau（粤语）（粤语）。广式早茶“四大天王”之首。澄面与淀粉做的皮蒸熟后晶莹透亮，隐约透出粉红虾仁，讲究至少十三道褶。"},
-    {"id":"miso_soup","no":34,"name":"豆腐海带味噌汤","emoji":"🍲","city":"japan","ingredients":["miso","tofu","nori"],"method":"cook","hint":"一勺发酵的豆酱化在热汤里，飘着白色小方块和海里的绿。","recipePrice":1000,"sellPrice":220,"story":"原名 味噌汁（日语）。日本家庭餐桌上几乎每天都有的一碗汤。味噌要最后放、不能久煮，才能留住香气。"},
+    {"id":"miso_soup","no":34,"name":"豆腐海带味噌汤","emoji":"🍲","city":"japan","ingredients":["miso","tofu","kelp"],"method":"cook","hint":"一勺发酵的豆酱化在热汤里，飘着白色小方块和海里的绿。","recipePrice":1000,"sellPrice":220,"story":"原名 味噌汁（日语）。日本家庭餐桌上几乎每天都有的一碗汤。味噌要最后放、不能久煮，才能留住香气。"},
     {"id":"tempura","no":35,"name":"天妇罗","emoji":"🍤","city":"japan","ingredients":["shrimp","wheat_flour","egg"],"method":"fry","hint":"海鲜裹上蛋和面粉调的薄衣，下油锅炸得酥脆。","recipePrice":1000,"sellPrice":260,"story":"原名 天ぷら（日语）。16 世纪由葡萄牙传教士带到日本，江户时代成为路边摊小吃，如今是讲究火候的职人料理。"},
     {"id":"fish_and_chips","no":36,"name":"炸鱼薯条","emoji":"🐟","city":"uk","ingredients":["fish_fillet","potato","wheat_flour"],"method":"fry","hint":"一块鱼裹上面糊，配上切条的土豆，一起下油锅。","recipePrice":1500,"sellPrice":380,"story":"原名 Fish and chips（英语）。19 世纪中叶起风靡英国的工人阶级快餐，二战时期是少数不限量配给的食物，被称为“好伙伴”。"},
     {"id":"scone","no":37,"name":"英式司康","emoji":"🧁","city":"uk","ingredients":["milk","butter","baking_powder"],"method":"cook","hint":"牛奶和牛油，加一点让面团膨起来的白粉，烤得外酥内软。","recipePrice":1500,"sellPrice":340,"story":"原名 Scone（英语）。英式下午茶的主角，配凝脂奶油和果酱。先抹奶油还是先抹果酱，至今是德文郡和康沃尔郡的争论。"},
@@ -527,7 +527,7 @@ window.GAME_DATA = {
     {"id":"kumara","no":186,"name":"毛利炸红薯","emoji":"🍠","city":"newzealand","ingredients":["sweet_potato","sugar"],"method":"fry","hint":"紫皮的甜薯切块炸得金黄，撒一点糖。","recipePrice":120,"sellPrice":60,"story":"原名 Kūmara（毛利语）（毛利语）。Kumara（库马拉）是毛利语里“红薯”的意思，是新西兰毛利人的主食，如今炸成小吃，是新西兰街头的常见零食。"},
     {"id":"shoyu_senbei","no":187,"name":"酱油仙贝","emoji":"🍘","city":"japan","ingredients":["rice","soy_sauce"],"method":"cook","hint":"米饼被炭火烤得焦香，刷上一层咸咸的酱汁。","recipePrice":120,"sellPrice":60,"story":"原名 醤油せんべい（日语）。日本最常见的仙贝，由埼玉县草加的茶馆起源，是日本人从小吃到大的零食。"},
     {"id":"shio_senbei","no":188,"name":"盐仙贝","emoji":"🧂","city":"japan","ingredients":["rice","salt"],"method":"cook","hint":"米饼只撒盐，烤得薄脆，吃起来清清爽爽。","recipePrice":120,"sellPrice":60,"story":"原名 塩せんべい（日语）。盐味仙贝是最简单的口味，只靠米和盐，却能吃出米的甜香。是日本人配茶的老朋友。"},
-    {"id":"ebi_senbei","no":189,"name":"虾仙贝","emoji":"🦐","city":"japan","ingredients":["shrimp","wheat_flour","nori"],"method":"cook","hint":"海苔和虾粉混进面糊，烤得又薄又脆又香。","recipePrice":180,"sellPrice":90,"story":"原名 えびせんべい（日语）。虾仙贝是日本很受欢迎的零食，带着海洋的鲜香，一包接一包地被孩子们吃光。"},
+    {"id":"ebi_senbei","no":189,"name":"虾仙贝","emoji":"🦐","city":"japan","ingredients":["shrimp","wheat_flour","seaweed"],"method":"cook","hint":"海苔和虾粉混进面糊，烤得又薄又脆又香。","recipePrice":180,"sellPrice":90,"story":"原名 えびせんべい（日语）。虾仙贝是日本很受欢迎的零食，带着海洋的鲜香，一包接一包地被孩子们吃光。"},
     {"id":"castella","no":190,"name":"长崎蛋糕","emoji":"🧽","city":"japan","ingredients":["sugar","wheat_flour","honey"],"method":"cook","hint":"糖、面粉和蜂蜜烤出一块金黄的松软方块。","recipePrice":120,"sellPrice":60,"story":"原名 カステラ（日语）。16 世纪葡萄牙人把它带到长崎，日本人加了蜂蜜，成了蜂蜜蛋糕。如今是长崎最有名的伴手礼。"},
     {"id":"yatsuhashi","no":191,"name":"八桥","emoji":"🥠","city":"japan","ingredients":["rice","cinnamon"],"method":"cook","hint":"米粉烤成瓦片似的薄片，带着树皮的辛香。","recipePrice":120,"sellPrice":60,"story":"原名 八つ橋（日语）。京都的名产，相传是为了纪念琴师八桥检校，形状就像一架弯弯的筝，是赴京必买的伴手礼。"},
     {"id":"nama_yatsuhashi","no":192,"name":"生八桥","emoji":"🥟","city":"japan","ingredients":["rice","cinnamon","red_bean"],"method":"freeze","hint":"没有烤过的软皮，包着红豆馅，带一点辛香。","recipePrice":190,"sellPrice":95,"story":"原名 生八つ橋（日语）。1960 年代京都发明的新口味，把没烤的软糯饼皮包上红豆馅，成了比烤八桥更流行的新款。"},
@@ -552,7 +552,7 @@ window.GAME_DATA = {
     {"id":"caramel_popcorn","no":211,"name":"焦糖爆米花","emoji":"🍯","city":"usa","ingredients":["corn","caramel"],"method":"cook","hint":"爆开的白花裹上棕色的糖浆，脆脆的。","recipePrice":120,"sellPrice":60,"story":"原名 Caramel popcorn（英语）。1893 年芝加哥世博会上首次亮相，包着焦糖的爆米花从此成了游乐园和球场的经典小吃。"},
     {"id":"salt_chips","no":212,"name":"盐味薯片","emoji":"🥔","city":"usa","ingredients":["potato","salt"],"method":"fry","hint":"切成薄片的土豆炸到金黄，只撒一点盐。","recipePrice":120,"sellPrice":60,"story":"原名 Salted potato chips（英语）。1853 年美国一位厨师被挑剔的客人逼得把土豆切到极薄，客人反而爱上了，薯片就这样诞生。"},
     {"id":"consomme_chips","no":213,"name":"清汤味薯片","emoji":"🥔","city":"japan","ingredients":["potato","consomme"],"method":"fry","hint":"金黄的薄片裹着高汤的鲜香，酥脆又浓郁。","recipePrice":140,"sellPrice":70,"story":"原名 コンソメ味ポテトチップス（日语）。清汤（コンソメ）味是日本薯片最受欢迎的经典口味，咸香里有肉和蔬菜熬出的鲜味。"},
-    {"id":"nori_chips","no":214,"name":"海苔味薯片","emoji":"🟩","city":"japan","ingredients":["potato","nori"],"method":"fry","hint":"金黄的薄片上撒满海苔碎，带着大海的香气。","recipePrice":130,"sellPrice":65,"story":"原名 のり塩ポテトチップス（日语）。“海苔盐味”是日本独创的口味，薯片的咸香配海苔的清香，一吃就上瘾。"},
+    {"id":"nori_chips","no":214,"name":"海苔味薯片","emoji":"🟩","city":"japan","ingredients":["potato","seaweed"],"method":"fry","hint":"金黄的薄片上撒满海苔碎，带着大海的香气。","recipePrice":130,"sellPrice":65,"story":"原名 のり塩ポテトチップス（日语）。“海苔盐味”是日本独创的口味，薯片的咸香配海苔的清香，一吃就上瘾。"},
     {"id":"milk_donut","no":215,"name":"牛奶甜甜圈","emoji":"🍩","city":"usa","ingredients":["wheat_flour","baking_powder","milk"],"method":"fry","hint":"面粉加牛奶揉成面团，膨起来后炸得金黄蓬松。","recipePrice":170,"sellPrice":85,"story":"原名 Milk doughnut（英语）。甜甜圈在美国被叫做“donut”，是早餐的主角，警察叔叔也爱吃，是美国人文化里的小趣事。"},
     {"id":"strawberry_donut","no":216,"name":"草莓甜甜圈","emoji":"🍓","city":"usa","ingredients":["wheat_flour","baking_powder","strawberry"],"method":"fry","hint":"金黄的圈圈裹着粉红的草莓糖霜。","recipePrice":180,"sellPrice":90,"story":"原名 Strawberry doughnut（英语）。粉红色的草莓甜甜圈出现在每家甜甜圈店的橱窗里，最受孩子们喜爱。"},
     {"id":"choco_donut","no":217,"name":"巧克力甜甜圈","emoji":"🍫","city":"usa","ingredients":["wheat_flour","baking_powder","chocolate"],"method":"fry","hint":"金黄的圈圈裹着深色的巧克力，一口下去又甜又浓。","recipePrice":180,"sellPrice":90,"story":"原名 Chocolate doughnut（英语）。巧克力甜甜圈是最经典的口味，在美式咖啡厅里配上一杯咖啡，是很多人的早晨仪式。"},
@@ -892,7 +892,7 @@ window.GAME_DATA = {
     {"id":"xmas_roast_chicken","no":551,"name":"圣诞烤鸡","emoji":"🍗","origin":"世界","ingredients":["chicken","olive_oil"],"method":"cook","hint":"外皮金黄脆脆的，一刀下去，汁水满溢。","recipePrice":130,"sellPrice":65,"story":"原名 Christmas roast chicken（英语）。一只涂满橄榄油的烤鸡，端上圣诞桌的那一刻，整个房间都是香的。"},
     {"id":"grilled_corn","no":552,"name":"烤玉米","emoji":"🌽","city":"japan","ingredients":["corn","soy_sauce"],"method":"cook","hint":"刷上一层酱汁，在炭火上烤得焦香。","recipePrice":120,"sellPrice":60,"story":"原名 焼きとうもろこし（日语）。夏日祭典里最香的味道，酱油在玉米上烤出焦香，一下就把小朋友招来了。"},
     {"id":"yakitori","no":553,"name":"烤鸡肉串","emoji":"🍢","city":"japan","ingredients":["chicken","soy_sauce"],"method":"cook","hint":"一串串的小肉块，刷着酱汁，烤得滋滋冒油。","recipePrice":120,"sellPrice":60,"story":"原名 焼き鳥（日语）。居酒屋的炭火前，一串串鸡肉被反复刷上酱汁，是下班后最好的一口。"},
-    {"id":"tamagoyaki_pancake","no":554,"name":"玉子煎饼","emoji":"🥞","city":"japan","ingredients":["shrimp","egg","nori"],"method":"cook","hint":"金黄的蛋饼里夹着小虾和海苔的香气。","recipePrice":200,"sellPrice":100,"story":"原名 玉子せんべい（日语）。在鸡蛋里加上小虾和海苔，煎成圆圆的薄饼，是夜市里一翻面就有人排队的小吃。"},
+    {"id":"tamagoyaki_pancake","no":554,"name":"玉子煎饼","emoji":"🥞","city":"japan","ingredients":["shrimp","egg","seaweed"],"method":"cook","hint":"金黄的蛋饼里夹着小虾和海苔的香气。","recipePrice":200,"sellPrice":100,"story":"原名 玉子せんべい（日语）。在鸡蛋里加上小虾和海苔，煎成圆圆的薄饼，是夜市里一翻面就有人排队的小吃。"},
     {"id":"okonomiyaki","no":555,"name":"大阪烧","emoji":"🥘","city":"japan","ingredients":["wheat_flour","egg","pork"],"method":"cook","hint":"圆圆的大饼，铁板上滋滋作响，刷满酱汁和柴鱼花。","recipePrice":160,"sellPrice":80,"story":"原名 お好み焼き（日语）。大阪人的灵魂小吃，把面糊、鸡蛋和猪肉煎成饼，在铁板前吃，才最有味道。"},
     {"id":"yakisoba","no":556,"name":"日式炒面","emoji":"🍜","city":"japan","ingredients":["pork","noodles","ginger"],"method":"cook","hint":"一大盘油亮的面条，蒸汽里带着浓浓的酱香和姜味。","recipePrice":120,"sellPrice":60,"story":"原名 焼きそば（日语）。日本夏日祭典的摊位上，铁板炒面的味道总是最先飘过来。"},
     {"id":"creamy_potato","no":557,"name":"奶油马铃薯","emoji":"🥔","origin":"世界","ingredients":["potato","butter"],"method":"steam","hint":"蒸得粉粉的小土豆，上面一块牛油慢慢化开。","recipePrice":120,"sellPrice":60,"story":"原名 Buttered potatoes（英语）。最简单的做法：蒸熟的小土豆，加一块牛油。热气一冒，什么都不用再加。"},

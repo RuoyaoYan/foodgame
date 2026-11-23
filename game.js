@@ -68,7 +68,7 @@
   function migrate(st, raw) {
     const RENAME = { minced_pork: "pork", pork_belly: "pork", tenderloin: "pork", tofu_skin: "tofu",
       pecorino: "cheese", cream_cheese: "cheese", raw_noodles: "noodles",
-      spaghetti: "noodles", chili: "spicy_spice", sichuan_pepper: "spicy_spice", scallion: "onion" };
+      spaghetti: "noodles", chili: "spicy_spice", sichuan_pepper: "spicy_spice", scallion: "onion", nori: "seaweed" };
     const DROP = ["sweet_paste", "doubanjiang", "yellow_paste", "guanciale", "garlic_sprout"];
     const fixMap = obj => {
       const out = {};
